@@ -1,0 +1,151 @@
+#==================================================================================================
+# Homework 1 
+# Date: October 18, 2020
+# Creator: Jake Cavaiani 
+
+#Purpose: Homework assignment 1 
+#
+#==================================================================================================
+#NOTES:
+
+#==================================================================================================
+# load in libraries #
+library(readr)
+
+wd <- getwd()
+
+# Define the location of our data desired subfolder
+################################### Problem 1 ###################################################
+# 1a
+dir.data <- file.path(wd, "data")
+dir.create(dir.data)
+sst <- read.csv(file = file.path(dir.data, "SST data.csv"))
+str(sst)
+head(sst)
+# 1b 
+sst.year <- sst$Year
+sst.month <- sst$Month
+sst.loc <- sst$Location
+sst.temp <- sst$SST
+typeof(sst.year)
+typeof(sst.month)
+typeof(sst.loc)
+typeof(sst.temp)
+
+# 1c 
+#Calculate the range (minimum and maximum) of the year observations, and create a vector called
+#sst.years, which holds the unique year values in ascending order
+range(sst.year)
+sst.years <- sort(unique(sst.year))
+sst.years
+
+# Calculate the mean, median, standard deviation, and coefficient of variation (CV) for the sea surface
+# temperature observations (sst.temp)
+sst.temp.mean <- mean(sst.temp)
+sst.temp.mean
+sst.temp.median <- median(sst.temp)
+sst.temp.median
+sst.temp.sd <- sd(sst.temp)
+sst.temp.cv <- sst.temp.sd/sst.temp.mean
+sst.temp.cv
+
+# 1d 
+# Create a histogram of the temperature observations (sst.temp) to compare with the summary statistics
+#you calculated in 1c, specifying the color of the histogram bars to be blue.
+dev.off()
+hist(sst$SST,
+     col = "blue",
+     xlab = "Temperature",
+     main = "Histogram of temperature observations")
+# 1 e 
+#Finally, please read in the “Bristol Bay 2020.csv” dataset using the read.table() and file.path()
+#functions, and save it as an object called bay.dat. Hint: you will need to look up the arguments to
+#read.table() in the function documentation to determine what might be needed for sep= and header= 
+bay.dat <- read.table(file = file.path(dir.data, "Bristol Bay 2020-1.csv"), header = TRUE, sep = ",")
+
+head(bay.dat)
+str(bay.dat)
+
+# 1f
+#Using the bay.dat object you have just created, please plot a histogram of the natural log of return
+#abundances contained in the “ret” column.
+
+hist(log(bay.dat$ret),
+     xlab = "Log of abundances",
+     main = "Histogram of natural log of abundances")
+
+################################### Problem 2 ###################################################
+# 2a #
+# Please reorder the following vector in ascending order using the indexing [] skills
+vect <- c(1,8,4,9,3,7,6,5,10,2)
+vect[]
+vect[3]
+asc.vect <- vect[c(1, 10, 5, 3, 8, 7, 6, 2, 4, 9)]
+asc.vect
+
+# 2b # 
+#Using calls to the rep() function and the combine function c(), please create a vector of integers
+#called myVect that includes: five 1’s, four 2’s, three 3’s, two 4’s, and a single 5, in this order.
+myVect <- rep(1:5, c(5,4,3,2,1))
+myVect
+
+# 2c #
+#Create an empty matrix (i.e. do not specify a data= argument to the matrix() constructor function)
+#called myMat with 3 rows and 8 columns. Next, create a vector of character strings including the
+#abbreviated days of the week as below:
+myMat <- matrix(data = NA, nrow = 3, ncol = 8)
+
+days <- c("Sun","Mon","Tue","Wed","Thu","Fri","Sat")
+days <- days[c(2:6)]
+
+myMat <- matrix(data = days, nrow = 3, ncol = 8, byrow = TRUE)
+
+################################### Problem 3 ###################################################
+# 3a
+#Please create an empty matrix called mat.horiz, with 10 rows and 10 columns. Next, populate this
+#matrix with values 1 to 100 by row (i.e. filling in values across columns, in descending rows), using two
+#for() loops and a counter object.
+
+mat.horiz <- matrix(nrow = 10, ncol = 10, byrow = TRUE)
+counter <- 1
+for (i in 1:100) {
+  mat.horiz[counter] <- paste(i)
+  counter <- counter + 1
+}
+mat.horiz
+
+# 3b
+mat.horiz <- matrix(nrow = 10, ncol = 10, byrow = FALSE)
+counter <- 1
+for (i in 1:100) {
+  mat.horiz[counter] <- paste(i)
+  counter <- counter + 1
+}
+mat.horiz
+
+# 3c #
+#First, load the StPaulTemp.csv file and save it as an object named air.temp.dat, which contains
+#successive monthly air temperature observations. Next, extract the column with the actual air temperature
+#observations (airT), and save these as a new vector called airT
+air.temp.dat <- read.csv(file = file.path(dir.data, "StPaulTemp-1.csv"))
+airT <- air.temp.dat$airT
+airT.diff <- vector(length = length(airT))
+test <- diff(airT)
+
+#Loop through the airT vector and calculate the difference between successive monthly air temperature
+#observations, as difference = February 1990 temperature – January 1990 temperature, ect. Since Jan
+#1990 is the first observation, the equivalent element in the airT.diff vector should be equal to zero.
+airT.diff[1] <- 0
+
+for(i in 2:length(airT)) {
+  airT.diff[i] <- diff(airT)
+}
+
+################################### Problem 4 ###################################################
+retYr <- bay.dat[2]
+system <- bay.dat[3]
+ret <- bay.dat[6]
+bay.dat.1963 <- bay.dat$retYr >= "1963"
+sum(bay.dat.1963)
+
+

@@ -1,0 +1,44 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","library(reticulate)"
+"0","Sys.which(""python"")"
+"1","           python "
+"1","
+"
+"1","""/usr/bin/python"" "
+"1","
+"
+"0","use_python(""/usr/bin/python"")"
+"0","library(tidyverse)"
+"0","options(tz=""America/Anchorage"")"
+"1","$tz
+"
+"1","NULL
+"
+"1","
+"
+"0","library(ggplot2)"
+"0","library(gridExtra)"
+"2","
+Attaching package: ‘gridExtra’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    combine
+
+"
+"0","library(boot)"
+"2","
+Attaching package: ‘boot’
+
+"
+"2","The following object is masked from ‘package:car’:
+
+    logit
+
+"
+"2","The following object is masked from ‘package:lattice’:
+
+    melanoma
+
+"

@@ -1,0 +1,581 @@
+### This script downloads DoD pressure transducer data at each site to create a rating curve for our discharge measurements. 
+
+# 2019 PT data is from DoD->2019 ak sensors->2019 sensor data->Q->PT depth->depth
+# 3) This data is read in from DoD Project->2020 AK sensors->Discharge->Pressure Transducer->Water Level
+
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(rio)
+library(ggplot2)
+library(scales)
+library(psych)
+library(here)
+library(googledrive)
+library(readxl)
+library(cowplot)
+library(zoo)
+library(readr)
+library(dplyr)
+library(RColorBrewer)
+library(gridExtra)
+library(ggpmisc)
+library(here)
+
+knitr::opts_chunk$set(echo = TRUE)
+Sys.setenv(TZ='America/Anchorage')
+
+
+### Import Data ###
+frch.stream.url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vStPTLYv7j4tC3hGRHQ3rW8oCTx9_I0bekcLBjCl4jKQT8GLImI_hXp9qq6UsmdVAaPd7vr4r3BsLZJ/pub?output=csv"
+frch.stream.url.two <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vQmHJ-1aQ_8UWAPq-v_us3gz-JTv7vsdVVKNnnMUloJwJNK7TTgvU8kLeUOCbIYU_mHz8v1k1CFz2Vl/pub?output=csv"
+vaul.stream.url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLn98ScyunAmC7oqWmd1UeFYg4lFoFTa3Zt9PEPIMMhkfNJqnxxEFB267V7jqR-4cnca8zv4LZcF_7/pub?output=csv"
+poke.stream.url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vR5CEMDu-NFH49FcPmbf_QglRqVaEV-0xgcGJWz3kWuuGP8pwI-OhXtSZCwN4uwBlOq0CuuQ9tMYLXX/pub?output=csv"
+poke.stream.url.two <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vTInrTbsXhYZ0Hcn0YZIBF7LWimNdO0V1e_06hKNaIriwxszvphODlUDfRnT_5_Xgi63k2WFW4q8EKm/pub?output=csv"
+strt.stream.url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vTgVqJmbVgtXVDGQL_SiQqHphyUBuXG-w0bCk8mLn-IksFrqg3PMvRveGizqHM9lhq_rhqozKseAD_7/pub?output=csv"
+strt.stream.url.two <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNwL17hN8tMuyzDCDKCTeXGjQ1eN7j881D0-pyi46PhTK7LwoqQ_jrwZWQrSypd3icId9KFpqsuatj/pub?output=csv"
+moos.stream.url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vQMF0fbfNRwgU-9DfsCJ7LpPd_LoAL01gcSdHzNIFXJ5sSnXwH8Vvsqyj_nZAeWVcXGDWhyJP2TbjZq/pub?output=csv"
+
+
+### read in data ###
+frch.stream.one <- read.csv(url(frch.stream.url))
+frch.stream.two <- read.csv(url(frch.stream.url.two))
+vaul.stream.one <- read.csv(url(vaul.stream.url), skip = 1)
+poke.stream.one <- read.csv(url(poke.stream.url))
+poke.stream.two <- read.csv(url(poke.stream.url.two))
+strt.stream.one <- read.csv(url(strt.stream.url))
+strt.stream.two <- read.csv(url(strt.stream.url.two))
+moos.stream.one <- read.csv(url(moos.stream.url))
+
+
+### combine data sets ### 
+frch.stream.two <- frch.stream.two[1:nrow(frch.stream.one),]
+frch.stream.one$X <- "FRCH1" #add column identifier
+frch.stream.two$X <- "FRCH2"
+allfrch <- bind_rows(frch.stream.one, frch.stream.two)
+
+allvaul <- vaul.stream.one
+allvaul$X <- "VAUL1"
+names(allvaul) <- c("Site", "DateTime",  "AbsolutePressure", "Baro", "WaterLevel", "Site1")
+names(vaul.stream.one) <- c("Site", "DateTimeGMT", "AbsolutePressure", "Baro", "WaterLevel")
+
+vaul.stream.one$DateTimeGMT[vaul.stream.one$DateTime == ""] <- NA
+
+
+vaul.stream.one$DateTime <- mdy_hms(vaul.stream.one$DateTimeGMT, tz = "GMT")
+attributes(vaul.stream.one$DateTime)$tzone <- 'America/Anchorage'
+
+
+poke.stream.two <- poke.stream.two[1:nrow(frch.stream.one),]
+poke.stream.one$X <- "POKE1" #add column identifier
+poke.stream.two$X <- "POKE2"
+allpoke <- bind_rows(poke.stream.one, poke.stream.two)
+
+strt.stream.two <- strt.stream.two[1:nrow(frch.stream.one),]
+strt.stream.one$X <- "STRT1" #add column identifier
+strt.stream.two$X <- "STRT2"
+allstrt <- bind_rows(strt.stream.one, strt.stream.two)
+
+strt.stream.two <- na.omit(strt.stream.two) # Cleaning NAs after removal of PT from stream
+
+allmoos <- moos.stream.one
+allmoos$X <- "MOOS1"
+
+# filtering dates #
+names(poke.stream.one) <- c("Site", "DateTime", "Temp", "WaterLevel")
+poke.stream.one$Site<- "POKE"
+
+poke.stream.one$DateTime <- as.POSIXct(paste(poke.stream.one$DateTime), format = "%Y-%m-%d %H:%M", tz = "America/Anchorage")
+poke.stream.one$DateTime <- lubridate::round_date(poke.stream.one$DateTime, "15 minutes")
+poke.stream.two$date_time_AK <- as.POSIXct(paste(poke.stream.two$date_time_AK), format = "%Y-%m-%d %H:%M", tz = "America/Anchorage") # make date as posix
+
+
+poke.stream.one.same.date <- poke.stream.one %>% subset(poke.stream.one$DateTime > "2019-05-15" & poke.stream.one$DateTime < "2019-10-15")
+
+poke.stream.two.same.date <- poke.stream.two %>% subset(poke.stream.two$date_time_AK > "2019-05-15" & poke.stream.two$date_time_AK < "2019-10-15")
+
+# Making the same date frame
+strt.stream.one.same.date <- strt.stream.one %>% subset(strt.stream.one$date_time_AK < "2019-08-22")
+strt.stream.two.same.date <- strt.stream.two %>% subset(strt.stream.two$date_time_AK < "2019-08-22")
+strt.stream.two <- strt.stream.two %>% subset(strt.stream.two$date_time_AK < "2019-10-15") # out of water after this 
+
+# Checking closeness between two PT #
+plot(x = frch.stream.one$abs_PT_depth_m, y = frch.stream.two$abs_PT_depth_m, main = "French PT comparison",
+     xlab = "French1 PT", 
+     ylab = "French2 PT")
+abline(1,1) 
+
+plot(x = vaul.stream.one$DateTime, y = vaul.stream.one$AbsolutePressure, main = "Vault PT comparison",
+     xlab = "DateTime", 
+     ylab = "VaultPT")
+
+plot(x = poke.stream.one.same.date$WaterLevel, y = poke.stream.two.same.date$abs_PT_depth_m, main = "Poker PT comparison", 
+     xlab = "Poker1PT", 
+     ylab = "Poker2PT")
+abline(1,1)
+
+plot(x = strt.stream.one.same.date$abs_PT_depth_m, y = strt.stream.two.same.date$abs_PT_depth_m, main = "Stuart PT comparison",
+     xlab = "Stuart1 PT", 
+     ylab = "Stuart2 PT")
+abline(1,1)
+
+
+### Water Level Plots ###
+Frch <- ggplot(allfrch) + 
+  geom_line(aes(x = date_time_AK , y= abs_PT_depth_m, color = X), size=1.25) +
+  xlab("Date") +
+  ylab("Water Level") +
+  theme_classic() +
+  ggtitle("French PT comparison") + 
+  scale_color_brewer(palette = "Paired")
+Frch
+
+Vaul <- ggplot(allvaul) + 
+  geom_line(aes(x = allvaul$DateTime , y= allvaul$WaterLevel), size=1.25) +
+  xlab("Date") +
+  ylab("Depth to Sensor") +
+  theme_classic() +
+  ggtitle("Vault PT comparison") 
+Vaul 
+
+Poke <- ggplot(allpoke) + 
+  geom_line(aes(x = date_time_AK , y= abs_PT_depth_m, color = X), size=1.25) +
+  xlab("Date") +
+  ylab("Depth to Sensor") +
+  theme_classic() +
+  ggtitle("Poker PT comparison") + 
+  scale_color_brewer(palette = "Paired")
+Poke 
+
+
+Strt <- ggplot(allstrt) + 
+  geom_line(aes(x = date_time_AK , y= abs_PT_depth_m), size=1.25) +
+  xlab("Date") +
+  ylab("Depth to Sensor") +
+  theme_classic() +
+  ggtitle("Stuart PT comparison") + 
+  scale_color_brewer(palette = "Paired")
+Strt  
+
+
+### Observed Discharge ###
+#url <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vT0R955lmRu0iaZFc-CxoVhwApmJuWaiHCYxhqICnY4oFH1sDI-VhRESmLFeuss01SYz0krWRktJ3oF/pub?output=csv"
+myurl <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vRUMy2yDlF5WQRDGgbuNHeVNp7diusfPJuKgikGY2ZQ8ewbG4Tyxm5TeN0shtDkxMmeL9M0AzhaL8l7/pub?output=csv"
+#QSummary.2018 <- read.csv(url(url))
+QSummary.2019 <- read.csv(url(myurl))
+#QSummary.2018$Time[QSummary.2018$Time == ""] <- NA
+#QSummary.2018$Q_Ls[QSummary.2018$MeasuredQ_Ls == ""] <- NA
+
+QSummary.2019$Time[QSummary.2019$Time == ""] <- NA
+QSummary.2019$Q_Ls[QSummary.2019$Q_Ls == ""] <- NA
+
+### Format Time ###
+#QSummary.2018$Date <- mdy(QSummary.2018$Date)
+#QSummary.2018$DateTime <- as.POSIXct(paste(QSummary.2018$Date, QSummary.2018$Time), format = "%Y-%m-%d %H:%M", tz = "America/Anchorage")
+QSummary.2019$Date <- mdy(QSummary.2019$Date)
+QSummary.2019$DateTime <- as.POSIXct(paste(QSummary.2019$Date, QSummary.2019$Time), format = "%Y-%m-%d %H:%M", tz = "America/Anchorage")
+
+### Rating curve for FRCH PT1 ###
+QSummary.FR <- QSummary.2019 %>% filter(Site =="French") %>% drop_na(Q_Ls)
+QSummary.FR$Site <- "FRCH"
+names(frch.stream.one) <- c("Site", "DateTime", "Temp", "WaterLevel")
+frch.stream.one$Site<- "FRCH"
+frch.stream.one$DateTime <- as.POSIXct(frch.stream.one$DateTime)
+
+library(dplyr)
+frch.stream.one$DateTime <- round_date(frch.stream.one$DateTime, unit = "15 min") # Round to 15 minutes
+
+French1comb <- full_join(frch.stream.one, QSummary.FR) 
+French1.lm <- lm(French1comb$Q_Ls ~ French1comb$WaterLevel)
+summary(French1.lm)  # Worked
+
+frch.formula <- y ~ x
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = French1comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = frch.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0.55, 0.70) +
+  ylim(0, 300) +
+  theme_classic() +
+  ggtitle("French1 all measured Q")
+
+French1comb$pred.french1.Q <- coef(French1.lm)[2] * French1comb$WaterLevel+ coef(French1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.french1.Q), data=French1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("French") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 5000) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+### Rating curve for FRCH PT2 ###
+names(frch.stream.two) <- c("Site", "DateTime", "Temp", "WaterLevel")
+frch.stream.two$Site<- "FRCH"
+frch.stream.two$DateTime <- as.POSIXct(frch.stream.two$DateTime)
+
+French2comb <- full_join(frch.stream.two, QSummary.FR) 
+French2.lm <- lm(French2comb$Q_Ls ~ French2comb$WaterLevel)
+summary(French2.lm) # worked
+
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = French2comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = frch.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0.45, 0.5) +
+  ylim(0, 300) +
+  theme_classic() +
+  ggtitle("French2 all measured Q")
+
+# Predicted Discharge
+French2comb$pred.french2.Q <- coef(French2.lm)[2] * French2comb$WaterLevel+ coef(French2.lm)[1]
+ggplot(aes(x = DateTime, y = pred.french2.Q), data=French2comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("French") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 5000) +
+  scale_x_datetime(limits = as_datetime(c("2019-04-29", "2019-10-10")))
+
+# Final FRCH # 
+frch.final.discharge <- data.frame(French2comb$Site, French2comb$DateTime, French1comb$pred.french1.Q, French2comb$pred.french2.Q)
+frch.final.discharge$MeanDischarge <- rowMeans(frch.final.discharge[,c(3:4)], na.rm = TRUE)
+names(frch.final.discharge) <- c("Site", "DateTime", "MeanDischarge")
+
+ggplot(aes(x = DateTime, y = pred.french1.Q), data = French1comb) +
+  geom_line(aes(x = DateTime, y = pred.french1.Q), data = French1comb, color="#A6CEE3", size=1.25) +
+  geom_line(aes(x = DateTime, y = pred.french2.Q), data = French2comb,color="#1F78B4", size=1.25, alpha = 0.75) +
+  geom_line(aes(x = DateTime, y = MeanDischarge), data = frch.final.discharge, color = "red", size = 1.25, alpha = 0.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls), size=2) +
+  theme_classic() +
+  ylim(0, 5000) +
+  ggtitle("Frecnh1(light) French2(dark) & MeanDischarge (red) predicted all measured Q") +
+  ylab("Predicted discharge L/s") +
+  xlab("Time")
+
+# Write CSV # 
+write.csv(frch.final.discharge, "Q/Final_Q/FRCH/FRCH.csv", row.names = FALSE)
+
+# VAUL #
+### Rating curve for VAUL PT1 ###
+QSummary.VA <- QSummary.2019 %>% filter(Site =="Vault") %>% drop_na(Q_Ls)
+names(vaul.stream.one) <- c("Site", "DateTimeGMT", "AbsolutePressure", "Baro", "WaterLevel", "DateTime")
+vaul.stream.one$Site <- "VAUL"
+QSummary.VA$Site <- "VAUL"
+
+Vault2comb <- full_join(vaul.stream.one, QSummary.VA)
+
+Vault3.lm <- lm(Vault2comb$Q_Ls ~ 0 + Vault2comb$WaterLevel)
+summary(Vault3.lm)
+
+vaul.formula <- y ~ x
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = Vault2comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = vaul.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0.1, 0.4) +
+  theme_classic() +
+  ggtitle("Vault2 all measured Q")  # I think this worked
+
+# Predicted Discharge
+Vault2comb$pred.vault3.Q <- coef(Vault3.lm)[1] * Vault2comb$WaterLevel
+ggplot(aes(x = DateTime, y = pred.vault3.Q), data = Vault2comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Vault") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 1000) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+# Final VAUL # 
+vaul.final.discharge <- data.frame(Vault2comb$Site, Vault2comb$DateTime, Vault2comb$pred.vault3.Q)
+names(vaul.final.discharge) <- c("Site", "DateTime", "MeanDischarge")
+
+ggplot(aes(x = DateTime, y = pred.vault3.Q), data = Vault2comb) +
+  geom_line(aes(x = DateTime, y = pred.vault3.Q), data = Vault2comb, color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls), size=2) +
+  theme_classic() +
+  ylim(0, 1000) +
+  ggtitle("MeanDischarge (blue) predicted all measured Q") +
+  ylab("Predicted discharge L/s") +
+  xlab("Time")
+
+# Write CSV # 
+write.csv(vaul.final.discharge, "Q/Final_Q/VAUL/VAUL.csv", row.names = FALSE)
+
+### Rating curve for POKE PT1 ###
+QSummary.PO <- QSummary.2019 %>% filter(Site =="Poker") %>% drop_na(Q_Ls)
+QSummary.PO$Site <- "POKE"
+
+Poker1comb <- full_join(poke.stream.one, QSummary.PO)
+Poker1.lm <- lm(Poker1comb$Q_Ls ~ Poker1comb$WaterLevel)
+summary(Poker1.lm) 
+
+
+Poker1comb <- full_join(poke.stream.one, QSummary.PO) 
+Poker1.lm <- lm(Poker1comb$Q_Ls ~ Poker1comb$WaterLevel)
+summary(Poker1.lm)  
+
+poke.formula <- y ~ x
+
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = Poker1comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = poke.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0, 0.5) +
+  ylim(0, 750) +
+  theme_classic() +
+  ggtitle("Poker1 all measured Q")
+
+Poker1comb$pred.poke1.Q <- coef(Poker1.lm)[2] * Poker1comb$WaterLevel+ coef(Poker1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.poke1.Q), data=Poker1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Poker") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 1500) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+
+### Rating Curve for POKE PT2 ### 
+names(poke.stream.two) <- c("Site", "DateTime", "Temp", "WaterLevel")
+poke.stream.two <- poke.stream.two %>% drop_na(WaterLevel)
+poke.stream.two$Site <- "POKE"
+poke.stream.two$DateTime <- as.POSIXct(poke.stream.two$DateTime)
+
+Poker2comb <- full_join(poke.stream.two, QSummary.PO)
+Poker2.lm <- lm(Poker2comb$Q_Ls ~ Poker2comb$WaterLevel)
+summary(Poker2.lm)
+
+ggplot(aes(x= WaterLevel, y = Q_Ls), data = Poker2comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = poke.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0.3,0.6) +
+  theme_classic() +
+  ggtitle("Poker2 all measured Q") 
+
+Poker2comb$pred.poke2.Q <- coef(Poker2.lm)[2] * Poker2comb$WaterLevel+ coef(Poker2.lm)[1]
+ggplot(aes(x = DateTime, y = pred.poke2.Q), data=Poker2comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Poker2 predicted all measured Q") +
+  xlab("Date") +
+  ylab("Predicted Discharge") +
+  ylim(0, 2000)
+
+
+# Final POKE # 
+Poker1comb[c(10118:11617, 14987:15440), 12] <- NA # Remove beaver dam data
+Poker2comb[c(9938:11227, 14631:15060), 12] <- NA # Remove beaver dam data
+
+poke.final.discharge <- left_join(Poker1comb, Poker2comb, by = c("DateTime"))
+poke.final.discharge$MeanDischarge <- rowMeans(poke.final.discharge[,c(12,23)], na.rm = TRUE)
+poke.final.discharge <- poke.final.discharge[,-c(3:11, 13:22)] # cleaning empty columns
+names(poke.final.discharge) <- c("Site", "DateTime", "PT1", "PT2", "MeanDischarge")
+
+ggplot(aes(x = DateTime, y = pred.poke1.Q), data = Poker1comb) +
+  geom_line(aes(x = DateTime, y = pred.poke1.Q), data = Poker1comb, color="#A6CEE3", size=1.25) +
+  geom_line(aes(x = DateTime, y = pred.poke2.Q), data = Poker2comb,color="#1F78B4", size=1.25, alpha = 0.75) +
+  geom_line(aes(x = DateTime, y = MeanDischarge), data = poke.final.discharge, color = "red", size = 1.25, alpha = 0.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls), size=2) +
+  theme_classic() +
+  ylim(0, 3000) +
+  ggtitle("Poker1(light) Poker2(dark) & MeanDischarge (red) predicted all measured Q") +
+  ylab("Predicted discharge L/s") +
+  xlab("Time")
+
+# Write CSV # 
+write.csv(poke.final.discharge, "Q/Final_Q/POKE/POKE.csv", row.names = FALSE)
+
+### STRT ###
+### Rating curve for POKE PT1 ###
+QSummary.ST <- QSummary.2019 %>% filter(Site =="Stuart") %>% drop_na(Q_Ls)
+QSummary.ST$Site<- "STRT"
+names(strt.stream.one) <- c("Site", "DateTime", "Temp", "WaterLevel")
+strt.stream.one$Site<- "STRT"
+strt.stream.one$DateTime <- as.POSIXct(strt.stream.one$DateTime)
+strt.stream.one <-  strt.stream.one %>% drop_na(WaterLevel)
+
+Stuart1comb <- full_join(strt.stream.one, QSummary.ST)
+Stuart1.lm <- lm(Stuart1comb$Q_Ls ~ Stuart1comb$WaterLevel)
+summary(Stuart1.lm) 
+
+
+strt.formula <- y ~ x
+
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = Stuart1comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = poke.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0, 1) +
+  ylim(0, 750) +
+  theme_classic() +
+  ggtitle("Stuart1 all measured Q")
+
+Stuart1comb$pred.stuart1.Q <- coef(Stuart1.lm)[2] * Stuart1comb$WaterLevel+ coef(Stuart1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.stuart1.Q), data=Stuart1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Stuart") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 10000) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+
+### Rating Curve for STRT PT2 ### 
+names(strt.stream.two) <- c("Site", "DateTime", "Temp", "WaterLevel")
+strt.stream.two$Site<- "STRT"
+strt.stream.two$DateTime <- as.POSIXct(strt.stream.two$DateTime)
+strt.stream.two <-  strt.stream.two %>% drop_na(WaterLevel)
+
+Stuart2comb <- full_join(strt.stream.two, QSummary.ST)
+Stuart2.lm <- lm(Stuart2comb$Q_Ls ~ Stuart2comb$WaterLevel)
+summary(Stuart2.lm) 
+
+
+strt.formula <- y ~ x
+
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = Stuart2comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = poke.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0, 1) +
+  ylim(0, 750) +
+  theme_classic() +
+  ggtitle("Stuart1 all measured Q")
+
+Stuart2comb$pred.stuart2.Q <- coef(Stuart2.lm)[2] * Stuart2comb$WaterLevel+ coef(Stuart2.lm)[1]
+ggplot(aes(x = DateTime, y = pred.stuart2.Q), data=Stuart2comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Stuart") +
+  scale_shape_discrete(name = "Method", labels = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab("Discharge (L/s)") +
+  ylim(0, 10000) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+# Final STRT # 
+strt.final.discharge <- left_join(Stuart1comb, Stuart2comb, by = c("DateTime"))
+strt.final.discharge$MeanDischarge <- rowMeans(strt.final.discharge[,c(12,23)], na.rm = TRUE)
+strt.final.discharge <- strt.final.discharge[,-c(3:11, 13:22)] # cleaning empty columns
+strt.final.discharge <- na.omit(strt.final.discharge) # Remove data points that after removal
+
+ggplot(aes(x = DateTime, y = pred.stuart2.Q), data = Stuart2comb) +
+  geom_line(aes(x = DateTime, y = pred.stuart1.Q), data = Stuart1comb, color="#A6CEE3", size=1.25) +
+  geom_line(aes(x = DateTime, y = pred.stuart2.Q), data = Stuart2comb,color="red", size=1.25, alpha = 0.75) +
+  geom_line(aes(x = DateTime, y = MeanDischarge), data = strt.final.discharge, color = "#1F78B4", size = 1.25, alpha = 0.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls), size=2) +
+  theme_classic() +
+  ylim(0, 10000) +
+  ggtitle("Stuart1(light) Stuart2(dark) & MeanDischarge (red) predicted all measured Q") +
+  ylab("Predicted discharge L/s") +
+  xlab("Time")
+
+
+Stuart2comb.end.date <- Stuart2comb %>% subset(Stuart2comb$DateTime > "2019-08-23 13:45:00") # the dataset that strt 1 does not have (the rest of the summer)
+Stuart2comb.end.date <- Stuart2comb.end.date[,-c(3:11)]
+names(strt.final.discharge) <- c("Site", "DateTime", "PT1", "PT2","MeanDischarge")
+strt.final.discharge <- strt.final.discharge[,-c(3:4)] # simplify so i can bind rows
+names(Stuart2comb.end.date) <- c("Site", "DateTime", "MeanDischarge")
+strt.final.discharge <- rbind(strt.final.discharge, Stuart2comb.end.date)
+
+strt.final.discharge <- strt.final.discharge %>% subset(strt.final.discharge$DateTime < "2019-10-13")
+# Write CSV # 
+write.csv(strt.final.discharge, "Q/Final_Q/STRT/STRT.csv", row.names = FALSE)
+
+
+### MOOS ###
+QSummary.MO <- QSummary.2019 %>% filter(Site =="Moose") %>% drop_na(Q_Ls)
+QSummary.MO$Site <- "MOOS"
+names(moos.stream.one) <- c("Site", "DateTime", "Temp", "WaterLevel")
+moos.stream.one$Site <- "MOOS"
+
+moos.stream.one$DateTime <- as.POSIXct(moos.stream.one$DateTime)
+
+Moose1comb <- full_join(moos.stream.one, QSummary.MO) 
+
+Moose1.lm <- lm(Moose1comb$Q_Ls ~ Moose1comb$WaterLevel)
+summary(Moose1.lm) # I think this worked
+
+moos.formula <- y ~ x
+
+ggplot(aes(x = WaterLevel, y = Q_Ls), data = Moose1comb) +
+  geom_point(aes(color = Method), size = 3) +
+  geom_smooth(method = "lm", se=FALSE) +
+  stat_poly_eq(formula = moos.formula, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  xlim(0.9, 1.8) + 
+  theme_classic() +
+  ggtitle("Moose1 all measured Q")  # I think this worked
+
+Moose1comb$pred.moose1.Q <- coef(Moose1.lm)[2] * Moose1comb$WaterLevel+ coef(Moose1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.moose1.Q), data=Moose1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q_Ls, shape = Method), size=3) +
+  theme_classic() +
+  ggtitle("Moose") +
+  scale_shape_discrete(name = "Method", label = c("Wading Rod", "Salt Dilution", "")) +
+  xlab("") +
+  ylab(" Discharge (L/s)") +
+  ylim(0, 4000) +
+  scale_x_datetime(limits = as_datetime(c("2019-05-15", "2019-10-10")))
+
+# Final MOOS # 
+moos.final.discharge <- data.frame(Moose1comb$Site, Moose1comb$DateTime, Moose1comb$pred.moose1.Q)
+names(moos.final.discharge) <- c("Site", "DateTime", "MeanDischarge")
+
+# Write CSV # 
+write.csv(moos.final.discharge, "Q/Final_Q/MOOS/MOOS.csv", row.names = FALSE)
+names(frch.final.discharge) <- c("Site", "DateTime", "PT1", "P2", "MeanDischarge")
+frch.final.discharge <- frch.final.discharge[, -c(3:4)] # just leaving mean discharge after checking that they make sense 
+poke.final.discharge <- poke.final.discharge[, -c(3:4)]# just leaving mean discharge after checking that they make sense 
+
+
+Q_2019 <- rbind(frch.final.discharge, vaul.final.discharge,
+                poke.final.discharge, strt.final.discharge,
+                moos.final.discharge)
+Q_2019$day = format(as.POSIXct(Q_2019$DateTime, format = "%Y-%m-%d %H:%M:%S"), format = "%Y-%m-%d")
+Q_2019$day = as.POSIXct(Q_2019$day, "%Y-%m-%d", tz = "America/Anchorage")
+#Q_2019$DateTime = NULL
+
+Q.daily = with(Q_2019, tapply(MeanDischarge, list(day, Site), mean))
+Q.daily = as.data.frame(Q.daily)
