@@ -1,0 +1,89 @@
+### Read me ###
+# the purpose of this script is to generate predicted discharge from rating curves generated from discrete observed discharge measurements 
+
+
+# Step 1: input rating curves for each site
+# Step 2: Generate predicted discharge values 
+# Step 3: output final csv with datetime in AK time, predicted discharge of PT1 in L/sec
+
+# Load packages #
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(rio)
+library(ggplot2)
+library(scales)
+library(psych)
+library(here)
+library(googledrive)
+library(readxl)
+library(cowplot)
+library(zoo)
+library(readr)
+library(dplyr)
+library(RColorBrewer)
+library(gridExtra)
+library(ggpmisc)
+library(here)
+
+dir.create(here("Predicted_Discharge"))
+dir.create(here("Predicted_Discharge", "Processed"))
+
+### FRCH ###
+# PT1 #
+French1comb$pred.french1.Q <- coef(French1.lm)[2] * French1comb$AbsolutePressure+ coef(French1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.french1.Q), data=French1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q..L.s.), size=3) +
+  theme_classic() +
+  ggtitle("French1 predicted all measured Q") +
+  xlab("Date") +
+  ylab("Predicted Discharge") 
+
+
+# Final Discharge # 
+frch.final.discharge <- data.frame(French1comb$site, French1comb$DateTime, French1comb$pred.french1.Q)
+
+### MOOS ### 
+# PT1 #
+Moose1comb$pred.moos1.Q <- coef(MOOS1.lm)[2] * Moose1comb$AbsolutePressure+ coef(MOOS1.lm)[1]
+ggplot(aes(x = DateTime, y = pred.moos1.Q), data = Moose1comb) +
+  geom_line(color="#A6CEE3", size=1.25) +
+  geom_point(aes(x = DateTime, y = Q..L.s.), size=3) +
+  theme_classic() +
+  ggtitle("Moose1 predicted all measured Q") +
+  xlab("Date") +
+  ylab("Predicted Discharge") 
+
+
+# Final Discharge #
+moos.final.discharge <- data.frame(Moose1comb$site, Moose1comb$DateTime, Moose1comb$pred.moos1.Q)
+
+setwd(here())
+# check: should be at DoD_2015
+getwd()
+### Write CSV ### 
+write.csv(frch.final.discharge,"Predicted_Discharge/processed/FRCH.csv", row.names = FALSE)
+write.csv(moos.final.discharge,"Predicted_Discharge/processed/MOOS.csv", row.names = FALSE)
+
+### Rename Columns ###
+names(frch.final.discharge) <- c("Site", "DateTime", "MeanDischarge")
+names(moos.final.discharge) <- c("Site", "DateTime", "MeanDischarge")
+
+
+moos.final.discharge <- na.omit(moos.final.discharge) # Removed 11 rows
+frch.final.discharge <- na.omit(frch.final.discharge) # Removed 31 rows
+
+
+final_discharge_2015 <- rbind(frch.final.discharge, moos.final.discharge)
+
+write.csv(final_discharge_2020,"Predicted_Discharge/processed/All_Sites.csv", row.names = FALSE)
+
+Q_2015 <- final_discharge_2015
+Q_2015$day = format(as.POSIXct(Q_2015$DateTime,format="%Y-%m-%d %H:%M:%S"),format="%Y-%m-%d")
+Q_2015$day = as.POSIXct(Q_2015$day, "%Y-%m-%d", tz="America/Anchorage")
+Q_2015$DateTime = NULL
+
+Q.daily.2015 = with(Q_2015, tapply(MeanDischarge, list(day, Site), mean))
+Q.daily.2015 = as.data.frame(Q.daily.2015)
+

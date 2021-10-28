@@ -1,8 +1,0 @@
-"0","VAUL_storm8c_10_04_Q['valuedatetime'] =  pd.to_datetime(VAUL_storm8c_10_04_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
-VAUL_storm8c_10_04_NO3['valuedatetime'] =  pd.to_datetime(VAUL_storm8c_10_04_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
-timespacing = 15 # 15 minutes between records
-hysdict_VAUL_storm8c_10_04_NO3 = hysteresisMetrics(VAUL_storm8c_10_04_Q, VAUL_storm8c_10_04_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
-"
-"2","KeyError: nan
-"
-"0",""

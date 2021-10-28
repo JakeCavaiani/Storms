@@ -22,7 +22,754 @@ library(geosphere)
 library(car)
 library(EcoHydRology)
 library(dplyr)
+############################################ 2018 ################################################
+# plot on normalized scale # 
+#### load data #####
+STRT_storm1a_06_19 <- read.csv("Storms/STRT_storm1a_06_19.csv")
+STRT_storm1a_06_19_Q <- read.csv("Storms/STRT_storm1a_06_19_Q.csv")
+STRT_storm1a_06_19_NO3 <- read.csv("Storms/STRT_storm1a_06_19_NO3.csv")
+STRT_storm1a_06_19_fDOM <- read.csv("Storms/STRT_storm1a_06_19_fDOM.csv")
 
+STRT_storm1b_06_20 <- read.csv("Storms/STRT_storm1b_06_20.csv")
+STRT_storm1b_06_20_Q <- read.csv("Storms/STRT_storm1b_06_20_Q.csv")
+STRT_storm1b_06_20_NO3 <- read.csv("Storms/STRT_storm1b_06_20_NO3.csv")
+STRT_storm1b_06_20_fDOM <- read.csv("Storms/STRT_storm1b_06_20_fDOM.csv")
+
+STRT_storm1c_06_22 <- read.csv("Storms/STRT_storm1c_06_22.csv")
+STRT_storm1c_06_22_Q <- read.csv("Storms/STRT_storm1c_06_22_Q.csv")
+STRT_storm1c_06_22_NO3 <- read.csv("Storms/STRT_storm1c_06_22_NO3.csv")
+STRT_storm1c_06_22_fDOM <- read.csv("Storms/STRT_storm1c_06_22_fDOM.csv")
+
+STRT_storm1d_06_23 <- read.csv("Storms/STRT_storm1d_06_23.csv")
+STRT_storm1d_06_23_Q <- read.csv("Storms/STRT_storm1d_06_23_Q.csv")
+STRT_storm1d_06_23_NO3 <- read.csv("Storms/STRT_storm1d_06_23_NO3.csv")
+STRT_storm1d_06_23_fDOM <- read.csv("Storms/STRT_storm1d_06_23_fDOM.csv")
+
+STRT_storm1e_06_24 <- read.csv("Storms/STRT_storm1e_06_24.csv")
+STRT_storm1e_06_24_Q <- read.csv("Storms/STRT_storm1e_06_24_Q.csv")
+STRT_storm1e_06_24_NO3 <- read.csv("Storms/STRT_storm1e_06_24_NO3.csv")
+STRT_storm1e_06_24_fDOM <- read.csv("Storms/STRT_storm1e_06_24_fDOM.csv")
+
+STRT_storm2_07_09 <- read.csv("Storms/STRT_storm2_07_09.csv")
+STRT_storm2_07_09_Q <- read.csv("Storms/STRT_storm2_07_09_Q.csv")
+STRT_storm2_07_09_NO3 <- read.csv("Storms/STRT_storm2_07_09_NO3.csv")
+STRT_storm2_07_09_fDOM <- read.csv("Storms/STRT_storm2_07_09_fDOM.csv")
+
+STRT_storm3_07_21 <- read.csv("Storms/STRT_storm3_07_21.csv")
+STRT_storm3_07_21_Q <- read.csv("Storms/STRT_storm3_07_21_Q.csv")
+STRT_storm3_07_21_NO3 <- read.csv("Storms/STRT_storm3_07_21_NO3.csv")
+STRT_storm3_07_21_fDOM <- read.csv("Storms/STRT_storm3_07_21_fDOM.csv")
+
+STRT_storm4a_08_01 <- read.csv("Storms/STRT_storm4a_08_01.csv")
+STRT_storm4a_08_01_Q <- read.csv("Storms/STRT_storm4a_08_01_Q.csv")
+STRT_storm4a_08_01_NO3 <- read.csv("Storms/STRT_storm4a_08_01_NO3.csv")
+STRT_storm4a_08_01_fDOM <- read.csv("Storms/STRT_storm4a_08_01_fDOM.csv")
+
+STRT_storm4b_08_03 <- read.csv("Storms/STRT_storm4b_08_03.csv")
+STRT_storm4b_08_03_Q <- read.csv("Storms/STRT_storm4b_08_03_Q.csv")
+STRT_storm4b_08_03_NO3 <- read.csv("Storms/STRT_storm4b_08_03_NO3.csv")
+STRT_storm4b_08_03_fDOM <- read.csv("Storms/STRT_storm4b_08_03_fDOM.csv")
+
+STRT_storm5_08_09 <- read.csv("Storms/STRT_storm5_08_09.csv")
+STRT_storm5_08_09_Q <- read.csv("Storms/STRT_storm5_08_09_Q.csv")
+STRT_storm5_08_09_NO3 <- read.csv("Storms/STRT_storm5_08_09_NO3.csv")
+STRT_storm5_08_09_fDOM <- read.csv("Storms/STRT_storm5_08_09_fDOM.csv")
+
+STRT_storm6_08_12 <- read.csv("Storms/STRT_storm6_08_12.csv")
+STRT_storm6_08_12_Q <- read.csv("Storms/STRT_storm6_08_12_Q.csv")
+STRT_storm6_08_12_NO3 <- read.csv("Storms/STRT_storm6_08_12_NO3.csv")
+STRT_storm6_08_12_fDOM <- read.csv("Storms/STRT_storm6_08_12_fDOM.csv")
+
+STRT_storm7a_08_20 <- read.csv("Storms/STRT_storm7a_08_20.csv")
+STRT_storm7a_08_20_Q <- read.csv("Storms/STRT_storm7a_08_20_Q.csv")
+STRT_storm7a_08_20_NO3 <- read.csv("Storms/STRT_storm7a_08_20_NO3.csv")
+STRT_storm7a_08_20_fDOM <- read.csv("Storms/STRT_storm7a_08_20_fDOM.csv")
+
+STRT_storm7b_08_21 <- read.csv("Storms/STRT_storm7b_08_21.csv")
+STRT_storm7b_08_21_Q <- read.csv("Storms/STRT_storm7b_08_21_Q.csv",)
+STRT_storm7b_08_21_NO3 <- read.csv("Storms/STRT_storm7b_08_21_NO3.csv")
+STRT_storm7b_08_21_fDOM <- read.csv("Storms/STRT_storm7b_08_21_fDOM.csv")
+
+STRT_storm8_08_28 <- read.csv("Storms/STRT_storm8_08_28.csv")
+STRT_storm8_08_28_Q <- read.csv("Storms/STRT_storm8_08_28_Q.csv")
+STRT_storm8_08_28_NO3 <- read.csv("Storms/STRT_storm8_08_28_NO3.csv")
+STRT_storm8_08_28_fDOM <- read.csv("Storms/STRT_storm8_08_28_fDOM.csv")
+
+STRT_storm9a_09_03 <- read.csv("Storms/STRT_storm9a_09_03.csv")
+STRT_storm9a_09_03_Q <- read.csv("Storms/STRT_storm9a_09_03_Q.csv")
+STRT_storm9a_09_03_NO3 <- read.csv("Storms/STRT_storm9a_09_03_NO3.csv")
+STRT_storm9a_09_03_fDOM <- read.csv("Storms/STRT_storm9a_09_03_fDOM.csv")
+
+STRT_storm9b_09_06 <- read.csv("Storms/STRT_storm9b_09_06.csv")
+STRT_storm9b_09_06_Q <- read.csv("Storms/STRT_storm9b_09_06_Q.csv")
+STRT_storm9b_09_06_NO3 <- read.csv("Storms/STRT_storm9b_09_06_NO3.csv")
+STRT_storm9b_09_06_fDOM <- read.csv("Storms/STRT_storm9b_09_06_fDOM.csv")
+
+STRT_storm9c_09_09 <- read.csv("Storms/STRT_storm9c_09_09.csv")
+STRT_storm9c_09_09_Q <- read.csv("Storms/STRT_storm9c_09_09_Q.csv")
+STRT_storm9c_09_09_NO3 <- read.csv("Storms/STRT_storm9c_09_09_NO3.csv")
+STRT_storm9c_09_09_fDOM <- read.csv("Storms/STRT_storm9c_09_09_fDOM.csv")
+
+STRT_storm10_09_23 <- read.csv("Storms/STRT_storm10_09_23.csv")
+STRT_storm10_09_23_Q <- read.csv("Storms/STRT_storm10_09_23_Q.csv")
+STRT_storm10_09_23_NO3 <- read.csv("Storms/STRT_storm10_09_23_NO3.csv")
+STRT_storm10_09_23_fDOM <- read.csv("Storms/STRT_storm10_09_23_fDOM.csv")
+
+# MOOS #
+MOOS_storm1_06_21 <- read.csv("Storms/MOOS_storm1_06_21.csv", row.names = 1)
+MOOS_storm1_06_21_Q <- read.csv("Storms/MOOS_storm1_06_21_Q.csv", row.names = 1)
+MOOS_storm1_06_21_NO3 <- read.csv("Storms/MOOS_storm1_06_21_NO3.csv", row.names = 1)
+MOOS_storm1_06_21_fDOM <- read.csv("Storms/MOOS_storm1_06_21_fDOM.csv", row.names = 1)
+
+MOOS_storm2_06_28 <- read.csv("Storms/MOOS_storm2_06_28.csv", row.names = 1)
+MOOS_storm2_06_28_Q <- read.csv("Storms/MOOS_storm2_06_28_Q.csv", row.names = 1)
+MOOS_storm2_06_28_NO3 <- read.csv("Storms/MOOS_storm2_06_28_NO3.csv", row.names = 1)
+MOOS_storm2_06_28_fDOM <- read.csv("Storms/MOOS_storm2_06_28_fDOM.csv", row.names = 1)
+
+MOOS_storm3_07_18 <- read.csv("Storms/MOOS_storm3_07_18.csv", row.names = 1)
+MOOS_storm3_07_18_Q <- read.csv("Storms/MOOS_storm3_07_18_Q.csv", row.names = 1)
+MOOS_storm3_07_18_NO3 <- read.csv("Storms/MOOS_storm3_07_18_NO3.csv", row.names = 1)
+MOOS_storm3_07_18_fDOM <- read.csv("Storms/MOOS_storm3_07_18_fDOM.csv", row.names = 1)
+
+MOOS_storm4_07_20 <- read.csv("Storms/MOOS_storm4_07_20.csv", row.names = 1)
+MOOS_storm4_07_20_Q <- read.csv("Storms/MOOS_storm4_07_20_Q.csv", row.names = 1)
+MOOS_storm4_07_20_NO3 <- read.csv("Storms/MOOS_storm4_07_20_NO3.csv", row.names = 1)
+MOOS_storm4_07_20_fDOM <- read.csv("Storms/MOOS_storm4_07_20_fDOM.csv", row.names = 1)
+
+MOOS_storm5_07_27 <- read.csv("Storms/MOOS_storm5_07_27.csv", row.names = 1)
+MOOS_storm5_07_27_Q <- read.csv("Storms/MOOS_storm5_07_27_Q.csv", row.names = 1)
+MOOS_storm5_07_27_NO3 <- read.csv("Storms/MOOS_storm5_07_27_NO3.csv", row.names = 1)
+MOOS_storm5_07_27_fDOM <- read.csv("Storms/MOOS_storm5_07_27_fDOM.csv", row.names = 1)
+
+MOOS_storm6a_08_01 <- read.csv("Storms/MOOS_storm6a_08_01.csv", row.names = 1)
+MOOS_storm6a_08_01_Q <- read.csv("Storms/MOOS_storm6a_08_01_Q.csv", row.names = 1)
+MOOS_storm6a_08_01_NO3 <- read.csv("Storms/MOOS_storm6a_08_01_NO3.csv", row.names = 1)
+MOOS_storm6a_08_01_fDOM <- read.csv("Storms/MOOS_storm6a_08_01_fDOM.csv", row.names = 1)
+
+MOOS_storm6b_08_03 <- read.csv("Storms/MOOS_storm6b_08_03.csv", row.names = 1)
+MOOS_storm6b_08_03_Q <- read.csv("Storms/MOOS_storm6b_08_03_Q.csv", row.names = 1)
+MOOS_storm6b_08_03_NO3 <- read.csv("Storms/MOOS_storm6b_08_03_NO3.csv", row.names = 1)
+MOOS_storm6b_08_03_fDOM <- read.csv("Storms/MOOS_storm6b_08_03_fDOM.csv", row.names = 1)
+
+MOOS_storm7a_08_09 <- read.csv("Storms/MOOS_storm7a_08_09.csv", row.names = 1)
+MOOS_storm7a_08_09_Q <- read.csv("Storms/MOOS_storm7a_08_09_Q.csv", row.names = 1)
+MOOS_storm7a_08_09_NO3 <- read.csv("Storms/MOOS_storm7a_08_09_NO3.csv", row.names = 1)
+MOOS_storm7a_08_09_fDOM <- read.csv("Storms/MOOS_storm7a_08_09_fDOM.csv", row.names = 1)
+
+MOOS_storm7b_08_12 <- read.csv("Storms/MOOS_storm7b_08_12.csv", row.names = 1)
+MOOS_storm7b_08_12_Q <- read.csv("Storms/MOOS_storm7b_08_12_Q.csv", row.names = 1)
+MOOS_storm7b_08_12_NO3 <- read.csv("Storms/MOOS_storm7b_08_12_NO3.csv", row.names = 1)
+MOOS_storm7b_08_12_fDOM <- read.csv("Storms/MOOS_storm7b_08_12_fDOM.csv", row.names = 1)
+
+MOOS_storm8_09_03 <- read.csv("Storms/MOOS_storm8_09_03.csv", row.names = 1)
+MOOS_storm8_09_03_Q <- read.csv("Storms/MOOS_storm8_09_03_Q.csv", row.names = 1)
+MOOS_storm8_09_03_NO3 <- read.csv("Storms/MOOS_storm8_09_03_NO3.csv", row.names = 1)
+MOOS_storm8_09_03_fDOM <- read.csv("Storms/MOOS_storm8_09_03_fDOM.csv", row.names = 1)
+
+MOOS_storm9_09_09 <- read.csv("Storms/MOOS_storm9_09_09.csv", row.names = 1)
+MOOS_storm9_09_09_Q <- read.csv("Storms/MOOS_storm9_09_09_Q.csv", row.names = 1)
+MOOS_storm9_09_09_NO3 <- read.csv("Storms/MOOS_storm9_09_09_NO3.csv", row.names = 1)
+MOOS_storm9_09_09_fDOM <- read.csv("Storms/MOOS_storm9_09_09_fDOM.csv", row.names = 1)
+
+# FRCH #
+FRCH_storm1_06_13 <- read.csv("Storms/FRCH_storm1_06_13.csv", row.names = 1)
+FRCH_storm1_06_13_Q <- read.csv("Storms/FRCH_storm1_06_13_Q.csv", row.names = 1)
+FRCH_storm1_06_13_NO3 <- read.csv("Storms/FRCH_storm1_06_13_NO3.csv", row.names = 1)
+FRCH_storm1_06_13_fDOM <- read.csv("Storms/FRCH_storm1_06_13_fDOM.csv", row.names = 1)
+
+FRCH_storm2_06_19 <- read.csv("Storms/FRCH_storm2_06_19.csv", row.names = 1)
+FRCH_storm2_06_19_Q <- read.csv("Storms/FRCH_storm2_06_19_Q.csv", row.names = 1)
+FRCH_storm2_06_19_NO3 <- read.csv("Storms/FRCH_storm2_06_19_NO3.csv", row.names = 1)
+FRCH_storm2_06_19_fDOM <- read.csv("Storms/FRCH_storm2_06_19_fDOM.csv", row.names = 1)
+
+FRCH_storm3a_06_20 <- read.csv("Storms/FRCH_storm3a_06_20.csv", row.names = 1)
+FRCH_storm3a_06_20_Q <- read.csv("Storms/FRCH_storm3a_06_20_Q.csv", row.names = 1)
+FRCH_storm3a_06_20_NO3 <- read.csv("Storms/FRCH_storm3a_06_20_NO3.csv", row.names = 1)
+FRCH_storm3a_06_20_fDOM <- read.csv("Storms/FRCH_storm3a_06_20_fDOM.csv", row.names = 1)
+
+FRCH_storm3b_06_22 <- read.csv("Storms/FRCH_storm3b_06_22.csv", row.names = 1)
+FRCH_storm3b_06_22_Q <- read.csv("Storms/FRCH_storm3b_06_22_Q.csv", row.names = 1)
+FRCH_storm3b_06_22_NO3 <- read.csv("Storms/FRCH_storm3b_06_22_NO3.csv", row.names = 1)
+FRCH_storm3b_06_22_fDOM <- read.csv("Storms/FRCH_storm3b_06_22_fDOM.csv", row.names = 1)
+
+FRCH_storm3c_06_28 <- read.csv("Storms/FRCH_storm3c_06_28.csv", row.names = 1)
+FRCH_storm3c_06_28_Q <- read.csv("Storms/FRCH_storm3c_06_28_Q.csv", row.names = 1)
+FRCH_storm3c_06_28_NO3 <- read.csv("Storms/FRCH_storm3c_06_28_NO3.csv", row.names = 1)
+FRCH_storm3c_06_28_fDOM <- read.csv("Storms/FRCH_storm3c_06_28_fDOM.csv", row.names = 1)
+
+FRCH_storm4a_07_07 <- read.csv("Storms/FRCH_storm4a_07_07.csv", row.names = 1)
+FRCH_storm4a_07_07_Q <- read.csv("Storms/FRCH_storm4a_07_07_Q.csv", row.names = 1)
+FRCH_storm4a_07_07_NO3 <- read.csv("Storms/FRCH_storm4a_07_07_NO3.csv", row.names = 1)
+FRCH_storm4a_07_07_fDOM <- read.csv("Storms/FRCH_storm4a_07_07_fDOM.csv", row.names = 1)
+
+FRCH_storm4b_07_09 <- read.csv("Storms/FRCH_storm4b_07_09.csv", row.names = 1)
+FRCH_storm4b_07_09_Q <- read.csv("Storms/FRCH_storm4b_07_09_Q.csv", row.names = 1)
+FRCH_storm4b_07_09_NO3 <- read.csv("Storms/FRCH_storm4b_07_09_NO3.csv", row.names = 1)
+FRCH_storm4b_07_09_fDOM <- read.csv("Storms/FRCH_storm4b_07_09_fDOM.csv", row.names = 1)
+
+FRCH_storm5_07_16 <- read.csv("Storms/FRCH_storm5_07_16.csv", row.names = 1)
+FRCH_storm5_07_16_Q <- read.csv("Storms/FRCH_storm5_07_16_Q.csv", row.names = 1)
+FRCH_storm5_07_16_NO3 <- read.csv("Storms/FRCH_storm5_07_16_NO3.csv", row.names = 1)
+FRCH_storm5_07_16_fDOM <- read.csv("Storms/FRCH_storm5_07_16_fDOM.csv", row.names = 1)
+
+FRCH_storm6_07_17 <- read.csv("Storms/FRCH_storm6_07_17.csv", row.names = 1)
+FRCH_storm6_07_17_Q <- read.csv("Storms/FRCH_storm6_07_17_Q.csv", row.names = 1)
+FRCH_storm6_07_17_NO3 <- read.csv("Storms/FRCH_storm6_07_17_NO3.csv", row.names = 1)
+FRCH_storm6_07_17_fDOM <- read.csv("Storms/FRCH_storm6_07_17_fDOM.csv", row.names = 1)
+
+FRCH_storm7_07_20 <- read.csv("Storms/FRCH_storm7_07_20.csv", row.names = 1)
+FRCH_storm7_07_20_Q <- read.csv("Storms/FRCH_storm7_07_20_Q.csv", row.names = 1)
+FRCH_storm7_07_20_NO3 <- read.csv("Storms/FRCH_storm7_07_20_NO3.csv", row.names = 1)
+FRCH_storm7_07_20_fDOM <- read.csv("Storms/FRCH_storm7_07_20_fDOM.csv", row.names = 1)
+
+FRCH_storm8_07_26 <- read.csv("Storms/FRCH_storm8_07_26.csv", row.names = 1)
+FRCH_storm8_07_26_Q <- read.csv("Storms/FRCH_storm8_07_26_Q.csv", row.names = 1)
+FRCH_storm8_07_26_NO3 <- read.csv("Storms/FRCH_storm8_07_26_NO3.csv", row.names = 1)
+FRCH_storm8_07_26_fDOM <- read.csv("Storms/FRCH_storm8_07_26_fDOM.csv", row.names = 1)
+
+FRCH_storm9a_08_01 <- read.csv("Storms/FRCH_storm9a_08_01.csv", row.names = 1)
+FRCH_storm9a_08_01_Q <- read.csv("Storms/FRCH_storm9a_08_01_Q.csv", row.names = 1)
+FRCH_storm9a_08_01_NO3 <- read.csv("Storms/FRCH_storm9a_08_01_NO3.csv", row.names = 1)
+FRCH_storm9a_08_01_fDOM <- read.csv("Storms/FRCH_storm9a_08_01_fDOM.csv", row.names = 1)
+
+FRCH_storm9b_08_02 <- read.csv("Storms/FRCH_storm9b_08_02.csv", row.names = 1)
+FRCH_storm9b_08_02_Q <- read.csv("Storms/FRCH_storm9b_08_02_Q.csv", row.names = 1)
+FRCH_storm9b_08_02_NO3 <- read.csv("Storms/FRCH_storm9b_08_02_NO3.csv", row.names = 1)
+FRCH_storm9b_08_02_fDOM <- read.csv("Storms/FRCH_storm9b_08_02_fDOM.csv", row.names = 1)
+
+# VAUL # 
+VAUL_storm1a_06_19 <- read.csv("Storms/VAUL_storm1a_06_19.csv", row.names = 1)
+VAUL_storm1a_06_19_Q <- read.csv("Storms/VAUL_storm1a_06_19_Q.csv", row.names = 1)
+VAUL_storm1a_06_19_NO3 <- read.csv("Storms/VAUL_storm1a_06_19_NO3.csv", row.names = 1)
+VAUL_storm1a_06_19_fDOM <- read.csv("Storms/VAUL_storm1a_06_19_fDOM.csv", row.names = 1)
+
+VAUL_storm1b_06_20 <- read.csv("Storms/VAUL_storm1b_06_20.csv", row.names = 1)
+VAUL_storm1b_06_20_Q <- read.csv("Storms/VAUL_storm1b_06_20_Q.csv", row.names = 1)
+VAUL_storm1b_06_20_NO3 <- read.csv("Storms/VAUL_storm1b_06_20_NO3.csv", row.names = 1)
+VAUL_storm1b_06_20_fDOM <- read.csv("Storms/VAUL_storm1b_06_20_fDOM.csv", row.names = 1)
+
+VAUL_storm1c_06_22 <- read.csv("Storms/VAUL_storm1c_06_22.csv", row.names = 1)
+VAUL_storm1c_06_22_Q <- read.csv("Storms/VAUL_storm1c_06_22_Q.csv", row.names = 1)
+VAUL_storm1c_06_22_NO3 <- read.csv("Storms/VAUL_storm1c_06_22_NO3.csv", row.names = 1)
+VAUL_storm1c_06_22_fDOM <- read.csv("Storms/VAUL_storm1c_06_22_fDOM.csv", row.names = 1)
+
+VAUL_storm2_06_28 <- read.csv("Storms/VAUL_storm2_06_28.csv", row.names = 1)
+VAUL_storm2_06_28_Q <- read.csv("Storms/VAUL_storm2_06_28_Q.csv", row.names = 1)
+VAUL_storm2_06_28_NO3 <- read.csv("Storms/VAUL_storm2_06_28_NO3.csv", row.names = 1)
+VAUL_storm2_06_28_fDOM <- read.csv("Storms/VAUL_storm2_06_28_fDOM.csv", row.names = 1)
+
+VAUL_storm3_07_09 <- read.csv("Storms/VAUL_storm3_07_09.csv", row.names = 1)
+VAUL_storm3_07_09_Q <- read.csv("Storms/VAUL_storm3_07_09_Q.csv", row.names = 1)
+VAUL_storm3_07_09_NO3 <- read.csv("Storms/VAUL_storm3_07_09_NO3.csv", row.names = 1)
+VAUL_storm3_07_09_fDOM <- read.csv("Storms/VAUL_storm3_07_09_fDOM.csv", row.names = 1)
+
+VAUL_storm4_07_12 <- read.csv("Storms/VAUL_storm4_07_12.csv", row.names = 1)
+VAUL_storm4_07_12_Q <- read.csv("Storms/VAUL_storm4_07_12_Q.csv", row.names = 1)
+VAUL_storm4_07_12_NO3 <- read.csv("Storms/VAUL_storm4_07_12_NO3.csv", row.names = 1)
+VAUL_storm4_07_12_fDOM <- read.csv("Storms/VAUL_storm4_07_12_fDOM.csv", row.names = 1)
+
+VAUL_storm5_07_27 <- read.csv("Storms/VAUL_storm5_07_27.csv", row.names = 1)
+VAUL_storm5_07_27_Q <- read.csv("Storms/VAUL_storm5_07_27_Q.csv", row.names = 1)
+VAUL_storm5_07_27_NO3 <- read.csv("Storms/VAUL_storm5_07_27_NO3.csv", row.names = 1)
+VAUL_storm5_07_27_fDOM <- read.csv("Storms/VAUL_storm5_07_27_fDOM.csv", row.names = 1)
+
+VAUL_storm6a_08_01 <- read.csv("Storms/VAUL_storm6a_08_01.csv", row.names = 1)
+VAUL_storm6a_08_01_Q <- read.csv("Storms/VAUL_storm6a_08_01_Q.csv", row.names = 1)
+VAUL_storm6a_08_01_NO3 <- read.csv("Storms/VAUL_storm6a_08_01_NO3.csv", row.names = 1)
+VAUL_storm6a_08_01_fDOM <- read.csv("Storms/VAUL_storm6a_08_01_fDOM.csv", row.names = 1)
+
+VAUL_storm6b_08_02 <- read.csv("Storms/VAUL_storm6b_08_02.csv", row.names = 1)
+VAUL_storm6b_08_02_Q <- read.csv("Storms/VAUL_storm6b_08_02_Q.csv", row.names = 1)
+VAUL_storm6b_08_02_NO3 <- read.csv("Storms/VAUL_storm6b_08_02_NO3.csv", row.names = 1)
+VAUL_storm6b_08_02_fDOM <- read.csv("Storms/VAUL_storm6b_08_02_fDOM.csv", row.names = 1)
+
+VAUL_storm7_08_08 <- read.csv("Storms/VAUL_storm7_08_08.csv", row.names = 1)
+VAUL_storm7_08_08_Q <- read.csv("Storms/VAUL_storm7_08_08_Q.csv", row.names = 1)
+VAUL_storm7_08_08_NO3 <- read.csv("Storms/VAUL_storm7_08_08_NO3.csv", row.names = 1)
+VAUL_storm7_08_08_fDOM <- read.csv("Storms/VAUL_storm7_08_08_fDOM.csv", row.names = 1)
+
+VAUL_storm8_08_11 <- read.csv("Storms/VAUL_storm8_08_11.csv", row.names = 1)
+VAUL_storm8_08_11_Q <- read.csv("Storms/VAUL_storm8_08_11_Q.csv", row.names = 1)
+VAUL_storm8_08_11_NO3 <- read.csv("Storms/VAUL_storm8_08_11_NO3.csv", row.names = 1)
+VAUL_storm8_08_11_fDOM <- read.csv("Storms/VAUL_storm8_08_11_fDOM.csv", row.names = 1)
+
+VAUL_storm9_08_12 <- read.csv("Storms/VAUL_storm9_08_12.csv", row.names = 1)
+VAUL_storm9_08_12_Q <- read.csv("Storms/VAUL_storm9_08_12_Q.csv", row.names = 1)
+VAUL_storm9_08_12_NO3 <- read.csv("Storms/VAUL_storm9_08_12_NO3.csv", row.names = 1)
+VAUL_storm9_08_12_fDOM <- read.csv("Storms/VAUL_storm9_08_12_fDOM.csv", row.names = 1)
+
+VAUL_storm10_08_25 <- read.csv("Storms/VAUL_storm10_08_25.csv", row.names = 1)
+VAUL_storm10_08_25_Q <- read.csv("Storms/VAUL_storm10_08_25_Q.csv", row.names = 1)
+VAUL_storm10_08_25_NO3 <- read.csv("Storms/VAUL_storm10_08_25_NO3.csv", row.names = 1)
+VAUL_storm10_08_25_fDOM <- read.csv("Storms/VAUL_storm10_08_25_fDOM.csv", row.names = 1)
+
+VAUL_storm11_08_27 <- read.csv("Storms/VAUL_storm11_08_27.csv", row.names = 1)
+VAUL_storm11_08_27_Q <- read.csv("Storms/VAUL_storm11_08_27_Q.csv", row.names = 1)
+VAUL_storm11_08_27_NO3 <- read.csv("Storms/VAUL_storm11_08_27_NO3.csv", row.names = 1)
+VAUL_storm11_08_27_fDOM <- read.csv("Storms/VAUL_storm11_08_27_fDOM.csv", row.names = 1)
+
+VAUL_storm12_09_01 <- read.csv("Storms/VAUL_storm12_09_01.csv", row.names = 1)
+VAUL_storm12_09_01_Q <- read.csv("Storms/VAUL_storm12_09_01_Q.csv", row.names = 1)
+VAUL_storm12_09_01_NO3 <- read.csv("Storms/VAUL_storm12_09_01_NO3.csv", row.names = 1)
+VAUL_storm12_09_01_fDOM <- read.csv("Storms/VAUL_storm12_09_01_fDOM.csv", row.names = 1)
+
+VAUL_storm13_09_03 <- read.csv("Storms/VAUL_storm13_09_03.csv", row.names = 1)
+VAUL_storm13_09_03_Q <- read.csv("Storms/VAUL_storm13_09_03_Q.csv", row.names = 1)
+VAUL_storm13_09_03_NO3 <- read.csv("Storms/VAUL_storm13_09_03_NO3.csv", row.names = 1)
+VAUL_storm13_09_03_fDOM <- read.csv("Storms/VAUL_storm13_09_03_fDOM.csv", row.names = 1)
+
+VAUL_storm14_09_06 <- read.csv("Storms/VAUL_storm14_09_06.csv", row.names = 1)
+VAUL_storm14_09_06_Q <- read.csv("Storms/VAUL_storm14_09_06_Q.csv", row.names = 1)
+VAUL_storm14_09_06_NO3 <- read.csv("Storms/VAUL_storm14_09_06_NO3.csv", row.names = 1)
+VAUL_storm14_09_06_fDOM <- read.csv("Storms/VAUL_storm14_09_06_fDOM.csv", row.names = 1)
+
+POKE_storm1_06_09 <- read.csv("Storms/POKE_storm1_06_09.csv", row.names = 1)
+POKE_storm1_06_09_Q <- read.csv("Storms/POKE_storm1_06_09_Q.csv", row.names = 1)
+POKE_storm1_06_09_NO3 <- read.csv("Storms/POKE_storm1_06_09_NO3.csv", row.names = 1)
+POKE_storm1_06_09_fDOM <- read.csv("Storms/POKE_storm1_06_09_fDOM.csv", row.names = 1)
+
+POKE_storm2_06_12 <- read.csv("Storms/POKE_storm2_06_12.csv", row.names = 1)
+POKE_storm2_06_12_Q <- read.csv("Storms/POKE_storm2_06_12_Q.csv", row.names = 1)
+POKE_storm2_06_12_NO3 <- read.csv("Storms/POKE_storm2_06_12_NO3.csv", row.names = 1)
+POKE_storm2_06_12_fDOM <- read.csv("Storms/POKE_storm2_06_12_fDOM.csv", row.names = 1)
+
+POKE_storm3_06_15 <- read.csv("Storms/POKE_storm3_06_15.csv", row.names = 1)
+POKE_storm3_06_15_Q <- read.csv("Storms/POKE_storm3_06_15_Q.csv", row.names = 1)
+POKE_storm3_06_15_NO3 <- read.csv("Storms/POKE_storm3_06_15_NO3.csv", row.names = 1)
+POKE_storm3_06_15_fDOM <- read.csv("Storms/POKE_storm3_06_15_fDOM.csv", row.names = 1)
+
+POKE_storm4a_06_19 <- read.csv("Storms/POKE_storm4a_06_19.csv", row.names = 1)
+POKE_storm4a_06_19_Q <- read.csv("Storms/POKE_storm4a_06_19_Q.csv", row.names = 1)
+POKE_storm4a_06_19_NO3 <- read.csv("Storms/POKE_storm4a_06_19_NO3.csv", row.names = 1)
+POKE_storm4a_06_19_fDOM <- read.csv("Storms/POKE_storm4a_06_19_fDOM.csv", row.names = 1)
+
+POKE_storm4b_06_20 <- read.csv("Storms/POKE_storm4b_06_20.csv", row.names = 1)
+POKE_storm4b_06_20_Q <- read.csv("Storms/POKE_storm4b_06_20_Q.csv", row.names = 1)
+POKE_storm4b_06_20_NO3 <- read.csv("Storms/POKE_storm4b_06_20_NO3.csv", row.names = 1)
+POKE_storm4b_06_20_fDOM <- read.csv("Storms/POKE_storm4b_06_20_fDOM.csv", row.names = 1)
+
+POKE_storm4c_06_21 <- read.csv("Storms/POKE_storm4c_06_21.csv", row.names = 1)
+POKE_storm4c_06_21_Q <- read.csv("Storms/POKE_storm4c_06_21_Q.csv", row.names = 1)
+POKE_storm4c_06_21_NO3 <- read.csv("Storms/POKE_storm4c_06_21_NO3.csv", row.names = 1)
+POKE_storm4c_06_21_fDOM <- read.csv("Storms/POKE_storm4c_06_21_fDOM.csv", row.names = 1)
+
+POKE_storm5_06_22 <- read.csv("Storms/POKE_storm5_06_22.csv", row.names = 1)
+POKE_storm5_06_22_Q <- read.csv("Storms/POKE_storm5_06_22_Q.csv", row.names = 1)
+POKE_storm5_06_22_NO3 <- read.csv("Storms/POKE_storm5_06_22_NO3.csv", row.names = 1)
+POKE_storm5_06_22_fDOM <- read.csv("Storms/POKE_storm5_06_22_fDOM.csv", row.names = 1)
+
+POKE_storm6_06_29 <- read.csv("Storms/POKE_storm6_06_29.csv", row.names = 1)
+POKE_storm6_06_29_Q <- read.csv("Storms/POKE_storm6_06_29_Q.csv", row.names = 1)
+POKE_storm6_06_29_NO3 <- read.csv("Storms/POKE_storm6_06_29_NO3.csv", row.names = 1)
+POKE_storm6_06_29_fDOM <- read.csv("Storms/POKE_storm6_06_29_fDOM.csv", row.names = 1)
+
+POKE_storm7_07_04 <- read.csv("Storms/POKE_storm7_07_04.csv", row.names = 1)
+POKE_storm7_07_04_Q <- read.csv("Storms/POKE_storm7_07_04_Q.csv", row.names = 1)
+POKE_storm7_07_04_NO3 <- read.csv("Storms/POKE_storm7_07_04_NO3.csv", row.names = 1)
+POKE_storm7_07_04_fDOM <- read.csv("Storms/POKE_storm7_07_04_fDOM.csv", row.names = 1)
+
+POKE_storm8_07_09 <- read.csv("Storms/POKE_storm8_07_09.csv", row.names = 1)
+POKE_storm8_07_09_Q <- read.csv("Storms/POKE_storm8_07_09_Q.csv", row.names = 1)
+POKE_storm8_07_09_NO3 <- read.csv("Storms/POKE_storm8_07_09_NO3.csv", row.names = 1)
+POKE_storm8_07_09_fDOM <- read.csv("Storms/POKE_storm8_07_09_fDOM.csv", row.names = 1)
+
+POKE_storm9_07_12 <- read.csv("Storms/POKE_storm9_07_12.csv", row.names = 1)
+POKE_storm9_07_12_Q <- read.csv("Storms/POKE_storm9_07_12_Q.csv", row.names = 1)
+POKE_storm9_07_12_NO3 <- read.csv("Storms/POKE_storm9_07_12_NO3.csv", row.names = 1)
+POKE_storm9_07_12_fDOM <- read.csv("Storms/POKE_storm9_07_12_fDOM.csv", row.names = 1)
+
+POKE_storm10_07_16 <- read.csv("Storms/POKE_storm10_07_16.csv", row.names = 1)
+POKE_storm10_07_16_Q <- read.csv("Storms/POKE_storm10_07_16_Q.csv", row.names = 1)
+POKE_storm10_07_16_NO3 <- read.csv("Storms/POKE_storm10_07_16_NO3.csv", row.names = 1)
+POKE_storm10_07_16_fDOM <- read.csv("Storms/POKE_storm10_07_16_fDOM.csv", row.names = 1)
+
+POKE_storm11_07_18 <- read.csv("Storms/POKE_storm11_07_18.csv", row.names = 1)
+POKE_storm11_07_18_Q <- read.csv("Storms/POKE_storm11_07_18_Q.csv", row.names = 1)
+POKE_storm11_07_18_NO3 <- read.csv("Storms/POKE_storm11_07_18_NO3.csv", row.names = 1)
+POKE_storm11_07_18_fDOM <- read.csv("Storms/POKE_storm11_07_18_fDOM.csv", row.names = 1)
+
+POKE_storm12_07_20 <- read.csv("Storms/POKE_storm12_07_20.csv", row.names = 1)
+POKE_storm12_07_20_Q <- read.csv("Storms/POKE_storm12_07_20_Q.csv", row.names = 1)
+POKE_storm12_07_20_NO3 <- read.csv("Storms/POKE_storm12_07_20_NO3.csv", row.names = 1)
+POKE_storm12_07_20_fDOM <- read.csv("Storms/POKE_storm12_07_20_fDOM.csv", row.names = 1)
+
+POKE_storm13_07_24 <- read.csv("Storms/POKE_storm13_07_24.csv", row.names = 1)
+POKE_storm13_07_24_Q <- read.csv("Storms/POKE_storm13_07_24_Q.csv", row.names = 1)
+POKE_storm13_07_24_NO3 <- read.csv("Storms/POKE_storm13_07_24_NO3.csv", row.names = 1)
+POKE_storm13_07_24_fDOM <- read.csv("Storms/POKE_storm13_07_24_fDOM.csv", row.names = 1)
+
+POKE_storm14_07_26 <- read.csv("Storms/POKE_storm14_07_26.csv", row.names = 1)
+POKE_storm14_07_26_Q <- read.csv("Storms/POKE_storm14_07_26_Q.csv", row.names = 1)
+POKE_storm14_07_26_NO3 <- read.csv("Storms/POKE_storm14_07_26_NO3.csv", row.names = 1)
+POKE_storm14_07_26_fDOM <- read.csv("Storms/POKE_storm14_07_26_fDOM.csv", row.names = 1)
+
+POKE_storm15_08_02 <- read.csv("Storms/POKE_storm15_08_02.csv", row.names = 1)
+POKE_storm15_08_02_Q <- read.csv("Storms/POKE_storm15_08_02_Q.csv", row.names = 1)
+POKE_storm15_08_02_NO3 <- read.csv("Storms/POKE_storm15_08_02_NO3.csv", row.names = 1)
+POKE_storm15_08_02_fDOM <- read.csv("Storms/POKE_storm15_08_02_fDOM.csv", row.names = 1)
+
+POKE_storm16_08_12 <- read.csv("Storms/POKE_storm16_08_12.csv", row.names = 1)
+POKE_storm16_08_12_Q <- read.csv("Storms/POKE_storm16_08_12_Q.csv", row.names = 1)
+POKE_storm16_08_12_NO3 <- read.csv("Storms/POKE_storm16_08_12_NO3.csv", row.names = 1)
+POKE_storm16_08_12_fDOM <- read.csv("Storms/POKE_storm16_08_12_fDOM.csv", row.names = 1)
+
+POKE_storm17_08_24 <- read.csv("Storms/POKE_storm17_08_24.csv", row.names = 1)
+POKE_storm17_08_24_Q <- read.csv("Storms/POKE_storm17_08_24_Q.csv", row.names = 1)
+POKE_storm17_08_24_NO3 <- read.csv("Storms/POKE_storm17_08_24_NO3.csv", row.names = 1)
+POKE_storm17_08_24_fDOM <- read.csv("Storms/POKE_storm17_08_24_fDOM.csv", row.names = 1)
+
+POKE_storm18_08_25 <- read.csv("Storms/POKE_storm18_08_25.csv", row.names = 1)
+POKE_storm18_08_25_Q <- read.csv("Storms/POKE_storm18_08_25_Q.csv", row.names = 1)
+POKE_storm18_08_25_NO3 <- read.csv("Storms/POKE_storm18_08_25_NO3.csv", row.names = 1)
+POKE_storm18_08_25_fDOM <- read.csv("Storms/POKE_storm18_08_25_fDOM.csv", row.names = 1)
+
+POKE_storm19_08_27 <- read.csv("Storms/POKE_storm19_08_27.csv", row.names = 1)
+POKE_storm19_08_27_Q <- read.csv("Storms/POKE_storm19_08_27_Q.csv", row.names = 1)
+POKE_storm19_08_27_NO3 <- read.csv("Storms/POKE_storm19_08_27_NO3.csv", row.names = 1)
+POKE_storm19_08_27_fDOM <- read.csv("Storms/POKE_storm19_08_27_fDOM.csv", row.names = 1)
+
+POKE_storm20_09_01 <- read.csv("Storms/POKE_storm20_09_01.csv", row.names = 1)
+POKE_storm20_09_01_Q <- read.csv("Storms/POKE_storm20_09_01_Q.csv", row.names = 1)
+POKE_storm20_09_01_NO3 <- read.csv("Storms/POKE_storm20_09_01_NO3.csv", row.names = 1)
+POKE_storm20_09_01_fDOM <- read.csv("Storms/POKE_storm20_09_01_fDOM.csv", row.names = 1)
+
+POKE_storm21_09_03 <- read.csv("Storms/POKE_storm21_09_03.csv", row.names = 1)
+POKE_storm21_09_03_Q <- read.csv("Storms/POKE_storm21_09_03_Q.csv", row.names = 1)
+POKE_storm21_09_03_NO3 <- read.csv("Storms/POKE_storm21_09_03_NO3.csv", row.names = 1)
+POKE_storm21_09_03_fDOM <- read.csv("Storms/POKE_storm21_09_03_fDOM.csv", row.names = 1)
+
+POKE_storm22a_09_07 <- read.csv("Storms/POKE_storm22a_09_07.csv", row.names = 1)
+POKE_storm22a_09_07_Q <- read.csv("Storms/POKE_storm22a_09_07_Q.csv", row.names = 1)
+POKE_storm22a_09_07_NO3 <- read.csv("Storms/POKE_storm22a_09_07_NO3.csv", row.names = 1)
+POKE_storm22a_09_07_fDOM <- read.csv("Storms/POKE_storm22a_09_07_fDOM.csv", row.names = 1)
+
+POKE_storm22b_09_09 <- read.csv("Storms/POKE_storm22b_09_09.csv", row.names = 1)
+POKE_storm22b_09_09_Q <- read.csv("Storms/POKE_storm22b_09_09_Q.csv", row.names = 1)
+POKE_storm22b_09_09_NO3 <- read.csv("Storms/POKE_storm22b_09_09_NO3.csv", row.names = 1)
+POKE_storm22b_09_09_fDOM <- read.csv("Storms/POKE_storm22b_09_09_fDOM.csv", row.names = 1)
+######################################## 2018 ##############################################################################
+
+# FRCH #
+# fxn: plot hysteresis loop ####
+hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
+  dat.p = ggplot(data = dat_Q, 
+                 aes(x=(dat_Q$datavalue), 
+                     y=(dat_response$datavalue), 
+                     color = as.numeric(dat_Q$valuedatetime))) +
+    geom_point() +
+    scale_colour_gradientn(colors = rainbow(3)) +
+    theme_bw() +
+    theme(legend.position="none") + 
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold")) +
+    ylab(paste(site, response_var))+
+    xlab("Normalized Discharge") +
+    ggtitle(paste("Storm", storm_num))
+  return(dat.p)
+}
+
+# plot FRCH loops #
+# NO3
+FRCH_storm1_06_21_NO3.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_NO3, "FRCH", "NO3", "0621")
+FRCH_storm2a_06_29_NO3.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_NO3, "FRCH", "NO3", "0629")
+FRCH_storm2b_07_04_NO3.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_NO3, "FRCH", "NO3", "0704")
+FRCH_storm3_07_10_NO3.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_NO3, "FRCH", "NO3", "0710")
+FRCH_storm4a_07_15_NO3.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_NO3, "FRCH", "NO3", "0715a")
+FRCH_storm4b_07_16_NO3.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_NO3, "FRCH", "NO3", "0716b")
+FRCH_storm5_08_04_NO3.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_NO3, "FRCH", "NO3", "0804")
+FRCH_storm6_08_13_NO3.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_NO3, "FRCH", "NO3", "0813")
+FRCH_storm7_08_23_NO3.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_NO3, "FRCH", "NO3", "0823")
+FRCH_storm8a_08_26_NO3.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_NO3, "FRCH", "NO3", "0826a")
+FRCH_storm8b_08_27_NO3.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_NO3, "FRCH", "NO3", "0827b")
+FRCH_storm9_08_29_NO3.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_NO3, "FRCH", "NO3", "0829")
+FRCH_storm10a_09_01_NO3.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_NO3, "FRCH", "NO3", "0901a")
+FRCH_storm10b_09_04_NO3.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_NO3, "FRCH", "NO3", "0904b")
+FRCH_storm11a_09_22_NO3.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_NO3, "FRCH", "NO3", "0922a")
+FRCH_storm11b_09_24_NO3.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_NO3, "FRCH", "NO3", "0924b")
+
+# fDOM #
+FRCH_storm1_06_21_fDOM.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_fDOM, "FRCH", "fDOM", "0621")
+FRCH_storm2a_06_29_fDOM.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_fDOM, "FRCH", "fDOM", "0629")
+FRCH_storm2b_07_04_fDOM.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_fDOM, "FRCH", "fDOM", "0704")
+FRCH_storm3_07_10_fDOM.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_fDOM, "FRCH", "fDOM", "0710")
+FRCH_storm4a_07_15_fDOM.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_fDOM, "FRCH", "fDOM", "0715a")
+FRCH_storm4b_07_16_fDOM.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_fDOM, "FRCH", "fDOM", "0716b")
+FRCH_storm5_08_04_fDOM.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_fDOM, "FRCH", "fDOM", "0804")
+FRCH_storm6_08_13_fDOM.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_fDOM, "FRCH", "fDOM", "0813")
+FRCH_storm7_08_23_fDOM.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_fDOM, "FRCH", "fDOM", "0823")
+FRCH_storm8a_08_26_fDOM.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_fDOM, "FRCH", "fDOM", "0826a")
+FRCH_storm8b_08_27_fDOM.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_fDOM, "FRCH", "fDOM", "0827b")
+FRCH_storm9_08_29_fDOM.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_fDOM, "FRCH", "fDOM", "0829")
+FRCH_storm10a_09_01_fDOM.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_fDOM, "FRCH", "fDOM", "0901a")
+FRCH_storm10b_09_04_fDOM.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_fDOM, "FRCH", "fDOM", "0904b")
+FRCH_storm11a_09_22_fDOM.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_fDOM, "FRCH", "fDOM", "0922a")
+FRCH_storm11b_09_24_fDOM.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_fDOM, "FRCH", "fDOM", "0924b")
+
+# SPC #
+FRCH_storm1_06_21_SPC.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_SPC, "FRCH", "SPC", "0621")
+FRCH_storm2a_06_29_SPC.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_SPC, "FRCH", "SPC", "0629")
+FRCH_storm2b_07_04_SPC.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_SPC, "FRCH", "SPC", "0704")
+FRCH_storm3_07_10_SPC.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_SPC, "FRCH", "SPC", "0710")
+FRCH_storm4a_07_15_SPC.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_SPC, "FRCH", "SPC", "0715a")
+FRCH_storm4b_07_16_SPC.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_SPC, "FRCH", "SPC", "0716b")
+FRCH_storm5_08_04_SPC.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_SPC, "FRCH", "SPC", "0804")
+FRCH_storm6_08_13_SPC.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_SPC, "FRCH", "SPC", "0813")
+FRCH_storm7_08_23_SPC.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_SPC, "FRCH", "SPC", "0823")
+FRCH_storm8a_08_26_SPC.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_SPC, "FRCH", "SPC", "0826a")
+FRCH_storm8b_08_27_SPC.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_SPC, "FRCH", "SPC", "0827b")
+FRCH_storm9_08_29_SPC.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_SPC, "FRCH", "SPC", "0829")
+FRCH_storm10a_09_01_SPC.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_SPC, "FRCH", "SPC", "0901a")
+FRCH_storm10b_09_04_SPC.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_SPC, "FRCH", "SPC", "0904b")
+FRCH_storm11a_09_22_SPC.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_SPC, "FRCH", "SPC", "0922a")
+FRCH_storm11b_09_24_SPC.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_SPC, "FRCH", "SPC", "0924b")
+
+# turb
+FRCH_storm1_06_21_turb.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_turb, "FRCH", "turb", "0621")
+FRCH_storm2a_06_29_turb.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_turb, "FRCH", "turb", "0629")
+FRCH_storm2b_07_04_turb.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_turb, "FRCH", "turb", "0704")
+FRCH_storm3_07_10_turb.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_turb, "FRCH", "turb", "0710")
+FRCH_storm4a_07_15_turb.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_turb, "FRCH", "turb", "0715a")
+FRCH_storm4b_07_16_turb.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_turb, "FRCH", "turb", "0716b")
+FRCH_storm5_08_04_turb.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_turb, "FRCH", "turb", "0804")
+FRCH_storm6_08_13_turb.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_turb, "FRCH", "turb", "0813")
+FRCH_storm7_08_23_turb.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_turb, "FRCH", "turb", "0823")
+FRCH_storm8a_08_26_turb.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_fDOM, "FRCH", "turb", "0826a")
+FRCH_storm8b_08_27_turb.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_turb, "FRCH", "turb", "0827b")
+FRCH_storm9_08_29_turb.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_turb, "FRCH", "turb", "0829")
+FRCH_storm10a_09_01_turb.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_turh, "FRCH", "turb", "0901a")
+FRCH_storm10b_09_04_turb.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_turb, "FRCH", "turb", "0904b")
+FRCH_storm11a_09_22_turb.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_turb, "FRCH", "turb", "0922a")
+FRCH_storm11b_09_24_turb.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_turb, "FRCH", "turb", "0924b")
+
+# Multiplots of FRCH storms #
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+multiplot(FRCH_storm1_06_21_NO3.p, FRCH_storm1_06_21_fDOM.p, FRCH_storm1_06_21_SPC.p, FRCH_storm1_06_21_turb.p) # works 
+multiplot(FRCH_storm2a_06_29_NO3.p, FRCH_storm2a_06_29_fDOM.p, FRCH_storm2a_06_29_SPC.p, FRCH_storm2a_06_29_turb.p) # works 
+multiplot(FRCH_storm2b_07_04_NO3.p, FRCH_storm2b_07_04_fDOM.p, FRCH_storm2b_07_04_SPC.p, FRCH_storm2b_07_04_turb.p) # works 
+multiplot(FRCH_storm3_07_10_NO3.p, FRCH_storm3_07_10_fDOM.p, FRCH_storm3_07_10_SPC.p, FRCH_storm3_07_10_turb.p) # works 
+multiplot(FRCH_storm4a_07_15_NO3.p, FRCH_storm4a_07_15_fDOM.p, FRCH_storm4a_07_15_SPC.p, FRCH_storm4a_07_15_turb.p) # works 
+multiplot(FRCH_storm4b_07_16_NO3.p, FRCH_storm4b_07_16_fDOM.p, FRCH_storm4b_07_16_SPC.p, FRCH_storm4b_07_16_turb.p) # works 
+multiplot(FRCH_storm5_08_04_NO3.p, FRCH_storm5_08_04_fDOM.p, FRCH_storm5_08_04_SPC.p, FRCH_storm5_08_04_turb.p) # works 
+multiplot(FRCH_storm6_08_13_NO3.p, FRCH_storm6_08_13_fDOM.p, FRCH_storm6_08_13_SPC.p, FRCH_storm6_08_13_turb.p) # works 
+multiplot(FRCH_storm7_08_23_NO3.p, FRCH_storm7_08_23_fDOM.p, FRCH_storm7_08_23_SPC.p, FRCH_storm7_08_23_turb.p) # works 
+multiplot(FRCH_storm8a_08_26_NO3.p, FRCH_storm8a_08_26_fDOM.p, FRCH_storm8a_08_26_SPC.p, FRCH_storm8a_08_26_turb.p) # works 
+multiplot(FRCH_storm8b_08_27_NO3.p, FRCH_storm8b_08_27_fDOM.p, FRCH_storm8b_08_27_SPC.p, FRCH_storm8b_08_27_turb.p) # works 
+multiplot(FRCH_storm9_08_29_NO3.p, FRCH_storm9_08_29_fDOM.p, FRCH_storm9_08_29_SPC.p, FRCH_storm9_08_29_turb.p) # works 
+multiplot(FRCH_storm10a_09_01_NO3.p, FRCH_storm10a_09_01_fDOM.p, FRCH_storm10a_09_01_SPC.p) # works 
+multiplot(FRCH_storm10b_09_04_NO3.p, FRCH_storm10b_09_04_fDOM.p, FRCH_storm10b_09_04_SPC.p, FRCH_storm10b_09_04_turb.p) # works 
+multiplot(FRCH_storm11a_09_22_NO3.p, FRCH_storm11a_09_22_fDOM.p, FRCH_storm11a_09_22_SPC.p, FRCH_storm11a_09_22_turb.p) # works 
+multiplot(FRCH_storm11b_09_24_NO3.p, FRCH_storm11b_09_24_fDOM.p, FRCH_storm11b_09_24_SPC.p, FRCH_storm11b_09_24_turb.p) # works 
+
+
+multiplot(FRCH_storm1_06_21_NO3.p, FRCH_storm1_06_21_fDOM.p, FRCH_storm1_06_21_SPC.p, FRCH_storm1_06_21_turb.p,
+          FRCH_storm2a_06_29_NO3.p, FRCH_storm2a_06_29_fDOM.p, FRCH_storm2a_06_29_SPC.p, FRCH_storm2a_06_29_turb.p,
+          FRCH_storm2b_07_04_NO3.p, FRCH_storm2b_07_04_fDOM.p, FRCH_storm2b_07_04_SPC.p, FRCH_storm2b_07_04_turb.p,
+          FRCH_storm3_07_10_NO3.p, FRCH_storm3_07_10_fDOM.p, FRCH_storm3_07_10_SPC.p, FRCH_storm3_07_10_turb.p,
+          FRCH_storm4a_07_15_NO3.p, FRCH_storm4a_07_15_fDOM.p, FRCH_storm4a_07_15_SPC.p, FRCH_storm4a_07_15_turb.p,
+          FRCH_storm4b_07_16_NO3.p, FRCH_storm4b_07_16_fDOM.p, FRCH_storm4b_07_16_SPC.p, FRCH_storm4b_07_16_turb.p,
+          FRCH_storm6_08_13_NO3.p, FRCH_storm6_08_13_fDOM.p, FRCH_storm6_08_13_SPC.p, FRCH_storm6_08_13_turb.p,
+          FRCH_storm7_08_23_NO3.p, FRCH_storm7_08_23_fDOM.p, FRCH_storm7_08_23_SPC.p, FRCH_storm7_08_23_turb.p,
+          FRCH_storm8a_08_26_NO3.p, FRCH_storm8a_08_26_fDOM.p, FRCH_storm8a_08_26_SPC.p, FRCH_storm8a_08_26_turb.p,
+          FRCH_storm8b_08_27_NO3.p, FRCH_storm8b_08_27_fDOM.p, FRCH_storm8b_08_27_SPC.p, FRCH_storm8b_08_27_turb.p,
+          FRCH_storm9_08_29_NO3.p, FRCH_storm9_08_29_fDOM.p, FRCH_storm9_08_29_SPC.p, FRCH_storm9_08_29_turb.p,
+          FRCH_storm10a_09_01_NO3.p, FRCH_storm10a_09_01_fDOM.p, FRCH_storm10a_09_01_SPC.p,
+          FRCH_storm10b_09_04_NO3.p, FRCH_storm10b_09_04_fDOM.p, FRCH_storm10b_09_04_SPC.p, FRCH_storm10b_09_04_turb.p,
+          FRCH_storm11a_09_22_NO3.p, FRCH_storm11a_09_22_fDOM.p, FRCH_storm11a_09_22_SPC.p, FRCH_storm11a_09_22_turb.p,
+          FRCH_storm11b_09_24_NO3.p, FRCH_storm11b_09_24_fDOM.p, FRCH_storm11b_09_24_SPC.p, FRCH_storm11b_09_24_turb.p,
+          cols = 7)
+
+# export pdf 20 x 30
+
+# MOOS #
+# fxn: plot hysteresis loop #
+hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
+  dat.p = ggplot(data = dat_Q, 
+                 aes(x=(dat_Q$datavalue), 
+                     y=(dat_response$datavalue), 
+                     color = as.numeric(dat_Q$valuedatetime))) +
+    geom_point() +
+    scale_colour_gradientn(colors = rainbow(3)) +
+    theme_bw() +
+    theme(legend.position="none") + 
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold")) +
+    ylab(paste(site, response_var))+
+    xlab("Normalized Discharge") +
+    ggtitle(paste("Storm", storm_num))
+  return(dat.p)
+}
+
+# plot MOOS loops #
+# NO3
+MOOS_storm1_06_21_NO3.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_NO3, "MOOS", "NO3", "0621")
+MOOS_storm2a_06_29_NO3.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_NO3, "MOOS", "NO3", "0629a")
+MOOS_storm2b_07_01_NO3.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_NO3, "MOOS", "NO3", "0701b")
+MOOS_storm2c_07_04_NO3.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_NO3, "MOOS", "NO3", "0704c")
+MOOS_storm3_07_09_NO3.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_NO3, "MOOS", "NO3", "0709")
+MOOS_storm4_07_15_NO3.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_NO3, "MOOS", "NO3", "0715")
+MOOS_storm5_08_04_NO3.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_NO3, "MOOS", "NO3", "0804")
+MOOS_storm6_08_13_NO3.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_NO3, "MOOS", "NO3", "0813")
+MOOS_storm7_08_23_NO3.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_NO3, "MOOS", "NO3", "0823")
+MOOS_storm8_08_26_NO3.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_NO3, "MOOS", "NO3", "0826")
+MOOS_storm9_08_29_NO3.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_NO3, "MOOS", "NO3", "0829")
+MOOS_storm10_09_01_NO3.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_NO3, "MOOS", "NO3", "0901")
+MOOS_storm11_09_22_NO3.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_NO3, "MOOS", "NO3", "0922")
+MOOS_storm12_09_24_NO3.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_NO3, "MOOS", "NO3", "0924")
+
+# fDOM #
+MOOS_storm1_06_21_fDOM.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_fDOM, "MOOS", "fDOM", "0621")
+MOOS_storm2a_06_29_fDOM.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_fDOM, "MOOS", "fDOM", "0629a")
+MOOS_storm2b_07_01_fDOM.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_fDOM, "MOOS", "fDOM", "0701b")
+MOOS_storm2c_07_04_fDOM.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_fDOM, "MOOS", "fDOM", "0704c")
+MOOS_storm3_07_09_fDOM.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_fDOM, "MOOS", "fDOM", "0709")
+MOOS_storm4_07_15_fDOM.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_fDOM, "MOOS", "fDOM", "0715")
+MOOS_storm5_08_04_fDOM.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_fDOM, "MOOS", "fDOM", "0804")
+MOOS_storm6_08_13_fDOM.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_fDOM, "MOOS", "fDOM", "0813")
+MOOS_storm7_08_23_fDOM.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_fDOM, "MOOS", "fDOM", "0823")
+MOOS_storm8_08_26_fDOM.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_fDOM, "MOOS", "fDOM", "0826")
+MOOS_storm9_08_29_fDOM.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_fDOM, "MOOS", "fDOM", "0829")
+MOOS_storm10_09_01_fDOM.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_fDOM, "MOOS", "fDOM", "0901")
+MOOS_storm11_09_22_fDOM.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_fDOM, "MOOS", "fDOM", "0922")
+MOOS_storm12_09_24_fDOM.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_fDOM, "MOOS", "fDOM", "0924")
+
+# SPC #
+MOOS_storm1_06_21_SPC.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_SPC, "MOOS", "SPC", "0621")
+MOOS_storm2a_06_29_SPC.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_SPC, "MOOS", "SPC", "0629a")
+MOOS_storm2b_07_01_SPC.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_SPC, "MOOS", "SPC", "0701b")
+MOOS_storm2c_07_04_SPC.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_SPC, "MOOS", "SPC", "0704c")
+MOOS_storm3_07_09_SPC.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_SPC, "MOOS", "SPC", "0709")
+MOOS_storm4_07_15_SPC.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_SPC, "MOOS", "SPC", "0715")
+MOOS_storm5_08_04_SPC.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_SPC, "MOOS", "SPC", "0804")
+MOOS_storm6_08_13_SPC.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_SPC, "MOOS", "SPC", "0813")
+MOOS_storm7_08_23_SPC.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_SPC, "MOOS", "SPC", "0823")
+MOOS_storm8_08_26_SPC.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_SPC, "MOOS", "SPC", "0826")
+MOOS_storm9_08_29_SPC.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_SPC, "MOOS", "SPC", "0829")
+MOOS_storm10_09_01_SPC.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_SPC, "MOOS", "SPC", "0901")
+MOOS_storm11_09_22_SPC.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_SPC, "MOOS", "SPC", "0922")
+MOOS_storm12_09_24_SPC.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_SPC, "MOOS", "SPC", "0924")
+
+# turb
+MOOS_storm1_06_21_turb.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_turb, "MOOS", "turb", "0621")
+MOOS_storm2a_06_29_turb.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_turb, "MOOS", "turb", "0629a")
+MOOS_storm2b_07_01_turb.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_turb, "MOOS", "turb", "0701b")
+MOOS_storm2c_07_04_turb.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_turb, "MOOS", "turb", "0704c")
+MOOS_storm3_07_09_turb.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_turb, "MOOS", "turb", "0709")
+MOOS_storm4_07_15_turb.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_turb, "MOOS", "turb", "0715")
+MOOS_storm5_08_04_turb.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_turb, "MOOS", "turb", "0804")
+MOOS_storm6_08_13_turb.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_turb, "MOOS", "turb", "0813")
+MOOS_storm7_08_23_turb.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_turb, "MOOS", "turb", "0823")
+MOOS_storm8_08_26_turb.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_turb, "MOOS", "turb", "0826")
+MOOS_storm9_08_29_turb.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_turb, "MOOS", "turb", "0829")
+MOOS_storm10_09_01_turb.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_turb, "MOOS", "turb", "0901")
+MOOS_storm11_09_22_turb.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_turb, "MOOS", "turb", "0922")
+MOOS_storm12_09_24_turb.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_turb, "MOOS", "turb", "0924")
+
+# Multiplots of MOOS storms #
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+multiplot(MOOS_storm1_06_21_NO3.p, MOOS_storm1_06_21_fDOM.p, MOOS_storm1_06_21_SPC.p, MOOS_storm1_06_21_turb.p) # works 
+multiplot(MOOS_storm2a_06_29_NO3.p, MOOS_storm2a_06_29_fDOM.p, MOOS_storm2a_06_29_SPC.p, MOOS_storm2a_06_29_turb.p) # works/ empty
+multiplot(MOOS_storm2b_07_01_NO3.p, MOOS_storm2b_07_01_fDOM.p, MOOS_storm2b_07_01_SPC.p, MOOS_storm2b_07_01_turb.p) # works/empty
+multiplot(MOOS_storm2c_07_04_NO3.p, MOOS_storm2c_07_04_fDOM.p, MOOS_storm2c_07_04_SPC.p, MOOS_storm2c_07_04_turb.p) # works/empty
+multiplot(MOOS_storm3_07_09_NO3.p, MOOS_storm3_07_09_fDOM.p, MOOS_storm3_07_09_SPC.p, MOOS_storm3_07_09_turb.p) # works 
+multiplot(MOOS_storm4_07_15_NO3.p, MOOS_storm4_07_15_fDOM.p, MOOS_storm4_07_15_SPC.p, MOOS_storm4_07_15_turb.p) # works 
+multiplot(MOOS_storm5_08_04_NO3.p, MOOS_storm5_08_04_fDOM.p, MOOS_storm5_08_04_SPC.p, MOOS_storm5_08_04_turb.p) # works 
+multiplot(MOOS_storm6_08_13_NO3.p, MOOS_storm6_08_13_fDOM.p, MOOS_storm6_08_13_SPC.p, MOOS_storm6_08_13_turb.p) # works 
+multiplot(MOOS_storm7_08_23_NO3.p, MOOS_storm7_08_23_fDOM.p, MOOS_storm7_08_23_SPC.p, MOOS_storm7_08_23_turb.p) # works 
+multiplot(MOOS_storm8_08_26_NO3.p, MOOS_storm8_08_26_fDOM.p, MOOS_storm8_08_26_SPC.p, MOOS_storm8_08_26_turb.p) # works 
+multiplot(MOOS_storm9_08_29_NO3.p, MOOS_storm9_08_29_fDOM.p, MOOS_storm9_08_29_SPC.p, MOOS_storm9_08_29_turb.p) # works 
+multiplot(MOOS_storm10_09_01_NO3.p, MOOS_storm10_09_01_fDOM.p, MOOS_storm10_09_01_SPC.p, MOOS_storm10_09_01_turb.p) # works 
+multiplot(MOOS_storm11_09_22_NO3.p, MOOS_storm11_09_22_fDOM.p, MOOS_storm11_09_22_SPC.p, MOOS_storm11_09_22_turb.p) # works 
+multiplot(MOOS_storm12_09_24_NO3.p, MOOS_storm12_09_24_fDOM.p, MOOS_storm12_09_24_SPC.p, MOOS_storm12_09_24_turb.p) # works 
+
+
+multiplot(MOOS_storm1_06_21_NO3.p, MOOS_storm1_06_21_fDOM.p, MOOS_storm1_06_21_SPC.p, MOOS_storm1_06_21_turb.p,
+          MOOS_storm2a_06_29_NO3.p, MOOS_storm2a_06_29_fDOM.p, MOOS_storm2a_06_29_SPC.p, MOOS_storm2a_06_29_turb.p,
+          MOOS_storm2b_07_01_NO3.p, MOOS_storm2b_07_01_fDOM.p, MOOS_storm2b_07_01_SPC.p, MOOS_storm2b_07_01_turb.p,
+          MOOS_storm2c_07_04_NO3.p, MOOS_storm2c_07_04_fDOM.p, MOOS_storm2c_07_04_SPC.p, MOOS_storm2c_07_04_turb.p,
+          MOOS_storm3_07_09_NO3.p, MOOS_storm3_07_09_fDOM.p, MOOS_storm3_07_09_SPC.p, MOOS_storm3_07_09_turb.p,
+          MOOS_storm4_07_15_NO3.p, MOOS_storm4_07_15_fDOM.p, MOOS_storm4_07_15_SPC.p, MOOS_storm4_07_15_turb.p,
+          MOOS_storm5_08_04_NO3.p, MOOS_storm5_08_04_fDOM.p, MOOS_storm5_08_04_SPC.p, MOOS_storm5_08_04_turb.p,
+          MOOS_storm6_08_13_NO3.p, MOOS_storm6_08_13_fDOM.p, MOOS_storm6_08_13_SPC.p, MOOS_storm6_08_13_turb.p,
+          MOOS_storm7_08_23_NO3.p, MOOS_storm7_08_23_fDOM.p, MOOS_storm7_08_23_SPC.p, MOOS_storm7_08_23_turb.p,
+          MOOS_storm8_08_26_NO3.p, MOOS_storm8_08_26_fDOM.p, MOOS_storm8_08_26_SPC.p, MOOS_storm8_08_26_turb.p,
+          MOOS_storm9_08_29_NO3.p, MOOS_storm9_08_29_fDOM.p, MOOS_storm9_08_29_SPC.p, MOOS_storm9_08_29_turb.p,
+          MOOS_storm10_09_01_NO3.p, MOOS_storm10_09_01_fDOM.p, MOOS_storm10_09_01_SPC.p, MOOS_storm10_09_01_turb.p,
+          MOOS_storm11_09_22_NO3.p, MOOS_storm11_09_22_fDOM.p, MOOS_storm11_09_22_SPC.p, MOOS_storm11_09_22_turb.p,
+          MOOS_storm12_09_24_NO3.p, MOOS_storm12_09_24_fDOM.p, MOOS_storm12_09_24_SPC.p, MOOS_storm12_09_24_turb.p,
+          cols = 7
+          )
 ############################################### 2019 ##############################################
 # plot on normalized scale # 
 #### load data #####

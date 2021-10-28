@@ -1,0 +1,1197 @@
+## DoD 2020 - analyze SUNA diagnostic logs ##
+# press Command+Option+O to collapse all sections and get an overview of the workflow! #
+
+#### read me ####
+
+# The purpose of this script is to work up SUNA diagnostic logs, i.e., logs of a SUNA reading in air, nanopure, or other when in continous mode when connected to the laptop. 
+# All SUNAs had their spectra updated and were read in nanopure before deployment. These logs are analyzed in "pre-deployment lab reading in nanopure" sections below. 
+#  In-field diagnostic readings in nanopure are analyzed similiarly  in the "In-field readings in nanopure". 
+## NOTE: as of June 25, 2020, we have in-field diagnostics for all sites except French. When French diagnostics are added, the script must be updated 1) in the "load data" sections and 2) a section for like what exists for the other sites, with the site code replaced with "FRCH" to subset the data and plot it from French.
+
+# >>>EDIT HERE<<< in section header means some code in that section needs to be manually edited depending on circumstances. Most often, this is commenting in/out code for sites that you are or aren't processing data for. 
+## TIP! Comment out a section of code by highlighting it and press Command+Shift+C (on macs). Comment it back in the same way. 
+
+# .sbslog file notes:
+## These are the file type created when you "log to file" in the UCI software, which is how we log data when testing SUNAs in air, nanopure, and other tests. 
+## For pre-deployment tests, I manually converted these to text and deleted all the extranious text created by the software at the top of each file. I kept an unedited .sbslog file version preserved so that it can be opened in UCI if desired. 
+## For in-field tests, I figured out how to import these without manual editing. 
+
+# .CAL file notes:
+## These are the latest calibration file from each SUNA. They can be read directly into R. HOWEVER, each file has several headers that describe the SUNA's parameters (pathlength, software version, etc.). For some reason, the # of descriptive header lines varies, so the number of lines skipped when the file is read in varies by SUNA. You must check the .CAL file in a text editor and skip the right number of lines when reading it into R if we create new .CAL files in the future (e.g., if we reset a ref spec). The dataframe should end up being 256 obs. of 4 variables when correctly imported with headers "H","Wavelength","NO3","Reference". 
+
+# Other notes:
+# As of June 2020, we have not delployed SN0629 since it came back from AZ. It got a spec update and is reading in spec, but the internal humidity is >40% and the dark counts are too high. I neglected to get the lastest .CAL file off the instrument when working with it, so the spectrum is not plotted here, but the mean dark spec counts are calculated and they are higher than they should be. 
+
+#### load libraries ####
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(rio)
+library(ggplot2)
+library(scales)
+library(psych)
+
+####++++++++++ In-field readings in nanopure ++++++++++####
+
+#### fxn: plot SUNA diagnostic and data plots ####
+
+SUNAdiagPlots = function(data.DF, data.LF, SITECODE){
+  par(mfrow=c(3,3), mar=c(7,4,2,1.5))
+  # plot dark frame counts over time. Should be between 500-1000
+  plot(data.DF[["specave"]] ~ data.DF[["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+  abline(h=c(500,1000), col="red")
+  # plot counts @ 220 nm over time
+  # Note that ~20,000 @220nm is ideal in nanopure, but we don't expect it to be this good in stream water
+  counts = as.data.frame(t(data.LF[,12:267]))
+  counts$Wavelength = ref.specs[[SITECODE]]$Wavelength
+  counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+  counts220$Wavelength = NULL
+  counts220 = data.frame(datetimeAK = data.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+  counts220 = dplyr::arrange(counts220, datetimeAK)
+  plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+  abline(h=10000, col="red")
+  abline(h=20000, col="yellow")
+  abline(h=30000, col="green")
+  # Plot the average absorbance spectra in counts
+  # Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+  AvgLightSpectrumCounts = colMeans(data.LF[,12:267], na.rm = T)
+  plot(AvgLightSpectrumCounts ~ ref.specs[[SITECODE]]$Wavelength, type="l", ylim=c(0, 40000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+  abline(v=220, col="black", lty=3)
+  abline(h=10000, col="red")
+  abline(h=20000, col="yellow")
+  abline(h=30000, col="green")
+  # lamp time #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"), (data.LF$lamptimecum),pch=20,col="black", main="cumulative lamp time (must be < red line)", xlab="time", ylab="sec", ylim=c(0, 3.3e+6))
+  abline(h=3.24e+6, col="red")
+  # internal humidity #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"), (data.LF$relhum),pch=20,col="black", main="internal humidity (30% = Warning, 50% = BAD!)", xlab="time", ylab="%", ylim=c(0,50))
+  abline(h=30, col="yellow"); abline(h=50, col="red")
+  # RMSE #
+  # The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+  plot(data.LF$fitRMSE ~ data.LF$datetimeAK, main="RMSE full range", xlab="time", ylab="RMSE")
+  plot(data.LF$fitRMSE ~ data.LF$datetimeAK, ylim=c(0,0.002), main="RMSE desired range (< red line is ideal)", xlab="time", ylab="RMSE")
+  abline(h=0.001, col="red")
+  # abs 254 #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"),(data.LF$abs254),pch=20,col="brown", main="ABS@254", xlab="time", ylab="abs")
+  # nitrate #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"),(data.LF$nitrateuM),pch=20,col="purple", main="NO3 (-2 to 2 uM = in spec)", xlab="time", ylab="uM", ylim=c(min(data.LF$nitrateuM), max(data.LF$nitrateuM)))
+  abline(h=-2, col="red"); abline(h=2, col="red")
+  par(mfrow=c(1,1), mar=c(5.1, 4.1, 4.1, 2.1))
+}
+
+#
+#### load data >>>EDIT HERE<<< ####
+
+# As of June 23, 2020:
+# SN 0628: MOOS
+# SN 1173: VAUL
+# SN 1247: FRCH
+# SN 1279: STRT
+# SN 1280: POKE
+
+nanopure_filelist <- list.files(path="SUNA_diagnostics/in_field/data/", recursive=F, 
+                                pattern="nanopure", full.names=TRUE)
+### >>> EDIT SERIAL NUMBERS FOR SITES IF NEEDED <<< ###
+MOOS_nano_filelist <- grep(pattern="0628", nanopure_filelist, value = TRUE)
+VAUL_nano_filelist <- grep(pattern="1173", nanopure_filelist, value = TRUE)
+FRCH_nano_filelist <- grep(pattern="1247", nanopure_filelist, value = TRUE)
+STRT_nano_filelist <- grep(pattern="1279", nanopure_filelist, value = TRUE)
+POKE_nano_filelist <- grep(pattern="1280", nanopure_filelist, value = TRUE)
+### load in-field nanopure tests
+MOOS_nano <- do.call("rbind", lapply(MOOS_nano_filelist, read.table, sep=",", header = F, skip=9))
+VAUL_nano <- do.call("rbind", lapply(VAUL_nano_filelist, read.table, sep=",", header = F, skip=9))
+FRCH_nano <- do.call("rbind", lapply(FRCH_nano_filelist, read.table, sep=",", header = F, skip=9))
+STRT_nano <- do.call("rbind", lapply(STRT_nano_filelist, read.table, sep=",", header = F, skip=9))
+POKE_nano <- do.call("rbind", lapply(POKE_nano_filelist, read.table, sep=",", header = F, skip=9))
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+
+### >>> EDIT OUT SITES WITHOUT DATA HERE <<< ###
+#nano = list(MOOS_nano,VAUL_nano,FRCH_nano,STRT_nano,POKE_nano)
+#names(nano) = c("MOOS","VAUL","FRCH", "STRT","POKE")
+nano = list(MOOS_nano,VAUL_nano,POKE_nano,STRT_nano)
+names(nano) = c("MOOS","VAUL","POKE","STRT")
+
+for (i in 1:length(nano)){
+  names(nano[[i]])<-SUNAnames
+}
+
+for (i in 1:length(nano)){
+  ## add time stamps in AK tz
+  # create separate year and day columns
+  year_day <- t(sapply(nano[[i]]$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+  year_day<-as.data.frame(year_day)
+  names(year_day)<-c("year", "day")
+  year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+  year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+  nano[[i]]<-cbind(nano[[i]], year_day)
+  # combine hours and julian day into fractional days
+  nano[[i]]$day_timeUTC<-nano[[i]]$day+(nano[[i]]$time_fhoursUTC/24)
+  # assign year to 2020 data ###>>> NOTE: MUST CHANGE THIS EVERY YEAR!!!! <<<###
+  origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+  nano[[i]]$date_timeUTC<-origin19 + nano[[i]]$day_timeUTC * 3600 * 24
+  # convert from UTC to AKDT
+  nano[[i]]$datetimeAK<-as.POSIXct(format(nano[[i]]$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+  tz(nano[[i]]$datetimeAK) = "America/Anchorage"
+  nano[[i]]$date = date(nano[[i]]$datetimeAK)
+}
+
+
+### organize reference spec (.CAL files) ###
+ref.spec.0628 = read.table("SUNA_cal/2020/SNA0628E.CAL", header=T, skip=17, sep=",")
+ref.spec.1173 = read.table("SUNA_cal/2020/SNA1173D.CAL", header=T, skip=23, sep=",")
+ref.spec.1247 = read.table("SUNA_cal/2020/SNA1247B.CAL", header=T, skip=20, sep=",")
+ref.spec.1279 = read.table("SUNA_cal/2020/SNA1279B.CAL", header=T, skip=20, sep=",")
+ref.spec.1280 = read.table("SUNA_cal/2020/SNA1280F.CAL", header=T, skip=26, sep=",")
+# put in list
+ref.specs = list(ref.spec.0628, ref.spec.1173, ref.spec.1247, ref.spec.1279, ref.spec.1280)
+### >>> EDIT SITE IDs HERE IF NEEDED <<< ###
+names(ref.specs) = c("MOOS","VAUL","FRCH", "STRT","POKE")
+
+#### MOOS in-field readings in nanopure ####
+
+# count light vs dark frames
+nano[["MOOS"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+nano[["MOOS"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+nano_bydate = split(nano[["MOOS"]], nano[["MOOS"]]$date)
+for(i in 1:length(nano_bydate)){
+  # create dataframe of dark frames
+  DF <- nano_bydate[[i]][!grepl("LF", nano_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- nano_bydate[[i]][!grepl("DF", nano_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_nanopure/MOOS_diagnostics_", names(nano_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "MOOS")
+  dev.off()
+}
+
+
+
+#### POKE in-field readings in nanopure ####
+
+# count light vs dark frames
+nano[["POKE"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+nano[["POKE"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+nano_bydate = split(nano[["POKE"]], nano[["POKE"]]$date)
+for(i in 1:length(nano_bydate)){
+  # create dataframe of dark frames
+  DF <- nano_bydate[[i]][!grepl("LF", nano_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- nano_bydate[[i]][!grepl("DF", nano_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_nanopure/POKE_diagnostics_", names(nano_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "POKE")
+  dev.off()
+}
+
+
+
+#### VAUL in-field readings in nanopure ####
+
+# count light vs dark frames
+nano[["VAUL"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+nano[["VAUL"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+nano_bydate = split(nano[["VAUL"]], nano[["VAUL"]]$date)
+for(i in 1:length(nano_bydate)){
+  # create dataframe of dark frames
+  DF <- nano_bydate[[i]][!grepl("LF", nano_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- nano_bydate[[i]][!grepl("DF", nano_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_nanopure/VAUL_diagnostics_", names(nano_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "VAUL")
+  dev.off()
+}
+
+
+
+#### STRT in-field readings in nanopure ####
+
+# count light vs dark frames
+nano[["STRT"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+nano[["STRT"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+nano_bydate = split(nano[["STRT"]], nano[["STRT"]]$date)
+for(i in 1:length(nano_bydate)){
+  # create dataframe of dark frames
+  DF <- nano_bydate[[i]][!grepl("LF", nano_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- nano_bydate[[i]][!grepl("DF", nano_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_nanopure/STRT_diagnostics_", names(nano_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "STRT")
+  dev.off()
+}
+
+
+
+####++++++++++ In-field readings in air ++++++++++####
+
+#### fxn: plot SUNA diagnostic and data plots ####
+
+SUNAdiagPlots = function(data.DF, data.LF, SITECODE){
+  par(mfrow=c(3,3), mar=c(7,4,2,1.5))
+  # plot dark frame counts over time. Should be between 500-1000
+  plot(data.DF[["specave"]] ~ data.DF[["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+  abline(h=c(500,1000), col="red")
+  # plot counts @ 220 nm over time
+  # Note that ~20,000 @220nm is ideal in air, but we don't expect it to be this good in stream water
+  counts = as.data.frame(t(data.LF[,12:267]))
+  counts$Wavelength = ref.specs[[SITECODE]]$Wavelength
+  counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+  counts220$Wavelength = NULL
+  counts220 = data.frame(datetimeAK = data.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+  counts220 = dplyr::arrange(counts220, datetimeAK)
+  plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+  abline(h=10000, col="red")
+  abline(h=20000, col="yellow")
+  abline(h=30000, col="green")
+  # Plot the average absorbance spectra in counts
+  # Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+  AvgLightSpectrumCounts = colMeans(data.LF[,12:267], na.rm = T)
+  plot(AvgLightSpectrumCounts ~ ref.specs[[SITECODE]]$Wavelength, type="l", ylim=c(0, 40000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+  abline(v=220, col="black", lty=3)
+  abline(h=10000, col="red")
+  abline(h=20000, col="yellow")
+  abline(h=30000, col="green")
+  # lamp time #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"), (data.LF$lamptimecum),pch=20,col="black", main="cumulative lamp time (must be < red line)", xlab="time", ylab="sec", ylim=c(0, 3.3e+6))
+  abline(h=3.24e+6, col="red")
+  # internal humidity #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"), (data.LF$relhum),pch=20,col="black", main="internal humidity (30% = Warning, 50% = BAD!)", xlab="time", ylab="%", ylim=c(0,50))
+  abline(h=30, col="yellow"); abline(h=50, col="red")
+  # RMSE #
+  # The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+  plot(data.LF$fitRMSE ~ data.LF$datetimeAK, main="RMSE full range", xlab="time", ylab="RMSE")
+  plot(data.LF$fitRMSE ~ data.LF$datetimeAK, ylim=c(0,0.002), main="RMSE desired range (< red line is ideal)", xlab="time", ylab="RMSE")
+  abline(h=0.001, col="red")
+  # abs 254 #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"),(data.LF$abs254),pch=20,col="brown", main="ABS@254", xlab="time", ylab="abs")
+  # nitrate #
+  plot(as.POSIXct(data.LF$datetimeAK, tz="America/Anchorage"),(data.LF$nitrateuM),pch=20,col="purple", main="NO3 (-2 to 2 uM = in spec)", xlab="time", ylab="uM", ylim=c(min(data.LF$nitrateuM), max(data.LF$nitrateuM)))
+  abline(h=-2, col="red"); abline(h=2, col="red")
+  par(mfrow=c(1,1), mar=c(5.1, 4.1, 4.1, 2.1))
+}
+
+#
+#### load data ####
+
+# As of June 23, 2020:
+# SN 0628: MOOS
+# SN 1173: VAUL
+# SN 1247: FRCH
+# SN 1279: STRT
+# SN 1280: POKE
+
+air_filelist <- list.files(path="SUNA_diagnostics/in_field/data/", recursive=F, 
+                                pattern="air", full.names=TRUE)
+### >>> EDIT SERIAL NUMBERS FOR SITES IF NEEDED <<< ###
+MOOS_air_filelist <- grep(pattern="0628", air_filelist, value = TRUE)
+VAUL_air_filelist <- grep(pattern="1173", air_filelist, value = TRUE)
+FRCH_air_filelist <- grep(pattern="1247", air_filelist, value = TRUE)
+STRT_air_filelist <- grep(pattern="1279", air_filelist, value = TRUE)
+POKE_air_filelist <- grep(pattern="1280", air_filelist, value = TRUE)
+### load in-field air tests
+MOOS_air <- do.call("rbind", lapply(MOOS_air_filelist, read.table, sep=",", header = F, skip=9))
+VAUL_air <- do.call("rbind", lapply(VAUL_air_filelist, read.table, sep=",", header = F, skip=9))
+FRCH_air <- do.call("rbind", lapply(FRCH_air_filelist, read.table, sep=",", header = F, skip=9))
+STRT_air <- do.call("rbind", lapply(STRT_air_filelist, read.table, sep=",", header = F, skip=9))
+POKE_air <- do.call("rbind", lapply(POKE_air_filelist, read.table, sep=",", header = F, skip=9))
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+
+### >>> EDIT OUT SITES WITHOUT DATA HERE <<< ###
+#air = list(MOOS_air,VAUL_air,FRCH_air,STRT_air,POKE_air)
+#names(air) = c("MOOS","VAUL","FRCH", "STRT","POKE")
+air = list(MOOS_air,VAUL_air,POKE_air,STRT_air)
+names(air) = c("MOOS","VAUL","POKE","STRT")
+
+for (i in 1:length(air)){
+  names(air[[i]])<-SUNAnames
+}
+
+for (i in 1:length(air)){
+  ## add time stamps in AK tz
+  # create separate year and day columns
+  year_day <- t(sapply(air[[i]]$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+  year_day<-as.data.frame(year_day)
+  names(year_day)<-c("year", "day")
+  year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+  year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+  air[[i]]<-cbind(air[[i]], year_day)
+  # combine hours and julian day into fractional days
+  air[[i]]$day_timeUTC<-air[[i]]$day+(air[[i]]$time_fhoursUTC/24)
+  # assign year to 2020 data ###>>> NOTE: MUST CHANGE THIS EVERY YEAR!!!! <<<###
+  origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+  air[[i]]$date_timeUTC<-origin19 + air[[i]]$day_timeUTC * 3600 * 24
+  # convert from UTC to AKDT
+  air[[i]]$datetimeAK<-as.POSIXct(format(air[[i]]$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+  tz(air[[i]]$datetimeAK) = "America/Anchorage"
+  air[[i]]$date = date(air[[i]]$datetimeAK)
+}
+
+
+### organize reference spec (.CAL files) ###
+ref.spec.0628 = read.table("SUNA_cal/2020/SNA0628E.CAL", header=T, skip=17, sep=",")
+ref.spec.1173 = read.table("SUNA_cal/2020/SNA1173D.CAL", header=T, skip=23, sep=",")
+ref.spec.1247 = read.table("SUNA_cal/2020/SNA1247B.CAL", header=T, skip=20, sep=",")
+ref.spec.1279 = read.table("SUNA_cal/2020/SNA1279B.CAL", header=T, skip=20, sep=",")
+ref.spec.1280 = read.table("SUNA_cal/2020/SNA1280F.CAL", header=T, skip=26, sep=",")
+# put in list
+ref.specs = list(ref.spec.0628, ref.spec.1173, ref.spec.1247, ref.spec.1279, ref.spec.1280)
+### >>> EDIT SITE IDs HERE IF NEEDED <<< ###
+names(ref.specs) = c("MOOS","VAUL","FRCH", "STRT","POKE")
+
+#### MOOS in-field readings in air ####
+
+# count light vs dark frames
+air[["MOOS"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+air[["MOOS"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+air_bydate = split(air[["MOOS"]], air[["MOOS"]]$date)
+for(i in 1:length(air_bydate)){
+  # create dataframe of dark frames
+  DF <- air_bydate[[i]][!grepl("LF", air_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- air_bydate[[i]][!grepl("DF", air_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_air/MOOS_diagnostics_", names(air_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "MOOS")
+  dev.off()
+}
+
+
+
+#### POKE in-field readings in air ####
+
+# count light vs dark frames
+air[["POKE"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+air[["POKE"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+air_bydate = split(air[["POKE"]], air[["POKE"]]$date)
+for(i in 1:length(air_bydate)){
+  # create dataframe of dark frames
+  DF <- air_bydate[[i]][!grepl("LF", air_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- air_bydate[[i]][!grepl("DF", air_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_air/POKE_diagnostics_", names(air_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "POKE")
+  dev.off()
+}
+
+
+
+#### VAUL in-field readings in air ####
+
+# count light vs dark frames
+air[["VAUL"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+air[["VAUL"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+air_bydate = split(air[["VAUL"]], air[["VAUL"]]$date)
+for(i in 1:length(air_bydate)){
+  # create dataframe of dark frames
+  DF <- air_bydate[[i]][!grepl("LF", air_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- air_bydate[[i]][!grepl("DF", air_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_air/VAUL_diagnostics_", names(air_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "VAUL")
+  dev.off()
+}
+
+
+
+#### STRT in-field readings in air ####
+
+# count light vs dark frames
+air[["STRT"]] %>% group_by(ID, date) %>% tally()
+# calc mean of light frame counts
+air[["STRT"]] %>% group_by(ID, date) %>% summarise(mn=mean(specave,na.rm=T))
+
+### MAKE AND SAVE PLOTS (by date) ###
+air_bydate = split(air[["STRT"]], air[["STRT"]]$date)
+for(i in 1:length(air_bydate)){
+  # create dataframe of dark frames
+  DF <- air_bydate[[i]][!grepl("LF", air_bydate[[i]]$ID),]
+  # create dataframe without dark frames
+  LF <- air_bydate[[i]][!grepl("DF", air_bydate[[i]]$ID),]
+  # PLOT #
+  pdf(paste("SUNA_diagnostics/in_field/in_field_air/STRT_diagnostics_", names(air_bydate)[[i]],".pdf", sep=""), width = 14, height =8)
+  SUNAdiagPlots(DF, LF, "STRT")
+  dev.off()
+}
+
+
+
+####++++++++++ Pre-deployment lab readings in nanopure ++++++++++####
+#### fxn: plot SUNA diagnostic and data plots ####
+makePlotSUNA = function(data){
+  par(mfrow=c(3,2), mar=c(7,4,2,1.5))
+  # lamp time #
+  plot(as.POSIXct(data$datetimeAK, tz="America/Anchorage"), (data$lamptimecum),pch=20,col="black", main="cumulative lamp time (must be < red line)", xlab="time", ylab="sec", ylim=c(0, 3.3e+6))
+  abline(h=3.24e+6, col="red")
+  # internal humidity #
+  plot(as.POSIXct(data$datetimeAK, tz="America/Anchorage"), (data$relhum),pch=20,col="black", main="internal humidity (30% = Warning, 50% = BAD!)", xlab="time", ylab="%", ylim=c(0,50))
+  abline(h=30, col="yellow"); abline(h=50, col="red")
+  # RMSE #
+  plot(data$fitRMSE ~ data$datetimeAK, main="RMSE full range", xlab="time", ylab="RMSE")
+  plot(data$fitRMSE ~ data$datetimeAK, ylim=c(0,0.002), main="RMSE desired range (< red line is ideal)", xlab="time", ylab="RMSE")
+  abline(h=0.001, col="red")
+  # abs 254 #
+  plot(as.POSIXct(data$datetimeAK, tz="America/Anchorage"),(data$abs254),pch=20,col="brown", main="ABS@254", xlab="time", ylab="abs")
+  # nitrate #
+  plot(as.POSIXct(data$datetimeAK, tz="America/Anchorage"),(data$nitrateuM),pch=20,col="purple", main="NO3 (between red lines = in spec)", xlab="time", ylab="uM", ylim=c(-3, 3))
+  abline(h=-2, col="red"); abline(h=2, col="red")
+  par(mfrow=c(1,1), mar=c(5.1, 4.1, 4.1, 2.1))
+}
+
+######### SN 1280 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_1280 = read.table("SUNA_cal/2020/SUNA-1280_2020-06-03_PostRefSpecUpdate.txt", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_1280)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_1280$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_1280<-cbind(labtest_1280, year_day)
+# combine hours and julian day into fractional days
+labtest_1280$day_timeUTC<-labtest_1280$day+(labtest_1280$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_1280$date_timeUTC<-origin19 + labtest_1280$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_1280$datetimeAK<-as.POSIXct(format(labtest_1280$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_1280$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_1280 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.1280 = read.table("SUNA_cal/2020/SNA1280F.CAL", header=T, skip=26, sep=",")
+
+# calc mean of light frame counts
+mean(labtest_1280[!grepl("DF", labtest_1280$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_1280[!grepl("LF", labtest_1280$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1280/spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_1280[!grepl("LF", labtest_1280$ID),][["specave"]] ~ labtest_1280[!grepl("LF", labtest_1280$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_1280.LF <- labtest_1280[!grepl("DF", labtest_1280$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_1280.LF[,12:267]))
+counts$Wavelength = ref.spec.1280$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_1280.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_1280.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.1280$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1280/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_1280.LF)
+dev.off()
+
+######### SN 0628 Dec 2019 pre-Seabird lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_dec2019_0628 = read.table("SUNA_cal/2019/D2019340_PreServiceTest_191205_MSB.CSV", sep=",", skip=14,header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_dec2019_0628)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_dec2019_0628$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_dec2019_0628<-cbind(labtest_dec2019_0628, year_day)
+# combine hours and julian day into fractional days
+labtest_dec2019_0628$day_timeUTC<-labtest_dec2019_0628$day+(labtest_dec2019_0628$time_fhoursUTC/24)
+# assign year to 2019 data
+origin19 <- as.POSIXct("2018-12-31 00:00:00", tz="GMT")
+labtest_dec2019_0628$date_timeUTC<-origin19 + labtest_dec2019_0628$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_dec2019_0628$datetimeAK<-as.POSIXct(format(labtest_dec2019_0628$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_dec2019_0628$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_dec2019_0628 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.0628D = read.table("SUNA_cal/2019/SNA0628D.CAL", header=T, skip=27, sep=",")
+
+# calc mean of light frame counts
+mean(labtest_dec2019_0628[!grepl("DF", labtest_dec2019_0628$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_dec2019_0628$darkvaluefit)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN0628/labtest_dec2019_spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_dec2019_0628$darkvaluefit ~ labtest_dec2019_0628$datetimeAK, ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_dec2019_0628.LF <- labtest_dec2019_0628[!grepl("DF", labtest_dec2019_0628$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_dec2019_0628.LF[,12:267]))
+counts$Wavelength = ref.spec.0628D$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_dec2019_0628.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_dec2019_0628.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.0628D$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN0628/labtest_dec2019_diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_dec2019_0628.LF)
+dev.off()
+
+######### SN 0628 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_0628 = read.table("SUNA_cal/2020/SUNA-0628_2020-06-19_11-33-13_PostSeabirdService", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_0628)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_0628$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_0628<-cbind(labtest_0628, year_day)
+# combine hours and julian day into fractional days
+labtest_0628$day_timeUTC<-labtest_0628$day+(labtest_0628$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_0628$date_timeUTC<-origin19 + labtest_0628$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_0628$datetimeAK<-as.POSIXct(format(labtest_0628$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_0628$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_0628 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.0628 = read.table("SUNA_cal/2020/SNA0628E.CAL", header=T, skip=17, sep=",")
+
+# calc mean of light frame counts
+mean(labtest_0628[!grepl("DF", labtest_0628$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_0628[!grepl("LF", labtest_0628$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN0628/spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_0628[!grepl("LF", labtest_0628$ID),][["specave"]] ~ labtest_0628[!grepl("LF", labtest_0628$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_0628.LF <- labtest_0628[!grepl("DF", labtest_0628$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_0628.LF[,12:267]))
+counts$Wavelength = ref.spec.0628$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_0628.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_0628.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.0628$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN0628/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_0628.LF)
+dev.off()
+
+######### SN 1173 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_1173 = read.table("SUNA_cal/2020/SUNA-1173_2020-06-03_PostRefSpecUpdate.txt", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_1173)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_1173$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_1173<-cbind(labtest_1173, year_day)
+# combine hours and julian day into fractional days
+labtest_1173$day_timeUTC<-labtest_1173$day+(labtest_1173$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_1173$date_timeUTC<-origin19 + labtest_1173$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_1173$datetimeAK<-as.POSIXct(format(labtest_1173$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_1173$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_1173 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.1173 = read.table("SUNA_cal/2020/SNA1173D.CAL", header=T, skip=23, sep=",")
+
+
+# calc mean of light frame counts
+mean(labtest_1173[!grepl("DF", labtest_1173$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_1173[!grepl("LF", labtest_1173$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1173/spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_1173[!grepl("LF", labtest_1173$ID),][["specave"]] ~ labtest_1173[!grepl("LF", labtest_1173$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_1173.LF <- labtest_1173[!grepl("DF", labtest_1173$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_1173.LF[,12:267]))
+counts$Wavelength = ref.spec.1173$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_1173.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_1173.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.1173$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1173/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_1173.LF)
+dev.off()
+
+######### SN 1279 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_1279 = read.table("SUNA_cal/2020/SUNA-1279_2020-06-11_PostRefSpecUpdate.txt", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_1279)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_1279$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_1279<-cbind(labtest_1279, year_day)
+# combine hours and julian day into fractional days
+labtest_1279$day_timeUTC<-labtest_1279$day+(labtest_1279$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_1279$date_timeUTC<-origin19 + labtest_1279$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_1279$datetimeAK<-as.POSIXct(format(labtest_1279$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_1279$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_1279 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.1279 = read.table("SUNA_cal/2020/SNA1279B.CAL", header=T, skip=20, sep=",")
+
+
+# calc mean of light frame counts
+mean(labtest_1279[!grepl("DF", labtest_1279$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_1279[!grepl("LF", labtest_1279$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1279/spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_1279[!grepl("LF", labtest_1279$ID),][["specave"]] ~ labtest_1279[!grepl("LF", labtest_1279$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_1279.LF <- labtest_1279[!grepl("DF", labtest_1279$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_1279.LF[,12:267]))
+counts$Wavelength = ref.spec.1279$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_1279.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_1279.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.1279$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1279/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_1279.LF)
+dev.off()
+
+######### SN 1247 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_1247 = read.table("SUNA_cal/2020/SUNA-1247_2020-06-03_PostRefSpecUpdate.txt", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_1247)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_1247$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_1247<-cbind(labtest_1247, year_day)
+# combine hours and julian day into fractional days
+labtest_1247$day_timeUTC<-labtest_1247$day+(labtest_1247$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_1247$date_timeUTC<-origin19 + labtest_1247$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_1247$datetimeAK<-as.POSIXct(format(labtest_1247$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_1247$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_1247 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+ref.spec.1247 = read.table("SUNA_cal/2020/SNA1247B.CAL", header=T, skip=20, sep=",")
+
+
+# calc mean of light frame counts
+mean(labtest_1247[!grepl("DF", labtest_1247$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_1247[!grepl("LF", labtest_1247$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1247/spec_counts.pdf", width = 5, height =7)
+par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_1247[!grepl("LF", labtest_1247$ID),][["specave"]] ~ labtest_1247[!grepl("LF", labtest_1247$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_1247.LF <- labtest_1247[!grepl("DF", labtest_1247$ID),]
+
+# plot counts @ 220 nm over time
+# Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+counts = as.data.frame(t(labtest_1247.LF[,12:267]))
+counts$Wavelength = ref.spec.1247$Wavelength
+counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+counts220$Wavelength = NULL
+counts220 = data.frame(datetimeAK = labtest_1247.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+counts220 = dplyr::arrange(counts220, datetimeAK)
+plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+# Plot the average absorbance spectra in counts
+# Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+AvgLightSpectrumCounts = colMeans(labtest_1247.LF[,12:267], na.rm = T)
+plot(AvgLightSpectrumCounts ~ ref.spec.1247$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+abline(v=220, col="black")
+abline(h=10000, col="red")
+abline(h=20000, col="yellow")
+abline(h=30000, col="green")
+
+dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN1247/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_1247.LF)
+dev.off()
+
+######### SN 0629 pre-deployment lab reading in nanopure ####
+### Load + format SUNA data ###
+labtest_0629 = read.table("SUNA_cal/2020/SUNA-0629_2020-06-11_PostRefSpecUpdate.txt", sep=",", header = F)
+
+## add headers
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(labtest_0629)<-SUNAnames
+
+## add time stamps in AK tz
+# create separate year and day columns
+year_day <- t(sapply(labtest_0629$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$day<-as.numeric(levels(year_day$day))[year_day$day]
+year_day$year<-as.numeric(levels(year_day$year))[year_day$year]
+labtest_0629<-cbind(labtest_0629, year_day)
+# combine hours and julian day into fractional days
+labtest_0629$day_timeUTC<-labtest_0629$day+(labtest_0629$time_fhoursUTC/24)
+# assign year to 2020 data
+origin19 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+labtest_0629$date_timeUTC<-origin19 + labtest_0629$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+labtest_0629$datetimeAK<-as.POSIXct(format(labtest_0629$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+tz(labtest_0629$datetimeAK) = "America/Anchorage"
+
+### Check absorbance spectra ###
+
+###+++++ Read in reference spectrums, plot counts at ~220nm, and plot counts across spectra +++++###
+
+## Reference Spectrum Units: ##
+# Wavelength: nm
+# NITRATE:	uM
+# Reference:	count of dark frame counts
+
+# "Counts" are a representation of the spectrometer voltage output that is directly proportional to the amount of light reaching the diodes. Counts can be converted to absorbance values by taking the base 10 log of the ratio of the reference spectrum dark counts for index i and response light frame counts for index i:
+## absorbance = base10log(ref. spec. counts @ wavelength i / SUNA raw counts @ wavelength i )
+
+# Looking at counts at ~220nm is to check lamp levels. It is ideally ~20,000. 
+
+# Counts across spectra represent the absorbance at wavelengths of ~190-395nm.
+
+# count light vs dark frames
+labtest_0629 %>% group_by(ID) %>% tally()
+
+# load appropriate reference spectrum:
+# NOTE: I DO NOT HAVE THIS CAL FILE so can't run diagonistics that use it
+# ref.spec.0629 = read.table("SUNA_cal/2020/", header=T, skip=20, sep=",")
+
+
+# calc mean of light frame counts
+mean(labtest_0629[!grepl("DF", labtest_0629$ID),][["specave"]], na.rm=T)
+# calc mean of dark frame counts
+mean(labtest_0629[!grepl("LF", labtest_0629$ID),][["specave"]], na.rm=T)
+
+### MAKE AND SAVE PLOTS ###
+# pdf("SUNA_diagnostics/predeployment_nanopure/SN0629/spec_counts.pdf", width = 5, height =7)
+# par(mfrow=c(3,1))
+
+# plot dark frame counts over time. Should be between 500-1000
+plot(labtest_0629[!grepl("LF", labtest_0629$ID),][["specave"]] ~ labtest_0629[!grepl("LF", labtest_0629$ID),][["datetimeAK"]], ylab="Counts", xlab = "Date/time", ylim=c(300,1500), main="Darkframe Counts (ideal is 500-1000)")
+abline(h=c(500,1000), col="red")
+
+# create dataframe without dark frames
+labtest_0629.LF <- labtest_0629[!grepl("DF", labtest_0629$ID),]
+
+# # plot counts @ 220 nm over time
+# # Note that ~20,000 @220nm is ideal, but we don't expect it to be this good in our stream water. 
+# counts = as.data.frame(t(labtest_0629.LF[,12:267]))
+# counts$Wavelength = ref.spec.0629$Wavelength
+# counts220 = counts[counts$Wavelength > 219 & counts$Wavelength < 221,]
+# counts220$Wavelength = NULL
+# counts220 = data.frame(datetimeAK = labtest_0629.LF$datetimeAK, counts220 = colMeans(counts220, na.rm=T))
+# counts220 = dplyr::arrange(counts220, datetimeAK)
+# plot(counts220$counts220 ~ counts220$datetimeAK, ylim=c(0, 40000), xlab = "Date/time", ylab="Counts", main = "Lightframe Counts @220nm (must be >10K, 30K is ideal)")
+# abline(h=10000, col="red")
+# abline(h=20000, col="yellow")
+# abline(h=30000, col="green")
+
+# # Plot the average absorbance spectra in counts
+# # Note that we want >10,000 (~30,000 @220nm is ideal), but we don't expect it to be this good in our stream water. 
+# AvgLightSpectrumCounts = colMeans(labtest_0629.LF[,12:267], na.rm = T)
+# plot(AvgLightSpectrumCounts ~ ref.spec.0629$Wavelength, type="l", ylim=c(0, 50000), xlab = "Wavelength (nm)", ylab="Counts", main = "Lightframe Counts (@220nm must be >10K, 30K is ideal)")
+# abline(v=220, col="black")
+# abline(h=10000, col="red")
+# abline(h=20000, col="yellow")
+# abline(h=30000, col="green")
+# 
+# dev.off()
+
+### Check all other diagnostics during test ###
+
+# The root mean square error parameter from the SUNA V2 can be used to make an estimate of how well the nitrate spectral fit is. This should usually be less than 1E-3. If it is higher, there is spectral shape (likely due to CDOM) that adversely impacts the nitrate estimate.
+
+pdf("SUNA_diagnostics/predeployment_nanopure/SN0629/diagnostics.pdf", width = 7, height =7)
+makePlotSUNA(labtest_0629.LF)
+dev.off()

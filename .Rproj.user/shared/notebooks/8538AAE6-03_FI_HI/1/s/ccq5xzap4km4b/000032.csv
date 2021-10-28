@@ -1,6 +1,0 @@
-"0","write.csv(STRT.HI.df, ""/~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.doy.df.csv"")
-"
-"2","cannot open file '/~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.doy.df.csv': No such file or directory"
-"2","Error in file(file, ifelse(append, ""a"", ""w"")) : 
-  cannot open the connection
-"
