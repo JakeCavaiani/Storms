@@ -3,17 +3,8 @@
 "2","Python 3.6.13 (/Users/jakecavaiani/Library/r-miniconda/envs/r-reticulate/bin/python)
 Reticulate 1.20 REPL -- A Python interpreter in R.
 "
-"0","FRCH_storm11a_09_22_Q = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_Q.csv"")"
-"0","FRCH_storm11a_09_22_NO3 = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_NO3.csv"")"
-"0","FRCH_storm11a_09_22_fDOM = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_fDOM.csv"")"
-"0","FRCH_storm11a_09_22_SPC = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_SPC.csv"")"
-"0","FRCH_storm11a_09_22_turb = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_turb.csv"")"
-"0",""
-"0","FRCH_storm11b_09_24_Q = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_Q.csv"")"
-"0","FRCH_storm11b_09_24_NO3 = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FFRCH_storm11b_09_24_NO3.csv"")"
-"2","FileNotFoundError: [Errno 2] No such file or directory: '/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH/FFRCH_storm11b_09_24_NO3.csv'
-"
-"0","FRCH_storm11b_09_24_fDOM = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_fDOM.csv"")"
-"0","FRCH_storm11b_09_24_SPC = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_SPC.csv"")"
-"0","FRCH_storm11b_09_24_turb = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_turb.csv"")"
+"0","FRCH_storm3_07_10_NO3 = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_NO3.csv"")"
+"0","FRCH_storm3_07_10_fDOM = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_fDOM.csv"")"
+"0","FRCH_storm3_07_10_SPC = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_SPC.csv"")"
+"0","FRCH_storm3_07_10_turb = pd.read_csv(""~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_turb.csv"")"
 "0",""
