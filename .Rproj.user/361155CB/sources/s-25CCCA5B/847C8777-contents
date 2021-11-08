@@ -1,0 +1,118 @@
+### The purpose of this script is to regress mean HI at each site per year against burn extent (percentage burned)
+  # and against permafrost extent (% coverage OR soil temperature profile)
+# Input: HI.dat 
+# Step 1) import HI.dat file which is HI for individual storms in 2018-2021 across DoD sites
+# Step 2) Calculate mean HI at each site for each year
+# Step 3) run a linear model of mean HI against burn extent 
+# Step 4) run a linear model of mean HI against permafrost extent
+# Output: linear model plot 
+
+# % of most recent burn # 
+# Poker Creek 33%
+# Vault Creek: NA
+# French Creek: 7.3% 
+# Moose Creek: 65.7%
+# Stuart Creek: 67.4%
+
+library(here)
+library(tidyverse)
+library(boot)
+library(broom)
+library(purrr)
+library(viridis)
+library(readr)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(rio)
+library(ggplot2)
+library(scales)
+library(psych)
+library(here)
+library(googledrive)
+library(readxl)
+library(cowplot)
+library(zoo)
+library(readr)
+library(dplyr)
+library(RColorBrewer)
+library(gridExtra)
+library(ggpmisc)
+
+# Import data #
+HI.dat <- read.csv("Output_from_analysis/HI.dat.csv")
+
+
+HI.mean<- HI.dat %>% group_by(site.ID, response, year) %>%  
+  summarise_at(vars(HI), list(HI = mean)) # take mean by site response and year 
+
+# merged # 
+# By site and response
+FRCH.fDOM <- subset(HI.mean, site.ID == "FRCH" & response == "fDOM")
+POKE.fDOM <- subset(HI.mean, site.ID == "POKE" & response == "fDOM")
+MOOS.fDOM <- subset(HI.mean, site.ID == "MOOS" & response == "fDOM")
+STRT.fDOM <- subset(HI.mean, site.ID == "STRT" & response == "fDOM")
+
+FRCH.NO3 <- subset(HI.mean, site.ID == "FRCH" & response == "NO3")
+POKE.NO3 <- subset(HI.mean, site.ID == "POKE" & response == "NO3")
+MOOS.NO3 <- subset(HI.mean, site.ID == "MOOS" & response == "NO3")
+STRT.NO3 <- subset(HI.mean, site.ID == "STRT" & response == "NO3")
+
+FRCH.fDOM$fire <- "0.073"
+FRCH.fDOM$fire<- as.numeric(FRCH.fDOM$fire)
+
+POKE.fDOM$fire <- "0.33"
+POKE.fDOM$fire<- as.numeric(POKE.fDOM$fire)
+
+MOOS.fDOM$fire <- "0.657"
+MOOS.fDOM$fire<- as.numeric(MOOS.fDOM$fire)
+
+STRT.fDOM$fire <- "0.674"
+STRT.fDOM$fire<- as.numeric(STRT.fDOM$fire)
+
+FRCH.NO3$fire <- "0.073"
+FRCH.NO3$fire<- as.numeric(FRCH.NO3$fire)
+
+POKE.NO3$fire <- "0.33"
+POKE.NO3$fire<- as.numeric(POKE.NO3$fire)
+
+MOOS.NO3$fire <- "0.657"
+MOOS.NO3$fire<- as.numeric(MOOS.NO3$fire)
+
+STRT.NO3$fire <- "0.674"
+STRT.NO3$fire<- as.numeric(STRT.NO3$fire)
+
+fdom.hi <- rbind(FRCH.fDOM, POKE.fDOM, MOOS.fDOM, STRT.fDOM)
+no3.hi <- rbind(FRCH.NO3, POKE.NO3, MOOS.NO3, STRT.NO3)
+no3.hi$year <- as.character(no3.hi$year)
+
+
+fdom.lm <- lm(fdom.hi$HI ~ fdom.hi$fire)
+no3.lm <- lm(no3.hi$HI ~ no3.hi$fire)
+
+fdom.hi %>%
+  ggplot(aes(x=fire, 
+             y=HI, 
+             color=year))+
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  ylim(-1,1) + 
+  ggtitle("DOC") +
+  xlab("Catchment burned (%)") +
+  ylab("HI-Solute Storage")
+
+no3.hi %>%
+  ggplot(aes(x=fire, 
+             y=HI, 
+             color=year))+
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  ylim(-1,1) + 
+  ggtitle("NO3") +
+  xlab("Catchment burned (%)") +
+  ylab("HI-Solute Storage")
+
+
+
+
+
