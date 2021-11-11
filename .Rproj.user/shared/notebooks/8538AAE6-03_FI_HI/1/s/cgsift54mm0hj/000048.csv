@@ -1,7 +1,4 @@
-"0","g2 <- g1 + 
-  stat_summary(fun.data = median_cl_boot, geom = ""errorbar"",
-               colour = ""black"", width = 0.2, size=1) + 
-  stat_summary(fun.y = median, geom = ""point"", 
-               colour = ""black"", size = 3)
+"0","storm.ID
 "
-"2","`fun.y` is deprecated. Use `fun` instead."
+"2","Error: object 'storm.ID' not found
+"
