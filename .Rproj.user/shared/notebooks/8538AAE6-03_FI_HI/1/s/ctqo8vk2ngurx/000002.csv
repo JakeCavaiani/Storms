@@ -1,5 +1,9 @@
 "0","reticulate::repl_python()
 "
+"2","Warning:"
+"2"," Python '/usr/bin/python' was requested but '/Users/jakecavaiani/Library/r-miniconda/envs/r-reticulate/bin/python' was loaded instead (see reticulate::py_config() for more information)
+"
+"2","Python '/usr/bin/python' was requested but '/Users/jakecavaiani/Library/r-miniconda/envs/r-reticulate/bin/python' was loaded instead (see reticulate::py_config() for more information)"
 "2","Python 3.6.13 (/Users/jakecavaiani/Library/r-miniconda/envs/r-reticulate/bin/python)
 Reticulate 1.20 REPL -- A Python interpreter in R.
 "
@@ -10,7 +14,7 @@ Reticulate 1.20 REPL -- A Python interpreter in R.
 "0","pd.set_option('display.max_columns', 500)"
 "0","pd.set_option('display.width', 1000)"
 "0","datetime.date.today()"
-"1","datetime.date(2021, 11, 5)
+"1","datetime.date(2021, 11, 14)
 "
 "0","quit()"
 "2","SystemExit: None

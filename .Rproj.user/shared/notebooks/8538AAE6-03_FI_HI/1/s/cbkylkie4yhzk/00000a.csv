@@ -1,0 +1,5 @@
+"0","MOOS_storm11_09_22_Q <- read.csv(""~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10b_09_22_Q.csv"")
+"
+"2","cannot open file '/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10b_09_22_Q.csv': No such file or directory"
+"2","Error in file(file, ""rt"") : cannot open the connection
+"
