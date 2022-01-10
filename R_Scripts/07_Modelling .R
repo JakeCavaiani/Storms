@@ -1,6 +1,6 @@
 ### The purpose of this script is to model HI/FI against fixed and random effects and perform model selection techniques to see which model is best fit
 
-# Input: HI.MOOS.csv as of 11/29/21 because all i have is moos rn 
+# Input: 2019_2020 HI for each catchment that is will be from Output_from_analysis->07_Models
 # Step 1) import HI.dat file which is HI for individual storms in 2018-2021 across DoD sites
 # Step 2) standardize and center the data
 # Step 3) add fixed (storm total, intensity, week precip, month precip, 3month precip and doy) and random effects (catchments)
@@ -34,51 +34,48 @@ library(datasets)
 library(ggthemes)
 library(sjPlot)
 library(GGally)
-
-
-
+library(car)
+install.packages("AED")
+vif
 
 # read in data #
-HI.MOOS <- read.csv("Output_from_analysis/07_Models/HI.MOOS.csv")
-HI.moos.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2019.csv") # just mean values of HI 
-HI.moos.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2020.csv")# just mean values of HI 
-HI.moos <- rbind(HI.moos.2019, HI.moos.2020)
+HI.2019.2020 <- read.csv("Output_from_analysis/07_Models/HI.2019.2020.csv") # has the 50 values for each storm
+HI.all <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.all.csv") # has the mean for HI for each storm
 
-# clean unnecesary columns 
-HI.MOOS <- HI.MOOS[,-c(2,3,12,17,18,20,21,23,24)]
-HI.moos <- HI.moos[,-c(11)]
-HI.moos$doy[4] <- 213
-HI.moos$doy[5] <- 217
-HI.moos$doy[6] <- 225
-HI.moos$doy[7] <- 226
-HI.moos$doy[8] <- 227
+#scaling # 
+HI.all[c(7:10, 12)] <- lapply(HI.all[c(7:10, 12)], function(x) c(scale(x)))
+pairs(HI.all[c(7:10, 12)])
+f1 <- formula(HI ~ precip + precip.week + precip.month + ThreeMonth + Intensity + doy)
+M0 <- gls(f1, data = HI.all)
+summary(M0)
+plot(M0)
+E <- resid(M0, type = "normalized")
+hist(E)
 
+plot(x=HI.all$HI, y=M0$fitted, 
+     type='p', pch=21, bg=rgb(1,0,0, alpha=0.25),
+     xlab="Observed", ylab="Predicted",
+     main="LM")
+abline(a=0, b=1, col='blue', lwd=2, lty=2)
+AIC(M0) # 551.468
 
-HI.MOOS.2 <- left_join(HI.moos, HI.MOOS, by = "storm.num")
-# scaling storm total, intensity, week precip, month precip and 3 month precip #
-HI.MOOS[c(6:10)] <- lapply(HI.MOOS[c(6:10)], function(x) c(scale(x)))
-HI.moos[c(7:11)] <- lapply(HI.moos[c(7:11)], function(x) c(scale(x)))
+mod.1 <- lm(HI ~ precip + precip.week + precip.month + ThreeMonth + Intensity + doy, data = HI.all)
+step(mod.1)
 
-pairs(HI.MOOS[c(6:10)])
-pairs(HI.moos[c(7:11)])
-
-mod.1 <- gls(HI ~ precip, HI.moos)
-mod.2 <- gls(HI ~ precip + precip.week, HI.moos)
-mod.3 <- gls(HI ~ precip + precip.week + precip.month, HI.moos)
-mod.4 <- gls(HI ~ precip + precip.week + precip.month + ThreeMonth, HI.moos)
-mod.5 <- gls(HI ~ precip + precip.week + precip.month + ThreeMonth + Intensity, HI.moos)
-mod.6 <- gls(HI ~ precip + precip.week + precip.month + ThreeMonth + Intensity + doy, HI.moos)
-
-summary(mod.1)
+mod.2 <- lme(HI ~ precip + precip.week + precip.month + ThreeMonth + Intensity + doy, data = HI.all, random=~1|site.ID)
 summary(mod.2)
-summary(mod.3)
-summary(mod.4)
-summary(mod.5)
-summary(mod.6)
+AIC(mod.2)# 552.0757
+plot(mod.2)
+plot(ACF(mod.2))
 
-
-
-
+mod.3 <- update(mod.2, correlation = corAR1())
+anova(mod.2, mod.3)
+mod.4 <- update(mod.2, correlation = corARMA(q = 2))
+mod.4
+anova(mod.3, mod.4)
+mod.5 <- update(mod.2, corr = corARMA(p = 1, q = 1))
+anova(mod.3,  mod.5)
+plot(ACF(mod.5))
 
 
 

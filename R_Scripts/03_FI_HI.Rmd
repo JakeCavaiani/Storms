@@ -2004,6 +2004,12 @@ FRCH_storm12d_08_21_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRC
 FRCH_storm12d_08_21_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12d_08_21_SPC.csv")
 FRCH_storm12d_08_21_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12d_08_21_Turb.csv")
 
+FRCH_storm12e_08_23_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_Q.csv")
+FRCH_storm12e_08_23_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_NO3.csv")
+FRCH_storm12e_08_23_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_fDOM.csv")
+FRCH_storm12e_08_23_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_SPC.csv")
+FRCH_storm12e_08_23_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_Turb.csv")
+
 FRCH_storm13_09_20_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm13_09_20_Q.csv")
 FRCH_storm13_09_20_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm13_09_20_NO3.csv")
 FRCH_storm13_09_20_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm13_09_20_fDOM.csv")

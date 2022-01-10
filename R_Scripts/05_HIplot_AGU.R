@@ -43,15 +43,13 @@ FRCH_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plot
 STRT_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/STRT/STRT.HI.doy.df.csv")
 VAUL_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/VAUL/VAUL.HI.doy.df.csv")
 MOOS_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/MOOS/MOOS.HI.doy.df.csv")
-POKE_HI_doy_df_2020 <- read_csv("~/Downloads/comb.all.HI.df.csv")
-POKE_HI_doy_df_2020 <- subset(POKE_HI_doy_df_2020, site.ID == "POKE" & year == "2020")
-POKE_HI_doy_df_2020 <- POKE_HI_doy_df_2020[,-1]
-names(POKE_HI_doy_df_2020) <- c("X1", "column_label",  "HI","Q_interval", "storm.ID","site.ID","storm.num",    
-                                "month","day","response","date","doy","year")
+POKE_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/POKE/POKE.HI.doy.df.csv")
+
 FRCH_HI_doy_df_2020$year <- "2020"
 STRT_HI_doy_df_2020$year <- "2020"
 VAUL_HI_doy_df_2020$year <- "2020"
 MOOS_HI_doy_df_2020$year <- "2020"
+POKE_HI_doy_df_2020$year <- "2020"
 
 comb.hi.2020 <- rbind(FRCH_HI_doy_df_2020, STRT_HI_doy_df_2020, VAUL_HI_doy_df_2020, MOOS_HI_doy_df_2020, POKE_HI_doy_df_2020)
 
@@ -65,6 +63,7 @@ MOOS_HI_doy_df_2021$year <- "2021"
 comb.hi.2021 <- rbind(MOOS_HI_doy_df_2021, FRCH_HI_doy_df_2021)
 
 # Combine all years #
+HI.dat.2019.2020 <- rbind(comb.hi.2019, comb.hi.2020)
 HI.dat <- rbind(comb.hi.2018, comb.hi.2019, comb.hi.2020, comb.hi.2021)
 write.csv(HI.dat, "~/Documents/Storms/Output_from_analysis/HI.dat.csv")
 
@@ -356,9 +355,239 @@ ggsave(HI.SPC.pl, path = here("Output_from_analysis"), file = "HI_SPC_box.pdf", 
 ggsave(HI.turb.pl, path = here("Output_from_analysis"), file = "HI_turb_box.pdf", width = 5.5, height = 5.5, units = "in")
 
 
+########################### 2019 2020 AGU Poster ###################################
+HI.med <- HI.dat.2019.2020 %>% 
+  group_by(response, doy, site.ID, year, storm.num) %>%
+  nest() %>%
+  mutate(medHI.boot = map(data,
+                          ~boot(data = .$HI,
+                                statistic = function(x,i) median(x[i]),
+                                R = 1000)),
+         boot_tidy = map(medHI.boot, tidy, conf.int = TRUE, con.method = "perc"),
+         n = map(data, nrow)) %>%
+  select(-data, -medHI.boot) %>%
+  unnest(cols = -c(response, doy, site.ID, year, storm.num)) %>% 
+  ungroup()
+
+HI.fDOM.doy.pl <-HI.med %>% filter(response == "fDOM") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab("fDOM\nHysteresis Index") +
+  xlab("day of year") +
+  facet_grid(rows=vars(year)) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size=20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
+
+HI.NO3.doy.pl <-HI.med %>% filter(response == "NO3") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab(expression(atop(N*O[3]^"-", "Hysteresis Index"))) +
+  xlab("day of year") +
+  facet_grid(rows=vars(year)) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size=20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
+
+HI.SPC.doy.pl <-HI.med %>% filter(response == "SPC") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab(expression(atop(N*O[3]^"-", "Hysteresis Index"))) +
+  xlab("day of year") +
+  facet_grid(rows=vars(year)) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size=20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
+
+HI.turb.doy.pl <-HI.med %>% filter(response == "turb") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab(expression(atop(N*O[3]^"-", "Hysteresis Index"))) +
+  xlab("day of year") +
+  facet_grid(rows=vars(year)) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size=20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
+
+HI.med$responselabs <- factor(HI.med$response, labels = c("fDOM" = "fDOM", "NO3" = expression(N*O[3]^"-", "SPC" = "SPC", "turb" = "turb")))
+
+HI.med$yearlabs <- factor(HI.med$year, labels = c('2019' = expression(atop("2019", "ppt = X mm")), '2020' = expression(atop("2020", "ppt = Y mm"))))
+
+HI.NO3.fDOM.doy.pl <-HI.med %>% filter(year == "2019") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab("Hysteresis Index") +
+  xlab("day of year") +
+  facet_grid(rows=vars(responselabs), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
+
+HI.NO3.fDOM.doy.pl <-HI.med %>% filter(year == "2020") %>%
+  ggplot(aes(x = doy, y = statistic)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = site.ID), size=.5, width = 0.1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)),
+                     labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  ylab("Hysteresis Index") +
+  xlab("day of year") +
+  facet_grid(rows = vars(responselabs), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank()
+  )
 
 
+HI.yrs.pl <- HI.med %>%
+  ggplot(aes(x = site.ID, y = statistic, fill = as.factor(year))) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_boxplot() +
+  ylab("Hysteresis Index") +
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  scale_x_discrete(labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  facet_grid(cols = vars(responselabs), labeller = label_parsed) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.425,0.95),
+        legend.background = element_blank()
+  )
 
+HI.fDOM.pl <- HI.med %>% filter(response == "fDOM") %>%
+  ggplot(aes(x = site.ID, y = statistic, fill = as.factor(year))) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_boxplot() +
+  ylab("fDOM\nHysteresis Index") +
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  scale_x_discrete(labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.875,0.95),
+        legend.background = element_blank()
+  )
+
+HI.NO3.pl <- HI.med %>% filter(response == "NO3") %>%
+  ggplot(aes(x = site.ID, y = statistic, fill = as.factor(year))) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_boxplot() +
+  ylab("NO3\nHysteresis Index") +
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  scale_x_discrete(labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.875,0.95),
+        legend.background = element_blank()
+  )
+
+HI.SPC.pl <- HI.med %>% filter(response == "SPC") %>%
+  ggplot(aes(x = site.ID, y = statistic, fill = as.factor(year))) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_boxplot() +
+  ylab("SPC\nHysteresis Index") +
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  scale_x_discrete(labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.875,0.95),
+        legend.background = element_blank()
+  )
+
+HI.turb.pl <- HI.med %>% filter(response == "turb") %>%
+  ggplot(aes(x = site.ID, y = statistic, fill = as.factor(year))) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_boxplot() +
+  ylab("Turb\nHysteresis Index") +
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  scale_x_discrete(labels = c("French", "Moose", "Poker", "Stuart", "Vault")) +
+  theme_bw() +
+  theme(panel.border = element_rect(fill=NA, size=1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.x = element_blank(),
+        text = element_text(size = 20),
+        strip.background = element_blank(),
+        legend.title = element_blank(),
+        legend.position = c(0.875,0.95),
+        legend.background = element_blank()
+  )
+HI.NO3.pl
+library(cowplot)
+plot_grid(HI.NO3.pl, HI.fDOM.pl,
+          HI.SPC.pl, HI.turb.pl,
+          ncol = 2)
 
 
 

@@ -46,15 +46,38 @@ library(RColorBrewer)
 library(gridExtra)
 library(ggpmisc)
 library(SLOPE)
-
+library(wesanderson)
 library(ggpubr)
 
 # Import data #
+FRCH_HI_doy_df <- read_csv("Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.doy.df.csv")
+MOOS_HI_doy_df <- read_csv("Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.doy.df.csv")
+POKE_HI_doy_df <- read_csv("Output_from_analysis/HI_plots/2019/POKE/POKE.HI.doy.df.csv")
+STRT_HI_doy_df <- read_csv("Output_from_analysis/HI_plots/2019/STRT/STRT.HI.doy.df.csv")
+VAUL_HI_doy_df <- read_csv("Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.doy.df.csv")
+
+FRCH_HI_doy_df.2020 <- read_csv("Output_from_analysis/HI_plots/2020/FRCH/FRCH.HI.doy.df.csv")
+MOOS_HI_doy_df.2020 <- read_csv("Output_from_analysis/HI_plots/2020/MOOS/MOOS.HI.doy.df.csv")
+POKE_HI_df <- read_csv("Output_from_analysis/HI_plots/2020/POKE/POKE.HI.df.csv")
+POKE_HI_df$date <- as.Date(with(POKE_HI_df, paste(month, day, sep = "-")), "%m-%d")
+POKE_HI_df$doy <- yday(POKE_HI_df$date) 
+POKE_HI_doy_df.2020 <- POKE_HI_df
+STRT_HI_doy_df.2020 <- read_csv("Output_from_analysis/HI_plots/2020/STRT/STRT.HI.doy.df.csv")
+VAUL_HI_doy_df.2020 <- read_csv("Output_from_analysis/HI_plots/2020/VAUL/VAUL.HI.doy.df.csv")
+
+HI.dat_2019 <- rbind(FRCH_HI_doy_df, MOOS_HI_doy_df, POKE_HI_doy_df, STRT_HI_doy_df, VAUL_HI_doy_df)
+HI.dat_2019$year <- "2019"
+HI.dat_2020 <- rbind(FRCH_HI_doy_df.2020, MOOS_HI_doy_df.2020, POKE_HI_doy_df.2020, STRT_HI_doy_df.2020, VAUL_HI_doy_df.2020)
+HI.dat_2020$year <- "2020"
+
+HI.dat <- rbind(HI.dat_2019, HI.dat_2020)
+write.csv(HI.dat, "~/Documents/Storms/Output_from_analysis/HI.dat.csv")
+
 HI.dat <- read.csv("~/Documents/Storms/Output_from_analysis/HI.dat.csv")
 
 
 HI.mean<- HI.dat %>% group_by(site.ID, response, year) %>%  
-  summarise_at(vars(HI), list(HI = mean)) # take mean by site response and year 
+  summarise_at(vars(HI), list(HI = median)) # take mean by site response and year 
 
 # merged # 
 # By site and response
@@ -131,7 +154,7 @@ MOOS.fDOM$pf <- "medium"
 
 STRT.fDOM$pf <- "high"
 
-VAUL.fDOM$pf <- "continuous"
+VAUL.fDOM$pf <- "high"
 
 FRCH.NO3$pf <- "medium"
 
@@ -141,7 +164,7 @@ MOOS.NO3$pf <- "medium"
 
 STRT.NO3$pf <- "high"
 
-VAUL.NO3$pf <- "continuous"
+VAUL.NO3$pf <- "high"
 
 
 pf.fdom.hi <- rbind(FRCH.fDOM, POKE.fDOM, MOOS.fDOM, STRT.fDOM, VAUL.fDOM)
@@ -179,10 +202,10 @@ pf.no3.hi %>%
 
 ### H 1.1: HI against precip ###
 HI.mean.precip <- HI.dat %>% group_by(site.ID, year, storm.num) %>%  
-  summarise_at(vars(HI), list(HI = mean)) # take mean by site response and year 
+  summarise_at(vars(HI), list(HI = median)) # take mean by site response and year 
 
 HI.mean.precip.response <- HI.dat %>% group_by(site.ID, year, storm.num, response) %>%  
-  summarise_at(vars(HI), list(HI = mean)) # take mean by site response and year 
+  summarise_at(vars(HI), list(HI = median)) # take mean by site response and year 
 
 ######################################## 2018 #####################################################################
 FRCHstorm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2018/All_final/", 
@@ -1352,9 +1375,6 @@ at <- HI.moos.turb.2.2019 %>%
   xlab("Intensity (mm/hr)") +
   ylab("HI-Solute Storage") +
   theme_classic() # plot model 
-
-plot_grid(aa,ab,ac,ad,ae,af,ag,ah,ai,aj,ak,al,am,an,ao,ap,aq,ar,as,at, 
-          ncol = 4)
 
 # day of year #
 MOOS.2019.1$day <- julian(MOOS.2019.1$DateTime, origin = as.POSIXct('2019-01-01', tz = 'America/Anchorage')) # making a fractional day column 
@@ -2803,7 +2823,7 @@ plot_grid(va,vb,vc,vd,ve,vf,vg,vh,vi,vj,vk,vl,vm,vn,vo,vp,vq,vr,vs,vt,vu,vv,vw,v
 
 HI.vaul.2019 <- rbind(HI.vaul.no3.2.2019, HI.vaul.fDOM.2.2019, HI.vaul.SPC.2.2019, HI.vaul.turb.2.2019) # merging all responses together 
 HI.vaul.2019$burn <- "unburned" # adding a burn column
-HI.vaul.2019$pf <- "continuous" # adding a pf column
+HI.vaul.2019$pf <- "high" # adding a pf column
 
 write.csv(HI.vaul.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.vaul.2019.csv")
 
@@ -3264,10 +3284,17 @@ HI.strt.2019$pf <- "high" # adding a pf column
 write.csv(HI.strt.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.strt.2019.csv")
 
 HI.2019 <- rbind(HI.moos.2019, HI.frch.2019, HI.poke.2019, HI.vaul.2019, HI.strt.2019) # bind all 2019 together
-write.csv(HI.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.csv")
+
+# add time since peak  Q in chena #
+HI.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.csv")
+HI.2019$date <- as.Date(HI.2019$doy, origin = "2019-01-01")
+origin_date <- as.Date("2019-05-18")
+HI.2019$TimeSinceChena <- julian(HI.2019$date, origin_date)
+#write.csv(HI.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.csv")
+
 
 storms.2019 <- rbind(FRCH_storms, MOOS_storms, VAUL_storms, POKE_storms, STRT_storms)
-write.csv(storms.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/storms.2019.csv")
+#write.csv(storms.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/storms.2019.csv")
 ############################################# 2020 ################################################################
 # import rain gauge data #
 FRCH_RainGauge_2020 <- read.csv("~/Documents/DoD_2020/RainGauge/FRCH.RainGauge.2020.csv")
@@ -4388,9 +4415,9 @@ pph <- HI.poke.fDOM.2020 %>%
   ylab("HI-Solute Storage") # plot model 
 
 HI.poke.SPC.2020 <- left_join(HI.mean.precip.poke.SPC, POKE.2020.per.storm.1, by = "storm.num")
-HI.poke.SPC.2020 <- left_join(HI.mean.precip.poke.SPC, POKE.2020.per.storm.2, by = "storm.num")
-HI.poke.SPC.2020 <- left_join(HI.mean.precip.poke.SPC, POKE.2020.per.storm.3, by = "storm.num")
-HI.poke.SPC.2020 <- left_join(HI.mean.precip.poke.SPC, POKE.2020.per.storm.4, by = "storm.num")
+HI.poke.SPC.2020 <- left_join(HI.poke.SPC.2020, POKE.2020.per.storm.2, by = "storm.num")
+HI.poke.SPC.2020 <- left_join(HI.poke.SPC.2020, POKE.2020.per.storm.3, by = "storm.num")
+HI.poke.SPC.2020 <- left_join(HI.poke.SPC.2020, POKE.2020.per.storm.4, by = "storm.num")
 
 poke.lm.SPC <- lm(HI.poke.SPC.2020$HI ~ HI.poke.SPC.2020$precip) # model one with just total precip
 poke.lm.SPC.2 <- lm(HI.poke.SPC.2020$HI ~ HI.poke.SPC.2020$precip.week) # model one with just total precip
@@ -4446,9 +4473,9 @@ ppl <- HI.poke.SPC.2020 %>%
   ylab("HI-Solute Storage") # plot model 
 
 HI.poke.turb.2020 <- left_join(HI.mean.precip.poke.turb, POKE.2020.per.storm.1, by = "storm.num")
-HI.poke.turb.2020 <- left_join(HI.mean.precip.poke.turb, POKE.2020.per.storm.2, by = "storm.num")
-HI.poke.turb.2020 <- left_join(HI.mean.precip.poke.turb, POKE.2020.per.storm.3, by = "storm.num")
-HI.poke.turb.2020 <- left_join(HI.mean.precip.poke.turb, POKE.2020.per.storm.4, by = "storm.num")
+HI.poke.turb.2020 <- left_join(HI.poke.turb.2020, POKE.2020.per.storm.2, by = "storm.num")
+HI.poke.turb.2020 <- left_join(HI.poke.turb.2020, POKE.2020.per.storm.3, by = "storm.num")
+HI.poke.turb.2020 <- left_join(HI.poke.turb.2020, POKE.2020.per.storm.4, by = "storm.num")
 
 poke.lm.turb <- lm(HI.poke.turb.2020$HI ~ HI.poke.turb.2020$precip) # model one with just total precip
 poke.lm.turb.2 <- lm(HI.poke.turb.2020$HI ~ HI.poke.turb.2020$precip.week) # model one with just total precip
@@ -4661,7 +4688,7 @@ ppx <- HI.poke.turb.2.2020 %>%
 plot_grid(ppa,ppb,ppc,ppd,ppe,ppf,ppg,pph,ppq,ppr,ppu,ppv,
           ncol = 4)
 
-HI.poke.2020 <- rbind(HI.poke.no3.2.2020, HI.poke.fDOM.2.2020) # merging all responses together 
+HI.poke.2020 <- rbind(HI.poke.no3.2.2020, HI.poke.fDOM.2.2020, HI.poke.SPC.2.2020, HI.poke.turb.2.2020) # merging all responses together 
 HI.poke.2020$burn <- "burned" # adding a burn column
 HI.poke.2020$pf <- "medium" # adding a pf column
 
@@ -5121,7 +5148,7 @@ plot_grid(daa,dbb,dcc,dcd,dee,dff,dgg,dhh,dii,djj,dkk,dll,dmm,dnn,doo,dpp,dqq,dr
 
 HI.vaul.2020 <- rbind(HI.vaul.no3.2.2020, HI.vaul.fDOM.2.2020, HI.vaul.SPC.2.2020, HI.vaul.turb.2.2020) # merging all responses together 
 HI.vaul.2020$burn <- "unburned" # adding a burn column
-HI.vaul.2020$pf <- "continuous" # adding a pf column
+HI.vaul.2020$pf <- "high" # adding a pf column
 
 write.csv(HI.vaul.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.vaul.2020.csv")
 
@@ -5576,24 +5603,158 @@ eww <- HI.strt.turb.2.2020 %>%
 plot_grid(eaa,ebb,ecc,edd,ede,eff,egg,ehh,eii,ejj,ekk,ell,emm,enn,eoo,epp,eqq,err,ess,ett,euu,etb,evv,eww,
           ncol = 4)
 
-# HI.strt.2020 <- rbind(HI.strt.no3.2.2020, HI.strt.fDOM.2.2020, HI.strt.SPC.2.2020, HI.strt.turb.2.2020) # merging all responses together 
-# HI.strt.2020$burn <- "burned" # adding a burn column
-# HI.strt.2020$pf <- "high" # adding a pf column
+HI.strt.2020 <- rbind(HI.strt.no3.2.2020, HI.strt.fDOM.2.2020, HI.strt.SPC.2.2020, HI.strt.turb.2.2020) # merging all responses together 
+HI.strt.2020$burn <- "burned" # adding a burn column
+HI.strt.2020$pf <- "high" # adding a pf column
 
 write.csv(HI.strt.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.strt.2020.csv")
 
 HI.2020 <- rbind(HI.moos.2020, HI.frch.2020, HI.vaul.2020, HI.strt.2020, HI.poke.2020)
+write.csv(HI.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.2020.csv")
+
+# time since peak chena flow (snow melt)  
+  # May 13th 2020 was peak Q for the chena 
+HI.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2020.csv")
+HI.2020$date <- as.Date(HI.2020$doy, origin = "2020-01-01")
+origin_date <- as.Date("2020-05-13")
+HI.2020$TimeSinceChena <- julian(HI.2020$date, origin_date)
+
+write.csv(HI.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.2020.csv")
+
+HI.2020 %>% filter(response == "NO3") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI)) +
+  geom_point(aes(color = site.ID)) +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT no3") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "NO3") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI,
+             color = site.ID)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT no3") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "fDOM") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI)) +
+  geom_point(aes(color = site.ID)) +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT fDOM") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "fDOM") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI,
+             color = site.ID)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT fDOM") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model
+
+HI.2020 %>% filter(response == "SPC") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI)) +
+  geom_point(aes(color = site.ID)) +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT SPC") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "SPC") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI,
+             color = site.ID)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT SPC") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "turb") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI)) +
+  geom_point(aes(color = site.ID)) +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT turb") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
+HI.2020 %>% filter(response == "turb") %>% 
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI,
+             color = site.ID)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  stat_poly_eq(formula = y~x, 
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT turb") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
+
 
 ################# combining data sets #######################
 # combining years
 HI.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.csv")
-HI.2019 <- HI.2019[,-1]
+HI.2019 <- HI.2019[,-c(1:2)]
 HI.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2020.csv")
 HI.2020 <- HI.2020[,-1]
 
-HI.all <- rbind(HI.2019, HI.2020)
-
-
+HI.2019.2020 <- rbind(HI.2019, HI.2020)
+write.csv(HI.2019.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.2020.csv")
+HI.2019.2020$year <- as.character(HI.2019.2020$year)
+HI.2019.2020 %>%
+  ggplot(aes(x=TimeSinceChena, 
+             y=HI,
+             shape = site.ID)) +
+  geom_point(aes(color = as.factor(year))) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE) +
+  facet_wrap(~response) +
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  ggtitle("STRT turb") +
+  xlab("Time since snowmelt") +
+  ylab("HI-Solute Storage") +
+  theme_classic() # plot model 
 # plot HI against antecedent conditions (week, intensity, month etc with burn and unburned catchments
 HI.2019.1 <- HI.2019
 HI.2019.1$burn <- as.factor(HI.2019.1$burn)
@@ -6100,14 +6261,16 @@ plot_grid(pfa,pfb,pfc,pfd,pfe,pff,pfg,pfh,pfi,pfj,pfk,pfl,pfm,pfn,pfo,pfp,
 
 ########################### MOOS ###########################
 HI.moos.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2019.csv") # just mean values of HI 
+names(HI.moos.2019)[names(HI.moos.2019) == 'HI'] <- 'HI.median'
 HI.moos.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2020.csv")# just mean values of HI 
+names(HI.moos.2020)[names(HI.moos.2020) == 'HI'] <- 'HI.median'
 
 MOOS.HI.df.2019 <- read.csv("Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.df.csv") # has 2% intervals to generate error bars
 MOOS.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/MOOS/MOOS.HI.df.csv") # has 2% intervals to generate error bars
 
-moos.2019 <- left_join(HI.moos.2019, MOOS.HI.df.2019, by = "storm.num") # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+moos.2019 <- left_join(HI.moos.2019, MOOS.HI.df.2019, by = c("storm.num", "response", "site.ID")) # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
-moos.2020 <- left_join(HI.moos.2020, MOOS.HI.df.2020, by = "storm.num")# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+moos.2020 <- left_join(HI.moos.2020, MOOS.HI.df.2020, by = c("storm.num", "response", "site.ID"))# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
 HI.moos.2019.2020 <- rbind(moos.2019, moos.2020) # joining 2019 and 2020 data 
 HI.moos.2019.2020$year <- as.character(HI.moos.2019.2020$year) # making year a character so it wont recognize it as a continuous variable
@@ -6129,8 +6292,7 @@ moos.formula <- y ~ x
 
 a <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = precip,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = y~x,
@@ -6143,21 +6305,17 @@ a <- HI.moos.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = a + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
-moos.storm.precip <- g1 + 
+moos.storm.precip <- a + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=1) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 
 b <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = precip.week,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6165,26 +6323,22 @@ b <- HI.moos.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("MOOS One-Week Precip") +
+  ggtitle("Medium PF") +
   xlab("One-Week Precip") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = b + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-moos.week.precip <- g1 + 
+moos.week.precip <- b + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=1) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 
 c <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = precip.month,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6192,26 +6346,22 @@ c <- HI.moos.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("MOOS One-Month Precip") +
+  ggtitle("") +
   xlab("One-Month Precip") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = c + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-moos.month.precip <- g1 + 
+moos.month.precip <- c + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=1) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 
 d <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = ThreeMonth,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6224,21 +6374,17 @@ d <- HI.moos.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = d + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-moos.3month.precip <- g1 + 
+moos.3month.precip <- d + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=1) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 
 e <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = Intensity,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6251,21 +6397,17 @@ e <- HI.moos.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = e + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-moos.intensity.precip <- g1 + 
+moos.intensity.precip <- e + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=.2) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 
 f <- HI.moos.2019.2020 %>% 
   ggplot(aes(x = doy,
-             y = HI.y,
-             shape = year)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6273,21 +6415,18 @@ f <- HI.moos.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("MOOS Day of Year") +
+  ggtitle("") +
   xlab("doy") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = f + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-moos.doy.precip <- g1 + 
+moos.doy.precip <- f + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
-               colour = "black", width = 0.2, size=1) + 
+               aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               colour = "black", size = 3)
+               aes(color = year), size = 2)
 plot_grid(moos.storm.precip, moos.week.precip, moos.month.precip,
           moos.3month.precip, moos.intensity.precip, moos.doy.precip,
           ncol = 3)
@@ -6295,14 +6434,16 @@ plot_grid(moos.storm.precip, moos.week.precip, moos.month.precip,
 
 ####################### FRCH #################################
 HI.frch.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.frch.2019.csv") # just mean values of HI 
+names(HI.frch.2019)[names(HI.frch.2019) == 'HI'] <- 'HI.median'
 HI.frch.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.frch.2020.csv")# just mean values of HI 
+names(HI.frch.2020)[names(HI.frch.2020) == 'HI'] <- 'HI.median'
 
 FRCH.HI.df.2019 <- read.csv("Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.doy.df.csv") # has 2% intervals to generate error bars
 FRCH.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/FRCH/FRCH.HI.doy.df.csv") # has 2% intervals to generate error bars
 
-frch.2019 <- left_join(HI.frch.2019, FRCH.HI.df.2019, by = "storm.num") # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+frch.2019 <- left_join(HI.frch.2019, FRCH.HI.df.2019, by = c("storm.num", "response", "site.ID")) # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
-frch.2020 <- left_join(HI.frch.2020, FRCH.HI.df.2020, by = "storm.num")# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+frch.2020 <- left_join(HI.frch.2020, FRCH.HI.df.2020, by = c("storm.num", "response", "site.ID"))# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
 HI.frch.2019.2020 <- rbind(frch.2019, frch.2020) # joining 2019 and 2020 data 
 HI.frch.2019.2020$year <- as.character(HI.frch.2019.2020$year) # making year a character so it wont recognize it as a continuous variable
@@ -6324,7 +6465,7 @@ frch.formula <- y ~ x
 
 a <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = precip,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = y~x,
@@ -6337,12 +6478,9 @@ a <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = a + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
-frch.storm.precip <- g1 + 
+frch.storm.precip <- a + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6350,7 +6488,7 @@ frch.storm.precip <- g1 +
 
 b <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = precip.week,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = frch.formula,
@@ -6363,12 +6501,9 @@ b <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = b + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-frch.week.precip <- g1 + 
+frch.week.precip <- b + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6376,7 +6511,7 @@ frch.week.precip <- g1 +
 
 c <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = precip.month,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = frch.formula,
@@ -6389,12 +6524,9 @@ c <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = c + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-frch.month.precip <- g1 + 
+frch.month.precip <- c + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6402,7 +6534,7 @@ frch.month.precip <- g1 +
 
 d <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = ThreeMonth,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = frch.formula,
@@ -6415,13 +6547,9 @@ d <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = d + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-frch.3month.precip <- g1 + 
+frch.3month.precip <- d + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6429,7 +6557,7 @@ frch.3month.precip <- g1 +
 
 e <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = Intensity,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = moos.formula,
@@ -6442,13 +6570,9 @@ e <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = e + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-frch.intensity.precip <- g1 + 
+frch.intensity.precip <- e + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6456,7 +6580,7 @@ frch.intensity.precip <- g1 +
 
 f <- HI.frch.2019.2020 %>% 
   ggplot(aes(x = doy.x,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = frch.formula,
@@ -6469,12 +6593,9 @@ f <- HI.frch.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = f + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-frch.doy.precip <- g1 + 
+frch.doy.precip <- f + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6485,14 +6606,16 @@ plot_grid(frch.storm.precip, frch.week.precip, frch.month.precip,
 
 ####################### VAUL #################################
 HI.vaul.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.vaul.2019.csv") # just mean values of HI 
+names(HI.vaul.2019)[names(HI.vaul.2019) == 'HI'] <- 'HI.median'
 HI.vaul.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.vaul.2020.csv")# just mean values of HI 
+names(HI.vaul.2020)[names(HI.vaul.2020) == 'HI'] <- 'HI.median'
 
 VAUL.HI.df.2019 <- read.csv("Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.doy.df.csv") # has 2% intervals to generate error bars
 VAUL.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/VAUL/VAUL.HI.doy.df.csv") # has 2% intervals to generate error bars
 
-vaul.2019 <- left_join(HI.vaul.2019, VAUL.HI.df.2019, by = "storm.num") # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+vaul.2019 <- left_join(HI.vaul.2019, VAUL.HI.df.2019, by = c("storm.num", "response", "site.ID")) # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
-vaul.2020 <- left_join(HI.vaul.2020, VAUL.HI.df.2020, by = "storm.num")# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+vaul.2020 <- left_join(HI.vaul.2020, VAUL.HI.df.2020, by = c("storm.num", "response", "site.ID"))# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
 HI.vaul.2019.2020 <- rbind(vaul.2019, vaul.2020) # joining 2019 and 2020 data 
 HI.vaul.2019.2020$year <- as.character(HI.vaul.2019.2020$year) # making year a character so it wont recognize it as a continuous variable
@@ -6514,7 +6637,7 @@ vaul.formula <- y ~ x
 
 a <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = precip,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = y~x,
@@ -6527,12 +6650,9 @@ a <- HI.vaul.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = a + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
-vaul.storm.precip <- g1 + 
+vaul.storm.precip <- a + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6540,7 +6660,7 @@ vaul.storm.precip <- g1 +
 
 b <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = precip.week,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = vaul.formula,
@@ -6548,17 +6668,14 @@ b <- HI.vaul.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("VAUL One-Week Precip") +
+  ggtitle("High PF") +
   xlab("One-Week Precip") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = b + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-vaul.week.precip <- g1 + 
+vaul.week.precip <- b + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6566,7 +6683,7 @@ vaul.week.precip <- g1 +
 
 c <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = precip.month,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = vaul.formula,
@@ -6574,17 +6691,14 @@ c <- HI.vaul.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("VAUL One-Month Precip") +
+  ggtitle("") +
   xlab("One-Month Precip") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = c + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-vaul.month.precip <- g1 + 
+vaul.month.precip <- c + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6592,7 +6706,7 @@ vaul.month.precip <- g1 +
 
 d <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = ThreeMonth,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = vaul.formula,
@@ -6605,13 +6719,9 @@ d <- HI.vaul.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = d + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-vaul.3month.precip <- g1 + 
+vaul.3month.precip <- d + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6619,7 +6729,7 @@ vaul.3month.precip <- g1 +
 
 e <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = Intensity,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = vaul.formula,
@@ -6632,13 +6742,9 @@ e <- HI.vaul.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = e + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-vaul.intensity.precip <- g1 + 
+vaul.intensity.precip <- e + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6646,7 +6752,7 @@ vaul.intensity.precip <- g1 +
 
 f <- HI.vaul.2019.2020 %>% 
   ggplot(aes(x = doy.x,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = vaul.formula,
@@ -6654,17 +6760,14 @@ f <- HI.vaul.2019.2020 %>%
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("VAUL Day of Year") +
+  ggtitle("") +
   xlab("doy") +
-  ylab("HI-Solute Storage") + 
+  ylab("") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = f + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-vaul.doy.precip <- g1 + 
+vaul.doy.precip <- f + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6675,14 +6778,16 @@ plot_grid(vaul.storm.precip, vaul.week.precip, vaul.month.precip,
 
 ####################### STRT #################################
 HI.strt.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.strt.2019.csv") # just mean values of HI 
+names(HI.strt.2019)[names(HI.strt.2019) == 'HI'] <- 'HI.median'
 HI.strt.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.strt.2020.csv")# just mean values of HI 
+names(HI.strt.2020)[names(HI.strt.2020) == 'HI'] <- 'HI.median'
 
 STRT.HI.df.2019 <- read.csv("Output_from_analysis/HI_plots/2019/STRT/STRT.HI.df.csv") # has 2% intervals to generate error bars
-STRT.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/STRT/STRT.HI..df.csv") # has 2% intervals to generate error bars
+STRT.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/STRT/STRT.HI.df.csv") # has 2% intervals to generate error bars
 
-strt.2019 <- left_join(HI.strt.2019, STRT.HI.df.2019, by = "storm.num") # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+strt.2019 <- left_join(HI.strt.2019, STRT.HI.df.2019, by = c("storm.num", "response", "site.ID")) # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
-strt.2020 <- left_join(HI.strt.2020, STRT.HI.df.2020, by = "storm.num")# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+strt.2020 <- left_join(HI.strt.2020, STRT.HI.df.2020, by = c("storm.num", "response", "site.ID"))# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
 
 HI.strt.2019.2020 <- rbind(strt.2019, strt.2020) # joining 2019 and 2020 data 
 HI.strt.2019.2020$year <- as.character(HI.strt.2019.2020$year) # making year a character so it wont recognize it as a continuous variable
@@ -6704,7 +6809,7 @@ strt.formula <- y ~ x
 
 a <- HI.strt.2019.2020 %>% 
   ggplot(aes(x = precip,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = y~x,
@@ -6717,12 +6822,9 @@ a <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = a + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
-vaul.storm.precip <- g1 + 
+strt.storm.precip <- a + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6730,7 +6832,7 @@ vaul.storm.precip <- g1 +
 
 b <- HI.strt.2019.2020 %>% 
   ggplot(aes(x = precip.week,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = strt.formula,
@@ -6743,12 +6845,9 @@ b <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = b + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-vaul.week.precip <- g1 + 
+strt.week.precip <- b + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6756,7 +6855,7 @@ vaul.week.precip <- g1 +
 
 c <- HI.strt.2019.2020 %>% 
   ggplot(aes(x = precip.month,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = strt.formula,
@@ -6769,12 +6868,9 @@ c <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = c + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-vaul.month.precip <- g1 + 
+strt.month.precip <- c + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6782,7 +6878,7 @@ vaul.month.precip <- g1 +
 
 d <- HI.strt.2019.2020 %>% 
   ggplot(aes(x = ThreeMonth,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = strt.formula,
@@ -6795,13 +6891,9 @@ d <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = d + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-strt.3month.precip <- g1 + 
+strt.3month.precip <- d + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6809,7 +6901,7 @@ strt.3month.precip <- g1 +
 
 e <- HI.strt.2019.2020 %>% 
   ggplot(aes(x = Intensity,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = strt.formula,
@@ -6822,21 +6914,17 @@ e <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = e + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-strt.intensity.precip <- g1 + 
+strt.intensity.precip <- e + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
                aes(color = year), size = 2) 
 
 f <- HI.strt.2019.2020 %>% 
-  ggplot(aes(x = doy.x,
-             y = HI.y)) +
+  ggplot(aes(x = doy,
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = strt.formula,
@@ -6849,12 +6937,9 @@ f <- HI.strt.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = f + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-strt.doy.precip <- g1 + 
+strt.doy.precip <- f + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6865,15 +6950,17 @@ plot_grid(strt.storm.precip, strt.week.precip, strt.month.precip,
 
 ################ POKE ###############################
 HI.poke.2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.poke.2019.csv") # just mean values of HI 
+names(HI.poke.2019)[names(HI.poke.2019) == 'HI'] <- 'HI.median'
 HI.poke.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.poke.2020.csv")# just mean values of HI 
+names(HI.poke.2020)[names(HI.poke.2020) == 'HI'] <- 'HI.median'
 
 POKE.HI.df.2019 <- read.csv("Output_from_analysis/HI_plots/2019/POKE/POKE.HI.df.csv") # has 2% intervals to generate error bars
-POKE.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/POKE/POKE.HI..df.csv") # has 2% intervals to generate error bars
+POKE.HI.df.2020 <- read.csv("Output_from_analysis/HI_plots/2020/POKE/POKE.HI.df.csv") # has 2% intervals to generate error bars
 
-poke.2019 <- left_join(HI.poke.2019, POKE.HI.df.2019, by = "storm.num") # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
-
-poke.2020 <- left_join(HI.poke.2020, POKE.HI.df.2020, by = "storm.num")# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
-
+poke.2019 <- left_join(HI.poke.2019, POKE.HI.df.2019, by = c("storm.num", "response", "site.ID")) # joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+poke.2019 <- poke.2019[,-24]
+poke.2020 <- left_join(HI.poke.2020, POKE.HI.df.2020, by = c("storm.num", "response", "site.ID"))# joining 2% inervals with the storm characteristics (Intensity) and antecedent conditions (one week, one month etc.) to generate error bars
+names(poke.2020)[names(poke.2020) == 'doy'] <- 'doy.x'
 HI.poke.2019.2020 <- rbind(poke.2019, poke.2020) # joining 2019 and 2020 data 
 HI.poke.2019.2020$year <- as.character(HI.poke.2019.2020$year) # making year a character so it wont recognize it as a continuous variable
 
@@ -6890,11 +6977,10 @@ median_cl_boot <- function(x, conf = 0.95) {
                                                                           uconf))
 }
 
-poke.formula <- y ~ x
 
 a <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = precip,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
   geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
   stat_poly_eq(formula = y~x,
@@ -6907,38 +6993,33 @@ a <- HI.poke.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = a + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1)) 
-poke.storm.precip <- g1 + 
+poke.storm.precip <- a + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
                aes(color = year), size = 2) 
+  
 
 b <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = precip.week,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
-  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
-  stat_poly_eq(formula = poke.formula,
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
                label.y = "top", label.x = "right",
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("POKE One-Week Precip") +
+  ggtitle("Low PF") +
   xlab("One-Week Precip") +
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = b + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 0))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-poke.week.precip <- g1 + 
+poke.week.precip <- b + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6946,25 +7027,22 @@ poke.week.precip <- g1 +
 
 c <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = precip.month,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
-  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
-  stat_poly_eq(formula = poke.formula,
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
                label.y = "top", label.x = "right",
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
   ggtitle("POKE One-Month Precip") +
-  xlab("One-Month Precip") +
+  xlab("") +
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = c + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-poke.month.precip <- g1 + 
+poke.month.precip <- c + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6972,10 +7050,10 @@ poke.month.precip <- g1 +
 
 d <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = ThreeMonth,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
-  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
-  stat_poly_eq(formula = poke.formula,
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
                label.y = "top", label.x = "right",
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
@@ -6985,13 +7063,9 @@ d <- HI.poke.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = d + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-poke.3month.precip <- g1 + 
+poke.3month.precip <- d + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -6999,10 +7073,10 @@ poke.3month.precip <- g1 +
 
 e <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = Intensity,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
-  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
-  stat_poly_eq(formula = poke.formula,
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
                label.y = "top", label.x = "right",
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
@@ -7012,13 +7086,9 @@ e <- HI.poke.2019.2020 %>%
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = e + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-
-poke.intensity.precip <- g1 + 
+poke.intensity.precip <- e + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
@@ -7026,112 +7096,368 @@ poke.intensity.precip <- g1 +
 
 f <- HI.poke.2019.2020 %>% 
   ggplot(aes(x = doy.x,
-             y = HI.y)) +
+             y = HI)) +
   geom_point(alpha = 0.00001) +
-  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
-  stat_poly_eq(formula = poke.formula,
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
                label.y = "top", label.x = "right",
                aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
                parse = TRUE) +
   ylim(-1,1) + 
-  ggtitle("POKE Day of Year") +
+  ggtitle("") +
   xlab("doy") +
   ylab("HI-Solute Storage") + 
   geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
   theme_classic() +
-  facet_wrap(~response.y)
+  facet_wrap(~response)
 
-g1 = f + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.00001, size=3) + 
-  theme(axis.text.x = element_text(angle = 90))+  labs(x="")  +
-  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 0, hjust = 1))
-poke.doy.precip <- g1 + 
+poke.doy.precip <- f + 
   stat_summary(fun.data = median_cl_boot, geom = "errorbar",
                aes(color = year), width = 0.2, size=1) + 
   stat_summary(fun.y = median, geom = "point", 
-               aes(color = year), size = 2) 
-plot_grid(poke.storm.precip, poke.week.precip, poke.month.precip,
-          poke.3month.precip, poke.intensity.precip, poke.doy.precip,
-          ncol = 3)
+               aes(color = year), size = 2)
+
+
+
+
+# AGU plot #
+HI.moos.2019.2020.fdom <- HI.moos.2019.2020 %>% filter(response == "fDOM")
+HI.frch.2019.2020.fdom <- HI.frch.2019.2020 %>% filter(response == "fDOM")
+HI.poke.2019.2020.fdom <- HI.poke.2019.2020 %>% filter(response == "fDOM")
+HI.strt.2019.2020.fdom <- HI.strt.2019.2020 %>% filter(response == "fDOM")
+HI.vaul.2019.2020.fdom <- HI.vaul.2019.2020 %>% filter(response == "fDOM")
+
+HI.moos.2019.2020.fdom <- HI.moos.2019.2020 %>% filter(response == "NO3")
+HI.frch.2019.2020.fdom <- HI.frch.2019.2020 %>% filter(response == "NO3")
+HI.poke.2019.2020.fdom <- HI.poke.2019.2020 %>% filter(response == "NO3")
+HI.strt.2019.2020.fdom <- HI.strt.2019.2020 %>% filter(response == "NO3")
+HI.vaul.2019.2020.fdom <- HI.vaul.2019.2020 %>% filter(response == "NO3")
+
+a <- HI.frch.2019.2020.fdom %>% 
+  ggplot(aes(x = precip.month,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Month Precip") +
+  ylab("HI") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+frch.precip.month.fdom <- a + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+a <- HI.frch.2019.2020.no3 %>% 
+  ggplot(aes(x = precip.week,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Week Precip") +
+  ylab("") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+frch.precip.week.no3 <- a + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+b <- HI.moos.2019.2020.fDOM %>% 
+  ggplot(aes(x = precip.week,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Week Precip") +
+  ylab("HI") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+moos.precip.week.fDOM <- b + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+b <- HI.moos.2019.2020.no3 %>% 
+  ggplot(aes(x = precip.week,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Week Precip") +
+  ylab("") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+moos.precip.week.no3 <- b + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+c <- HI.poke.2019.2020.fdom %>% 
+  ggplot(aes(x = doy.x,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("Day of Year") +
+  ylab("HI") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+poke.doy.fdom <- c + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+d <- HI.poke.2019.2020.no3 %>% 
+  ggplot(aes(x = precip.month,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Month Precip") +
+  ylab("") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+poke.precip.month <- d + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+e <- HI.strt.2019.2020.fdom %>% 
+  ggplot(aes(x = precip.week,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Week Precip") +
+  ylab("HI") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+strt.precip.week.fdom <- e + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+e <- HI.strt.2019.2020.no3 %>% 
+  ggplot(aes(x = precip.week,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("One-Week Precip") +
+  ylab("") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+strt.precip.week.no3 <- e + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+f <- HI.vaul.2019.2020.fdom %>% 
+  ggplot(aes(x = doy.x,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("Day of Year") +
+  ylab("HI") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+vaul.doy.fdom <- f + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+f <- HI.vaul.2019.2020.no3 %>% 
+  ggplot(aes(x = doy.x,
+             y = HI)) +
+  geom_point(alpha = 0.00001) +
+  geom_smooth(method = "lm", formula= y~x, na.rm = TRUE, fullrange = TRUE, aes(group = 1)) +
+  ylim(-1,1) + 
+  ggtitle("") +
+  xlab("Day of Year") +
+  ylab("") + 
+  geom_hline(yintercept = 0, linetype = "dotted", col = 'red') +
+  theme_classic() 
+
+vaul.doy.no3 <- f + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               aes(color = year), width  = 0.2, size = 1) + 
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) +
+  stat_summary(fun.y = median, geom = "point", 
+               aes(color = year), size = 2) +
+  scale_colour_manual(values = wes_palette(n=2, name="Royal1")) 
+
+
+
+
+ggarrange(frch.precip.month.fdom, frch.precip.week.no3, 
+          moos.precip.week.fDOM, moos.precip.week.no3,
+          poke.doy.fdom, poke.precip.month,
+          strt.precip.week.fdom, strt.precip.week.no3,
+          vaul.doy.fdom, vaul.doy.no3,
+          ncol = 2, nrow = 5,
+          common.legend = TRUE, legend = "bottom")
+
+# removing columns that are unneeded to match all together 
+#HI.frch.2019.2020 <- HI.frch.2019.2020[,-c(25:26)]
+#HI.poke.2019.2020 <- HI.frch.2019.2020[,-25]
+#HI.vaul.2019.2020 <- HI.vaul.2019.2020[,-c(25:26)]
+
+#names(HI.moos.2019.2020)[names(HI.moos.2019.2020) == 'doy'] <- 'doy.x'
+ 
+#HI.2019.2020 <- rbind(HI.vaul.2019.2020, HI.frch.2019.2020, HI.moos.2019.2020, HI.strt.2019.2020, HI.poke.2019.2020)
+
+#write.csv(HI.2019.2020, "~/Documents/Storms/Output_from_analysis/07_Models/HI.2019.2020.csv")
 
 ################# 2019 and 2020  chem ################
-DOD.2019 <- read.csv("~/Documents/DoD_Discharge/Discharge_Chem/2019/DOD.2019.csv")
+# when i import from my local machine it gets rid of nitrate for some reason
 
-fa <- ggplot(data = DOD.2019, aes(x = DateTime , 
-           y = nitrateuM,
-           color = Site,
-           group = 1)) +
-  geom_line() +
-  ggtitle("2019") +
+VAUL_chem_2019 <- read_csv("Q_Chem/VAUL/VAUL_chem_2019.csv")
+VAUL <- VAUL_chem_2019
+VAUL <- VAUL[,-1]
+chem_2019 <- rbind(FRCH, MOOS, POKE, STRT,VAUL)
+
+names(chem_2019) <- c("Site", "DateTime", "MeanDischarge", "day", "fDOM", "NO3", "SPC", "Turb")
+chem_2019 <- chem_2019[,-4]
+chem_2019$year <- "2019"
+chem_2019[chem_2019$Site==1:15687, "Site"] <- "French"
+
+write.csv(chem_2019, "~/Documents/Storms/Q_Chem/DOD.2019.mean.csv")
+chem_2019 <- read_csv("Q_Chem/DOD.2019.mean.csv")
+
+FRCH_chem_2020 <- read_csv("Q_Chem/FRCH/FRCH_chem_2020.csv")
+MOOS_chem_2020 <- read_csv("Q_Chem/MOOS/MOOS_chem_2020.csv")
+MOOS_chem_2020 <- MOOS_chem_2020[,-c(2,6)]
+POKE_chem_2020 <- read_csv("Q_Chem/POKE/POKE_chem_2020.csv")
+names(POKE_chem_2020)[names(POKE_chem_2020) == 'fDOM.RFU'] <- 'fDOM.QSU'
+
+STRT_chem_2020 <- read_csv("Q_Chem/STRT/STRT_chem_2020.csv")
+VAUL_chem_2020 <- read_csv("Q_Chem/VAUL/VAUL_chem_2020.csv")
+
+which(VAUL_chem_2020$fDOM.QSU > 1000)
+which(VAUL_chem_2020$Turbidity.FNU < 0)
+
+
+VAUL_chem_2020 <- VAUL_chem_2020[-c(5307,5308), ]
+
+chem_2020 <- rbind(FRCH_chem_2020, MOOS_chem_2020, POKE_chem_2020, STRT_chem_2020, VAUL_chem_2020)
+chem_2020 <- chem_2020[,-1]
+chem_2020$year <- "2020"
+names(chem_2020) <- c("Site", "DateTime", "MeanDischarge", "fDOM", "NO3", "SPC", "Turb", "year")
+
+chem_2019_2020 <- rbind(chem_2019, chem_2020)
+
+Q_2019 <- read_csv("~/Documents/DoD_Discharge/Predicted_Discharge/2019/Q_2019.csv")
+Q_2020 <- read_csv("~/Documents/DoD_Discharge/Predicted_Discharge/2020/Q_2020.csv")
+Q_2019$year <- "2019"
+Q_2020$year <- "2020"
+
+Q_2019_2020 <- rbind(Q_2019, Q_2020)
+
+no3 <- ggplot(data = chem_2019_2020, aes(x = Site, y = NO3, fill = as.factor(year))) +
+  geom_violin() + 
   xlab("") +
-  ylab("Nitrate (uM)") +
-  theme_classic() # plot model 
+  ylab("Nitrate (µM)") +
+  theme_classic() +
+  scale_fill_manual(values=wes_palette(n=2, name="Royal1")) +
+  labs(fill = "Year") + 
+  theme(text = element_text(size = 15)) 
 
-fb <- ggplot(data = DOD.2019, aes(x = DateTime , 
-                            y = fDOM.QSU.mn,
-                            color = Site)) +
-  geom_line() +
+fDOM <- ggplot(data = chem_2019_2020, aes(x = Site, y = fDOM, fill = as.factor(year))) +
+  geom_violin() + 
   xlab("") +
   ylab("fDOM (QSU)") +
-  theme_classic() # plot model 
+  theme_classic() +
+  scale_fill_manual(values=wes_palette(n=2, name="Royal1")) +
+  labs(fill = "Year") + 
+  theme(text = element_text(size = 15)) 
+fDOM
 
-fc <- ggplot(data = DOD.2019, aes(x = DateTime, 
-                            y = SpCond.uScm.mn,
-                            color = Site)) +
-  geom_line() +
+SPC <- ggplot(data = chem_2019_2020, aes(x = Site, y = SPC, fill = as.factor(year))) +
+  geom_violin() + 
   xlab("") +
-  ylab("SPC") +
-  theme_classic() # plot model 
+  ylab("SPC (µScm)") +
+  theme_classic() +
+  scale_fill_manual(values=wes_palette(n=2, name="Royal1")) +
+  labs(fill = "Year") + 
+  theme(text = element_text(size = 15)) 
 
-fd <- ggplot(data = DOD.2019, aes(x = DateTime, 
-                            y = Turbidity.FNU.mn,
-                            color = Site)) +
-  geom_line() +
-  xlab("Date") +
-  ylab("SPC") +
-  theme_classic() # plot model 
-
-
-DOD.2020 <- read.csv("~/Documents/DoD_Discharge/Discharge_Chem/2020/DOD.2020.csv")
-
-fe <- ggplot(data = DOD.2020, aes(x = DateTime , 
-                            y = nitrateuM,
-                            color = Site)) +
-  geom_line() +
-  ggtitle("2020") +
+SPC
+options(scipen = 999)
+turb <- ggplot(data = chem_2019_2020, aes(x = Site, y = Turb, fill = as.factor(year))) +
+  geom_violin() + 
   xlab("") +
-  ylab("Nitrate (uM)") +
-  theme_classic() # plot model 
+  ylab("Turbidity (FNU)") +
+  theme_classic() +
+  scale_fill_manual(values=wes_palette(n=2, name="Royal1")) +
+  labs(fill = "Year") + 
+  theme(text = element_text(size = 15)) +
+  scale_y_continuous(trans='log10', labels = scales::label_number(accuracy = 1))
 
-ff <- ggplot(data = DOD.2020, aes(x = DateTime , 
-                            y = fDOM.QSU,
-                            color = Site)) +
-  geom_line() +
+turb
+
+Q <- ggplot(data = Q_2019_2020, aes(x = Site, y = MeanDischarge, fill = as.factor(year))) +
+  geom_violin() + 
   xlab("") +
-  ylab("fDOM (QSU)") +
-  theme_classic() # plot model 
+  ylab("Discharge (L/s)") +
+  theme_classic() +
+  scale_fill_manual(values=wes_palette(n=2, name="Royal1")) +
+  labs(fill = "Year") + 
+  theme(text = element_text(size = 15)) +
+  scale_y_continuous(trans='log10')
+Q
 
-fg <- ggplot(data = DOD.2020, aes(x = DateTime, 
-                            y = SpCond.uScm,
-                            color = Site)) +
-  geom_line() +
-  xlab("") +
-  ylab("SPC") +
-  theme_classic() # plot model 
-
-fh <- ggplot(data = DOD.2020, aes(x = DateTime, 
-                            y = Turbidity.FNU,
-                            color = Site)) +
-  geom_line() +
-  xlab("Date") +
-  ylab("SPC") +
-  theme_classic() # plot model 
-
-
-plot_grid(fa, fe,
-          fb, ff,
-          fc, fg,
-          fd, fh,
-          ncol = 2)
+ggarrange(Q, no3,
+          fDOM, SPC, 
+          turb, NA,
+          ncol = 2, nrow = 3,
+          common.legend = TRUE, legend = "bottom")
 
 
 #### FI ? #####
@@ -7145,6 +7471,9 @@ storms.2019.2020[cols] <- log(storms.2019.2020[cols]) # making concentrations an
 
 MOOS.2019 <- storms.2019.2020 %>% filter(Site == "MOOS" & year == "2019") # filtering out Site and year
 MOOS.2019.fDOM <- MOOS.2019[,-c(6,7,8)] # making it so it is just fDOM
+
+POKE.2019 <- storms.2019.2020 %>% filter(Site == "POKE" & year == "2019") # filtering out Site and year
+POKE.2019.fDOM <- POKE.2019[,-c(6,7,8)] # making it so it is just fDOM
 
 #STRT.2019 <- storms.2019.2020 %>% filter(Site == "STRT" & year == "2019") # filtering out Site and year
 #STRT.2019.fDOM <- STRT.2019[,-c(6,7,8)] # making it so it is just fDOM
@@ -7162,10 +7491,10 @@ slope <- function(x, y){
 }
 
 # storm 1 #
-Moos_test_ascending_storm1 <- filter(Moos_test_ascending, storm.num == "storm1")
-Moos_test_ascending_storm1 <-  Moos_test_ascending_storm1[!is.na(Moos_test_ascending_storm1$fDOM.QSU), ]
-slope(Moos_test_ascending_storm1$MeanDischarge, Moos_test_ascending_storm1$fDOM.QSU)
-summary(lm(Moos_test_ascending_storm1$fDOM.QSU ~ Moos_test_ascending_storm1$MeanDischarge))
+#Moos_test_ascending_storm1 <- filter(Moos_test_ascending, storm.num == "storm1")
+#Moos_test_ascending_storm1 <-  Moos_test_ascending_storm1[!is.na(Moos_test_ascending_storm1$fDOM.QSU), ]
+#slope(Moos_test_ascending_storm1$MeanDischarge, Moos_test_ascending_storm1$fDOM.QSU)
+#summary(lm(Moos_test_ascending_storm1$fDOM.QSU ~ Moos_test_ascending_storm1$MeanDischarge))
 
 # try it by all of moos #
 Moos_test <- MOOS.2019.fDOM %>% group_by(storm.num) %>% 
@@ -7173,8 +7502,98 @@ Moos_test <- MOOS.2019.fDOM %>% group_by(storm.num) %>%
 
 Moos_test_ascending <- filter(Moos_test, limb == "ascending")
 Moos_test_ascending <-  Moos_test_ascending[!is.na(Moos_test_ascending$fDOM.QSU), ]
-beta <- Moos_test_ascending %>% group_by(storm.num) %>% 
+
+Poke_test <- POKE.2019.fDOM %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
+
+Poke_test_ascending <- filter(Poke_test, limb == "ascending")
+Poke_test_ascending <-  Poke_test_ascending[!is.na(Poke_test_ascending$fDOM.QSU), ]
+
+#################### test plot ##################################################
+ggplot(data = Moos_test_ascending, aes(x = MeanDischarge, y = fDOM.QSU, color = storm.num)) +
+  geom_point()
+
+beta.1 <- Moos_test_ascending %>% group_by(storm.num) %>% 
   summarize(beta = slope(MeanDischarge, fDOM.QSU))
+
+lm(Moos_test_ascending_1$fDOM.QSU ~ Moos_test_ascending$MeanDischarge)
+
+Moos_test_ascending_1 <- filter(Moos_test_ascending, storm.num == "storm1")
+Moos_test_1 <- filter(Moos_test, storm.num == "storm1")
+ggplot(data = Moos_test_1, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Moos_test_ascending_1$fDOM.QSU ~ Moos_test_ascending_1$MeanDischarge)
+
+
+Moos_test_ascending_4 <- filter(Moos_test_ascending, storm.num == "storm4")
+Moos_test_4 <- filter(Moos_test, storm.num == "storm4")
+ggplot(data = Moos_test_4, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Moos_test_ascending_4$fDOM.QSU ~ Moos_test_ascending_4$MeanDischarge)
+
+Moos_test_ascending_5 <- filter(Moos_test_ascending, storm.num == "storm5")
+Moos_test_5 <- filter(Moos_test, storm.num == "storm5")
+ggplot(data = Moos_test_ascending_5, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Moos_test_ascending_5$fDOM.QSU ~ Moos_test_ascending_5$MeanDischarge)
+
+### poke test ###
+ggplot(data = Poke_test_ascending, aes(x = MeanDischarge, y = fDOM.QSU, color = storm.num)) +
+  geom_point()
+
+beta.poke <- Poke_test_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(MeanDischarge, fDOM.QSU))
+
+
+Poke_test_ascending_1 <- filter(Poke_test_ascending, storm.num == "storm1")
+Poke_test_1 <- filter(Poke_test, storm.num == "storm1")
+ggplot(data = Poke_test_1, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Poke_test_ascending_1$fDOM.QSU ~ Poke_test_ascending_1$MeanDischarge)
+
+
+Moos_test_ascending_4 <- filter(Moos_test_ascending, storm.num == "storm4")
+Moos_test_4 <- filter(Moos_test, storm.num == "storm4")
+ggplot(data = Moos_test_4, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Moos_test_ascending_4$fDOM.QSU ~ Moos_test_ascending_4$MeanDischarge)
+
+Moos_test_ascending_5 <- filter(Moos_test_ascending, storm.num == "storm5")
+Moos_test_5 <- filter(Moos_test, storm.num == "storm5")
+ggplot(data = Moos_test_ascending_5, aes(MeanDischarge, fDOM.QSU)) + 
+  geom_point()
+lm(Moos_test_ascending_5$fDOM.QSU ~ Moos_test_ascending_5$MeanDischarge)
+
+MOOS_chem_2019 <- read_csv("Q_Chem/MOOS/MOOS_chem_2019.csv")
+ggplot() +
+  geom_point(data = MOOS_chem_2019, aes(DateTime, MeanDischarge), color = "red") +
+  geom_point(data = MOOS_chem_2019, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
+
+EXO_aord <- read_csv("~/Documents/DoD_2019/EXO_processed/EXO.aord.csv")
+MOOS_2019_EXO <- filter(EXO_aord, site.ID == "MOOS")
+MOOS_2019_EXO$datetimeAK <- as.POSIXct(MOOS_2019_EXO$datetimeAK, tz="America/Anchorage")
+MOOS_2019_EXO$DateTime <- MOOS_2019_EXO$datetimeAK
+MOOS_2019_Q <- read_csv("~/Documents/DoD_2019/Q/Final_Q/MOOS/MOOS.csv")
+MOOS_2019_Q$DateTime <- as.POSIXct(MOOS_2019_Q$DateTime, tz = "America/Anchorage")
+
+moos.q.chem <- full_join(MOOS_2019_Q, MOOS_2019_EXO) # this wo
+moos.q.chem <- moos.q.chem[,-c(4,5,6,8,9,10,11,12,14,16,17,18,19,20,21,22,23)]
+
+ggplot() +
+  geom_point(data = moos.q.chem, aes(DateTime, MeanDischarge), color = "red") +
+  geom_point(data = moos.q.chem, aes(DateTime, Turbidity.FNU.mn * 10), color = "green") +
+  geom_point(data = moos.q.chem, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
+
+ggplot() +
+  geom_point(data = moos.q.chem, aes(DateTime, MeanDischarge), color = "red") +
+  geom_point(data = moos.q.chem, aes(DateTime, Turbidity.FNU.mn), color = "blue") 
+
+POKE_chem_2019 <- read_csv("Q_Chem/POKE/POKE_chem_2019.csv")
+ggplot() +
+  geom_point(data = POKE_chem_2019, aes(DateTime, MeanDischarge), color = "red") +
+  geom_point(data = POKE_chem_2019, aes(DateTime, Turbidity.FNU.mn * 10), color = "green") +
+  geom_point(data = POKE_chem_2019, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
+
 
 # merge HI and beta
 #HI_moos_2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2019.csv")
@@ -7225,7 +7644,7 @@ beta.all.turb <- all_turb_ascending %>% group_by(storm.num, Site, year) %>%
   summarize(beta = slope(MeanDischarge, Turbidity.FNU)) # this works just like the beta one that is for an individual site
 
 # merge HI and beta 
-HI.all <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.all.csv")
+HI.all <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.2020.csv")
 names(HI.all)[names(HI.all) == 'site.ID'] <- 'Site'
 # filter by response
 HI.all.NO3 <- filter(HI.all, response == "NO3")
@@ -7241,46 +7660,111 @@ beta.HI.turb <- left_join(HI.all.turb, beta.all.turb)  # joining beta and HI for
 
 # plot #
 HI_FI_NO3.p = 
-  ggplot(beta.HI.NO3, aes(beta, HI)) + geom_point(aes(colour=factor(pf)), size = 4)+
-  scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
+  ggplot(beta.HI.NO3, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(pf), alpha = doy), size = 4)+
+  scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9", "brown", "deepskyblue4")) +
   geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
-  ggtitle("a) NO3")+ 
-  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+  ggtitle("NO3")+ 
+  xlab("") +
+  ylab("HI") +
+  theme(legend.position = "none") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20),
+                                                                                                                                                                               legend.text = element_text(size = 8)) 
 HI_FI_NO3.p
 
 HI_FI_fDOM.p = 
-  ggplot(beta.HI.fDOM, aes(beta, HI)) + geom_point(aes(colour=factor(pf)), size = 4)+
+  ggplot(beta.HI.fDOM, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(pf), alpha = doy), size = 4)+
+  scale_color_manual(values = c("#999999", "#E69F00", "#56B4E9", "brown", "deepskyblue4")) +
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("fDOM")+ 
+  ylab("") +
+  xlab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20),
+        legend.text = element_text(size = 10))
+HI_FI_fDOM.p
+
+HI_FI_SPC.p = 
+  ggplot(beta.HI.SPC, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(pf), alpha = doy), size = 4)+
   scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
   geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
-  ggtitle("b) fDOM")+ 
+  ggtitle("SPC")+ 
+  xlab("Storm Flushing Index") + 
+  theme(legend.position = "none") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 30)) 
+HI_FI_SPC.p
+
+HI_FI_turb.p = 
+  ggplot(beta.HI.turb, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(pf), alpha = doy), size = 4)+
+  scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("Turbidity")+ 
+  xlab("Storm Flushing Index") + 
+  theme(legend.position = "none") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 30)) +
+  labs(
+    colour = "Permafrost Extent")
+HI_FI_turb.p
+
+
+ggarrange(HI_FI_NO3.p, HI_FI_fDOM.p,  
+          ncol = 2, nrow = 1,
+          common.legend = TRUE, legend="bottom",
+          font.label = list(size = 100))
+
+plot_grid(HI_FI_NO3.p, HI_FI_fDOM.p,
+          cols = 2)
+
+# burn #
+HI_FI_NO3.p = 
+  ggplot(beta.HI.NO3, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(burn), alpha = doy), size = 4)+
+  scale_fill_manual(values = c("brown", "deepskyblue4")) +
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("NO3")+ 
+  xlab("") +
+  ylab("HI") +
+  theme_classic() +
+  labs(color = "PF Extent")
+HI_FI_NO3.p
+
+HI_FI_fDOM.p = 
+  ggplot(beta.HI.fDOM, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(burn), alpha = doy), size = 4)+
+  scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("fDOM")+ 
+  ylab("") +
+  xlab("") +
+  theme(legend.position = "none") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_fDOM.p
 
 HI_FI_SPC.p = 
-  ggplot(beta.HI.SPC, aes(beta, HI)) + geom_point(aes(colour=factor(pf)), size = 4)+
+  ggplot(beta.HI.SPC, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(burn), alpha = doy), size = 4)+
   scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
   geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
-  ggtitle("c) SPC")+ 
+  ggtitle("SPC")+ 
+  xlab("Storm Flushing Index") + 
+  theme(legend.position = "none") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_SPC.p
 
 HI_FI_turb.p = 
-  ggplot(beta.HI.turb, aes(beta, HI)) + geom_point(aes(colour=factor(pf)), size = 4)+
+  ggplot(beta.HI.turb, aes(beta, HI)) + geom_point(aes(colour= Site, shape = factor(burn), alpha = doy), size = 4)+
   scale_fill_manual(values = c("#E69F00", "brown", "deepskyblue4")) +
   geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+theme_bw()+
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
-  ggtitle("d) Turbidity")+ 
-  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+  ggtitle("Turbidity")+ 
+  xlab("Storm Flushing Index") + 
+  theme(legend.position = "none") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) +
+  labs(
+    colour = "Permafrost Extent")
 HI_FI_turb.p
-
-plot_grid(HI_FI_NO3.p, HI_FI_fDOM.p,
-          HI_FI_SPC.p, HI_FI_turb.p,
-          ncol = 2)
-
-
 
 
 
