@@ -2,12 +2,12 @@
     "sortOrder": [
         {
             "columnIndex": 2,
-            "ascending": true
+            "ascending": false
         },
         {
             "columnIndex": 4,
             "ascending": false
         }
     ],
-    "path": "~/Documents/Storms/Storm_Events/2020/POKE"
+    "path": "~/Documents/Storms/Output_from_analysis"
 }
