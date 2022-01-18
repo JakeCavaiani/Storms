@@ -1,0 +1,2 @@
+"0","strt.pt.2020 <- rbind(strt.stream.one.2020, strt.stream.two.2020)"
+"0","write.csv(strt.pt.2020, ""~/Documents/DoD_Discharge/PT_data/2020/STRT/strt.pt.2020.csv"", row.names = FALSE)"

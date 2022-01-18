@@ -1,0 +1,27 @@
+{
+    "id": "1FE48EAB",
+    "path": "~/Documents/CPCRW_2017/R scripts/25_CPCRW_2017.Rmd",
+    "project_path": null,
+    "type": "r_markdown",
+    "hash": "1752980275",
+    "contents": "",
+    "dirty": false,
+    "created": 1642124711918.0,
+    "source_on_save": false,
+    "relative_order": 8,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "2073,66",
+        "scrollLine": "2054",
+        "last_setup_crc32": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1623955875,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1623955875,
+    "read_only": false,
+    "read_only_alternatives": []
+}

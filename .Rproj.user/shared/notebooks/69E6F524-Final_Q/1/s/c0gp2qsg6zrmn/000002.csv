@@ -1,0 +1,3 @@
+"0","moos.final.discharge.2020_final <- moos.final.discharge.2020"
+"0","names(moos.final.discharge.2020_final) <- c(""Site"", ""DateTime"", ""Q"")"
+"0","write.csv(moos.final.discharge.2020_final, ""~/Documents/DoD_Discharge/Predicted_Discharge/2020/MOOS/MOOS.Q.csv"", row.names = FALSE)"

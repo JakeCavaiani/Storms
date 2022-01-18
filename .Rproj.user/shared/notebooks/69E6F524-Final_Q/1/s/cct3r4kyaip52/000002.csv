@@ -1,0 +1,2 @@
+"0","frch.pt.2020 <- rbind(frch.stream.one.2020, frch.stream.two.2020)"
+"0","write.csv(frch.pt.2020, ""~/Documents/DoD_Discharge/PT_data/2020/FRCH/frch.pt.2020.csv"")"
