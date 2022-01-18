@@ -1,0 +1,3 @@
+"0","Poke1comb.2020_final <- Poke1comb.2020[,-c(2:4, 6:12)]"
+"0","names(Poke1comb.2020_final) <- c(""Site"", ""DateTime"", ""Q"")"
+"0","write.csv(Poke1comb.2020_final, ""~/Documents/DoD_Discharge/Predicted_Discharge/2020/POKE/POKE.Q.csv"", row.names = FALSE)"

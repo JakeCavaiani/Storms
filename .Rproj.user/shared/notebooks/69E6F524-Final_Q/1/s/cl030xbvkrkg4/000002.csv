@@ -1,0 +1,3 @@
+"0","Vaul2comb.2020_final <- Vaul2comb.2020[,-c(2:4, 6:12)]"
+"0","names(Vaul2comb.2020_final) <- c(""Site"", ""DateTime"", ""Q"")"
+"0","write.csv(Vaul2comb.2020_final, ""~/Documents/DoD_Discharge/Predicted_Discharge/2020/VAUL/VAUL.Q.csv"", row.names = FALSE)"

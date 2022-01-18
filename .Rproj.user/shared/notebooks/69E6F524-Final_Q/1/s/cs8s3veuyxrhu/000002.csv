@@ -1,0 +1,3 @@
+"0","strt.final.discharge.2020_final <- strt.final.discharge.2020[,-c(3:4)]"
+"0","names(strt.final.discharge.2020_final) <- c(""Site"", ""DateTime"", ""Q"")"
+"0","write.csv(strt.final.discharge.2020_final, ""~/Documents/DoD_Discharge/Predicted_Discharge/2020/STRT/STRT.Q.csv"", row.names = FALSE)"
