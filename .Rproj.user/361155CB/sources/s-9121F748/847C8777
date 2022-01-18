@@ -1,0 +1,27 @@
+{
+    "id": "847C8777",
+    "path": "~/Documents/Storms/R_Scripts/06_HI_fire_permafrost_year.R",
+    "project_path": "R_Scripts/06_HI_fire_permafrost_year.R",
+    "type": "r_source",
+    "hash": "903309017",
+    "contents": "",
+    "dirty": false,
+    "created": 1636400660536.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "10669,0",
+        "scrollLine": "10650"
+    },
+    "folds": "209|46|993|0|\n7481|49|7802|0|\n",
+    "lastKnownWriteTime": 1642475058,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1642475058217,
+    "read_only": false,
+    "read_only_alternatives": []
+}

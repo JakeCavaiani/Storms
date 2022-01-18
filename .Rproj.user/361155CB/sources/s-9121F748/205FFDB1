@@ -1,0 +1,27 @@
+{
+    "id": "205FFDB1",
+    "path": "~/Documents/Storms/R_Scripts/05_HIplot_AGU.R",
+    "project_path": "R_Scripts/05_HIplot_AGU.R",
+    "type": "r_source",
+    "hash": "1439804486",
+    "contents": "",
+    "dirty": false,
+    "created": 1636048296086.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "142,67",
+        "scrollLine": "132"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1638489364,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1638489364671,
+    "read_only": false,
+    "read_only_alternatives": []
+}

@@ -1,0 +1,4 @@
+"0","CARI_storm1_06_01_Q = pd.read_csv(""~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_06_01_Q.csv"")
+"
+"2","FileNotFoundError: [Errno 2] No such file or directory: '/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_06_01_Q.csv'
+"
