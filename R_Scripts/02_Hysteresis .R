@@ -22,432 +22,375 @@ library(geosphere)
 library(car)
 library(EcoHydRology)
 library(dplyr)
-############################################ 2018 ################################################
+############################################ 2015 ################################################
 # plot on normalized scale # 
-#### load data #####
-STRT_storm1a_06_19 <- read.csv("Storms/STRT_storm1a_06_19.csv")
-STRT_storm1a_06_19_Q <- read.csv("Storms/STRT_storm1a_06_19_Q.csv")
-STRT_storm1a_06_19_NO3 <- read.csv("Storms/STRT_storm1a_06_19_NO3.csv")
-STRT_storm1a_06_19_fDOM <- read.csv("Storms/STRT_storm1a_06_19_fDOM.csv")
 
-STRT_storm1b_06_20 <- read.csv("Storms/STRT_storm1b_06_20.csv")
-STRT_storm1b_06_20_Q <- read.csv("Storms/STRT_storm1b_06_20_Q.csv")
-STRT_storm1b_06_20_NO3 <- read.csv("Storms/STRT_storm1b_06_20_NO3.csv")
-STRT_storm1b_06_20_fDOM <- read.csv("Storms/STRT_storm1b_06_20_fDOM.csv")
+######################################## 2018 ##############################################################################
 
-STRT_storm1c_06_22 <- read.csv("Storms/STRT_storm1c_06_22.csv")
-STRT_storm1c_06_22_Q <- read.csv("Storms/STRT_storm1c_06_22_Q.csv")
-STRT_storm1c_06_22_NO3 <- read.csv("Storms/STRT_storm1c_06_22_NO3.csv")
-STRT_storm1c_06_22_fDOM <- read.csv("Storms/STRT_storm1c_06_22_fDOM.csv")
+# plot on normalized scale # 
+# load data #
+#FRCH_storm1_06_21 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21.csv")
+FRCH_storm1_06_21_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_Q.csv")
+FRCH_storm1_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_NO3.csv")
+FRCH_storm1_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_fDOM.csv")
+FRCH_storm1_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_SPC.csv")
+FRCH_storm1_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_Turb.csv")
 
-STRT_storm1d_06_23 <- read.csv("Storms/STRT_storm1d_06_23.csv")
-STRT_storm1d_06_23_Q <- read.csv("Storms/STRT_storm1d_06_23_Q.csv")
-STRT_storm1d_06_23_NO3 <- read.csv("Storms/STRT_storm1d_06_23_NO3.csv")
-STRT_storm1d_06_23_fDOM <- read.csv("Storms/STRT_storm1d_06_23_fDOM.csv")
+#FRCH_storm2a_06_29 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29.csv")
+FRCH_storm2a_06_29_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_Q.csv")
+FRCH_storm2a_06_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_NO3.csv")
+#FRCH_storm2a_06_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_fDOM.csv",
+#                                  col_types = cols(datavalue = col_double()))
+#FRCH_storm2a_06_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_SPC.csv",
+#                                   col_types = cols(datavalue = col_double()))
+#FRCH_storm2a_06_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_Turb.csv",
+#                                    col_types = cols(datavalue = col_double()))
 
-STRT_storm1e_06_24 <- read.csv("Storms/STRT_storm1e_06_24.csv")
-STRT_storm1e_06_24_Q <- read.csv("Storms/STRT_storm1e_06_24_Q.csv")
-STRT_storm1e_06_24_NO3 <- read.csv("Storms/STRT_storm1e_06_24_NO3.csv")
-STRT_storm1e_06_24_fDOM <- read.csv("Storms/STRT_storm1e_06_24_fDOM.csv")
+#FRCH_storm2b_07_04 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04.csv")
+FRCH_storm2b_07_04_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_Q.csv")
+FRCH_storm2b_07_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_NO3.csv")
+#FRCH_storm2b_07_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_fDOM.csv")
+#FRCH_storm2b_07_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_SPC.csv")
+#FRCH_storm2b_07_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_Turb.csv")
 
-STRT_storm2_07_09 <- read.csv("Storms/STRT_storm2_07_09.csv")
-STRT_storm2_07_09_Q <- read.csv("Storms/STRT_storm2_07_09_Q.csv")
-STRT_storm2_07_09_NO3 <- read.csv("Storms/STRT_storm2_07_09_NO3.csv")
-STRT_storm2_07_09_fDOM <- read.csv("Storms/STRT_storm2_07_09_fDOM.csv")
+#FRCH_storm3_07_10 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10.csv")
+FRCH_storm3_07_10_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_Q.csv")
+FRCH_storm3_07_10_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_NO3.csv")
+#FRCH_storm3_07_10_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_fDOM.csv",
+#                                   col_types = cols(datavalue = col_double()))
+#FRCH_storm3_07_10_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_SPC.csv")
+#FRCH_storm3_07_10_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_Turb.csv")
 
-STRT_storm3_07_21 <- read.csv("Storms/STRT_storm3_07_21.csv")
-STRT_storm3_07_21_Q <- read.csv("Storms/STRT_storm3_07_21_Q.csv")
-STRT_storm3_07_21_NO3 <- read.csv("Storms/STRT_storm3_07_21_NO3.csv")
-STRT_storm3_07_21_fDOM <- read.csv("Storms/STRT_storm3_07_21_fDOM.csv")
+#FRCH_storm4a_07_15 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15.csv")
+FRCH_storm4a_07_15_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_Q.csv")
+FRCH_storm4a_07_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_NO3.csv")
+#FRCH_storm4a_07_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_fDOM.csv")
+#FRCH_storm4a_07_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_SPC.csv")
+#FRCH_storm4a_07_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_Turb.csv")
 
-STRT_storm4a_08_01 <- read.csv("Storms/STRT_storm4a_08_01.csv")
-STRT_storm4a_08_01_Q <- read.csv("Storms/STRT_storm4a_08_01_Q.csv")
-STRT_storm4a_08_01_NO3 <- read.csv("Storms/STRT_storm4a_08_01_NO3.csv")
-STRT_storm4a_08_01_fDOM <- read.csv("Storms/STRT_storm4a_08_01_fDOM.csv")
+#FRCH_storm4b_07_16 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16.csv")
+FRCH_storm4b_07_16_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_Q.csv")
+FRCH_storm4b_07_16_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_NO3.csv")
+FRCH_storm4b_07_16_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_fDOM.csv")
+FRCH_storm4b_07_16_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_SPC.csv")
+FRCH_storm4b_07_16_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_Turb.csv")
 
-STRT_storm4b_08_03 <- read.csv("Storms/STRT_storm4b_08_03.csv")
-STRT_storm4b_08_03_Q <- read.csv("Storms/STRT_storm4b_08_03_Q.csv")
-STRT_storm4b_08_03_NO3 <- read.csv("Storms/STRT_storm4b_08_03_NO3.csv")
-STRT_storm4b_08_03_fDOM <- read.csv("Storms/STRT_storm4b_08_03_fDOM.csv")
+#FRCH_storm5_08_04 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04.csv")
+FRCH_storm5_08_04_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_Q.csv")
+FRCH_storm5_08_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_NO3.csv")
+FRCH_storm5_08_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_fDOM.csv")
+FRCH_storm5_08_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_SPC.csv")
+FRCH_storm5_08_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_Turb.csv")
 
-STRT_storm5_08_09 <- read.csv("Storms/STRT_storm5_08_09.csv")
-STRT_storm5_08_09_Q <- read.csv("Storms/STRT_storm5_08_09_Q.csv")
-STRT_storm5_08_09_NO3 <- read.csv("Storms/STRT_storm5_08_09_NO3.csv")
-STRT_storm5_08_09_fDOM <- read.csv("Storms/STRT_storm5_08_09_fDOM.csv")
+#FRCH_storm6_08_13 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13.csv")
+FRCH_storm6_08_13_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_Q.csv")
+#FRCH_storm6_08_13_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_NO3.csv")
+FRCH_storm6_08_13_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_fDOM.csv")
+FRCH_storm6_08_13_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_SPC.csv")
+FRCH_storm6_08_13_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_Turb.csv")
 
-STRT_storm6_08_12 <- read.csv("Storms/STRT_storm6_08_12.csv")
-STRT_storm6_08_12_Q <- read.csv("Storms/STRT_storm6_08_12_Q.csv")
-STRT_storm6_08_12_NO3 <- read.csv("Storms/STRT_storm6_08_12_NO3.csv")
-STRT_storm6_08_12_fDOM <- read.csv("Storms/STRT_storm6_08_12_fDOM.csv")
+#FRCH_storm7_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23.csv")
+FRCH_storm7_08_23_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_Q.csv")
+#FRCH_storm7_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_NO3.csv")
+FRCH_storm7_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_fDOM.csv")
+FRCH_storm7_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_SPC.csv")
+FRCH_storm7_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_Turb.csv")
 
-STRT_storm7a_08_20 <- read.csv("Storms/STRT_storm7a_08_20.csv")
-STRT_storm7a_08_20_Q <- read.csv("Storms/STRT_storm7a_08_20_Q.csv")
-STRT_storm7a_08_20_NO3 <- read.csv("Storms/STRT_storm7a_08_20_NO3.csv")
-STRT_storm7a_08_20_fDOM <- read.csv("Storms/STRT_storm7a_08_20_fDOM.csv")
+#FRCH_storm8a_08_26 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26.csv")
+FRCH_storm8a_08_26_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_Q.csv")
+#FRCH_storm8a_08_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_NO3.csv")
+FRCH_storm8a_08_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_fDOM.csv")
+FRCH_storm8a_08_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_SPC.csv")
+FRCH_storm8a_08_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_Turb.csv")
 
-STRT_storm7b_08_21 <- read.csv("Storms/STRT_storm7b_08_21.csv")
-STRT_storm7b_08_21_Q <- read.csv("Storms/STRT_storm7b_08_21_Q.csv",)
-STRT_storm7b_08_21_NO3 <- read.csv("Storms/STRT_storm7b_08_21_NO3.csv")
-STRT_storm7b_08_21_fDOM <- read.csv("Storms/STRT_storm7b_08_21_fDOM.csv")
+#FRCH_storm8b_08_27 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27.csv")
+FRCH_storm8b_08_27_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_Q.csv")
+#FRCH_storm8b_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_NO3.csv")
+FRCH_storm8b_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_fDOM.csv")
+FRCH_storm8b_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_SPC.csv")
+FRCH_storm8b_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_Turb.csv")
 
-STRT_storm8_08_28 <- read.csv("Storms/STRT_storm8_08_28.csv")
-STRT_storm8_08_28_Q <- read.csv("Storms/STRT_storm8_08_28_Q.csv")
-STRT_storm8_08_28_NO3 <- read.csv("Storms/STRT_storm8_08_28_NO3.csv")
-STRT_storm8_08_28_fDOM <- read.csv("Storms/STRT_storm8_08_28_fDOM.csv")
+#FRCH_storm9_08_29 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29.csv")
+FRCH_storm9_08_29_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_Q.csv")
+#FRCH_storm9_08_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_NO3.csv")
+FRCH_storm9_08_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_fDOM.csv")
+FRCH_storm9_08_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_SPC.csv")
+FRCH_storm9_08_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_Turb.csv")
 
-STRT_storm9a_09_03 <- read.csv("Storms/STRT_storm9a_09_03.csv")
-STRT_storm9a_09_03_Q <- read.csv("Storms/STRT_storm9a_09_03_Q.csv")
-STRT_storm9a_09_03_NO3 <- read.csv("Storms/STRT_storm9a_09_03_NO3.csv")
-STRT_storm9a_09_03_fDOM <- read.csv("Storms/STRT_storm9a_09_03_fDOM.csv")
+#FRCH_storm10_09_01 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01.csv")
+FRCH_storm10_09_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_Q.csv")
+#FRCH_storm10_09_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_NO3.csv")
+FRCH_storm10_09_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_fDOM.csv")
+FRCH_storm10_09_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_SPC.csv")
+FRCH_storm10_09_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_Turb.csv")
 
-STRT_storm9b_09_06 <- read.csv("Storms/STRT_storm9b_09_06.csv")
-STRT_storm9b_09_06_Q <- read.csv("Storms/STRT_storm9b_09_06_Q.csv")
-STRT_storm9b_09_06_NO3 <- read.csv("Storms/STRT_storm9b_09_06_NO3.csv")
-STRT_storm9b_09_06_fDOM <- read.csv("Storms/STRT_storm9b_09_06_fDOM.csv")
+#FRCH_storm11a_09_22 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22.csv")
+FRCH_storm11a_09_22_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_Q.csv")
+#FRCH_storm11a_09_22_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_NO3.csv")
+FRCH_storm11a_09_22_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_fDOM.csv")
+FRCH_storm11a_09_22_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_SPC.csv")
+FRCH_storm11a_09_22_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_Turb.csv")
 
-STRT_storm9c_09_09 <- read.csv("Storms/STRT_storm9c_09_09.csv")
-STRT_storm9c_09_09_Q <- read.csv("Storms/STRT_storm9c_09_09_Q.csv")
-STRT_storm9c_09_09_NO3 <- read.csv("Storms/STRT_storm9c_09_09_NO3.csv")
-STRT_storm9c_09_09_fDOM <- read.csv("Storms/STRT_storm9c_09_09_fDOM.csv")
-
-STRT_storm10_09_23 <- read.csv("Storms/STRT_storm10_09_23.csv")
-STRT_storm10_09_23_Q <- read.csv("Storms/STRT_storm10_09_23_Q.csv")
-STRT_storm10_09_23_NO3 <- read.csv("Storms/STRT_storm10_09_23_NO3.csv")
-STRT_storm10_09_23_fDOM <- read.csv("Storms/STRT_storm10_09_23_fDOM.csv")
+#FRCH_storm11b_09_24 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FFRCH_storm11b_09_24.csv")
+FRCH_storm11b_09_24_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_Q.csv")
+#FRCH_storm11b_09_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_NO3.csv")
+FRCH_storm11b_09_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_fDOM.csv")
+FRCH_storm11b_09_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_SPC.csv")
+FRCH_storm11b_09_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_Turb.csv")
 
 # MOOS #
-MOOS_storm1_06_21 <- read.csv("Storms/MOOS_storm1_06_21.csv", row.names = 1)
-MOOS_storm1_06_21_Q <- read.csv("Storms/MOOS_storm1_06_21_Q.csv", row.names = 1)
-MOOS_storm1_06_21_NO3 <- read.csv("Storms/MOOS_storm1_06_21_NO3.csv", row.names = 1)
-MOOS_storm1_06_21_fDOM <- read.csv("Storms/MOOS_storm1_06_21_fDOM.csv", row.names = 1)
-
-MOOS_storm2_06_28 <- read.csv("Storms/MOOS_storm2_06_28.csv", row.names = 1)
-MOOS_storm2_06_28_Q <- read.csv("Storms/MOOS_storm2_06_28_Q.csv", row.names = 1)
-MOOS_storm2_06_28_NO3 <- read.csv("Storms/MOOS_storm2_06_28_NO3.csv", row.names = 1)
-MOOS_storm2_06_28_fDOM <- read.csv("Storms/MOOS_storm2_06_28_fDOM.csv", row.names = 1)
-
-MOOS_storm3_07_18 <- read.csv("Storms/MOOS_storm3_07_18.csv", row.names = 1)
-MOOS_storm3_07_18_Q <- read.csv("Storms/MOOS_storm3_07_18_Q.csv", row.names = 1)
-MOOS_storm3_07_18_NO3 <- read.csv("Storms/MOOS_storm3_07_18_NO3.csv", row.names = 1)
-MOOS_storm3_07_18_fDOM <- read.csv("Storms/MOOS_storm3_07_18_fDOM.csv", row.names = 1)
-
-MOOS_storm4_07_20 <- read.csv("Storms/MOOS_storm4_07_20.csv", row.names = 1)
-MOOS_storm4_07_20_Q <- read.csv("Storms/MOOS_storm4_07_20_Q.csv", row.names = 1)
-MOOS_storm4_07_20_NO3 <- read.csv("Storms/MOOS_storm4_07_20_NO3.csv", row.names = 1)
-MOOS_storm4_07_20_fDOM <- read.csv("Storms/MOOS_storm4_07_20_fDOM.csv", row.names = 1)
-
-MOOS_storm5_07_27 <- read.csv("Storms/MOOS_storm5_07_27.csv", row.names = 1)
-MOOS_storm5_07_27_Q <- read.csv("Storms/MOOS_storm5_07_27_Q.csv", row.names = 1)
-MOOS_storm5_07_27_NO3 <- read.csv("Storms/MOOS_storm5_07_27_NO3.csv", row.names = 1)
-MOOS_storm5_07_27_fDOM <- read.csv("Storms/MOOS_storm5_07_27_fDOM.csv", row.names = 1)
-
-MOOS_storm6a_08_01 <- read.csv("Storms/MOOS_storm6a_08_01.csv", row.names = 1)
-MOOS_storm6a_08_01_Q <- read.csv("Storms/MOOS_storm6a_08_01_Q.csv", row.names = 1)
-MOOS_storm6a_08_01_NO3 <- read.csv("Storms/MOOS_storm6a_08_01_NO3.csv", row.names = 1)
-MOOS_storm6a_08_01_fDOM <- read.csv("Storms/MOOS_storm6a_08_01_fDOM.csv", row.names = 1)
-
-MOOS_storm6b_08_03 <- read.csv("Storms/MOOS_storm6b_08_03.csv", row.names = 1)
-MOOS_storm6b_08_03_Q <- read.csv("Storms/MOOS_storm6b_08_03_Q.csv", row.names = 1)
-MOOS_storm6b_08_03_NO3 <- read.csv("Storms/MOOS_storm6b_08_03_NO3.csv", row.names = 1)
-MOOS_storm6b_08_03_fDOM <- read.csv("Storms/MOOS_storm6b_08_03_fDOM.csv", row.names = 1)
-
-MOOS_storm7a_08_09 <- read.csv("Storms/MOOS_storm7a_08_09.csv", row.names = 1)
-MOOS_storm7a_08_09_Q <- read.csv("Storms/MOOS_storm7a_08_09_Q.csv", row.names = 1)
-MOOS_storm7a_08_09_NO3 <- read.csv("Storms/MOOS_storm7a_08_09_NO3.csv", row.names = 1)
-MOOS_storm7a_08_09_fDOM <- read.csv("Storms/MOOS_storm7a_08_09_fDOM.csv", row.names = 1)
-
-MOOS_storm7b_08_12 <- read.csv("Storms/MOOS_storm7b_08_12.csv", row.names = 1)
-MOOS_storm7b_08_12_Q <- read.csv("Storms/MOOS_storm7b_08_12_Q.csv", row.names = 1)
-MOOS_storm7b_08_12_NO3 <- read.csv("Storms/MOOS_storm7b_08_12_NO3.csv", row.names = 1)
-MOOS_storm7b_08_12_fDOM <- read.csv("Storms/MOOS_storm7b_08_12_fDOM.csv", row.names = 1)
-
-MOOS_storm8_09_03 <- read.csv("Storms/MOOS_storm8_09_03.csv", row.names = 1)
-MOOS_storm8_09_03_Q <- read.csv("Storms/MOOS_storm8_09_03_Q.csv", row.names = 1)
-MOOS_storm8_09_03_NO3 <- read.csv("Storms/MOOS_storm8_09_03_NO3.csv", row.names = 1)
-MOOS_storm8_09_03_fDOM <- read.csv("Storms/MOOS_storm8_09_03_fDOM.csv", row.names = 1)
-
-MOOS_storm9_09_09 <- read.csv("Storms/MOOS_storm9_09_09.csv", row.names = 1)
-MOOS_storm9_09_09_Q <- read.csv("Storms/MOOS_storm9_09_09_Q.csv", row.names = 1)
-MOOS_storm9_09_09_NO3 <- read.csv("Storms/MOOS_storm9_09_09_NO3.csv", row.names = 1)
-MOOS_storm9_09_09_fDOM <- read.csv("Storms/MOOS_storm9_09_09_fDOM.csv", row.names = 1)
-
-# FRCH #
-FRCH_storm1_06_13 <- read.csv("Storms/FRCH_storm1_06_13.csv", row.names = 1)
-FRCH_storm1_06_13_Q <- read.csv("Storms/FRCH_storm1_06_13_Q.csv", row.names = 1)
-FRCH_storm1_06_13_NO3 <- read.csv("Storms/FRCH_storm1_06_13_NO3.csv", row.names = 1)
-FRCH_storm1_06_13_fDOM <- read.csv("Storms/FRCH_storm1_06_13_fDOM.csv", row.names = 1)
-
-FRCH_storm2_06_19 <- read.csv("Storms/FRCH_storm2_06_19.csv", row.names = 1)
-FRCH_storm2_06_19_Q <- read.csv("Storms/FRCH_storm2_06_19_Q.csv", row.names = 1)
-FRCH_storm2_06_19_NO3 <- read.csv("Storms/FRCH_storm2_06_19_NO3.csv", row.names = 1)
-FRCH_storm2_06_19_fDOM <- read.csv("Storms/FRCH_storm2_06_19_fDOM.csv", row.names = 1)
-
-FRCH_storm3a_06_20 <- read.csv("Storms/FRCH_storm3a_06_20.csv", row.names = 1)
-FRCH_storm3a_06_20_Q <- read.csv("Storms/FRCH_storm3a_06_20_Q.csv", row.names = 1)
-FRCH_storm3a_06_20_NO3 <- read.csv("Storms/FRCH_storm3a_06_20_NO3.csv", row.names = 1)
-FRCH_storm3a_06_20_fDOM <- read.csv("Storms/FRCH_storm3a_06_20_fDOM.csv", row.names = 1)
-
-FRCH_storm3b_06_22 <- read.csv("Storms/FRCH_storm3b_06_22.csv", row.names = 1)
-FRCH_storm3b_06_22_Q <- read.csv("Storms/FRCH_storm3b_06_22_Q.csv", row.names = 1)
-FRCH_storm3b_06_22_NO3 <- read.csv("Storms/FRCH_storm3b_06_22_NO3.csv", row.names = 1)
-FRCH_storm3b_06_22_fDOM <- read.csv("Storms/FRCH_storm3b_06_22_fDOM.csv", row.names = 1)
-
-FRCH_storm3c_06_28 <- read.csv("Storms/FRCH_storm3c_06_28.csv", row.names = 1)
-FRCH_storm3c_06_28_Q <- read.csv("Storms/FRCH_storm3c_06_28_Q.csv", row.names = 1)
-FRCH_storm3c_06_28_NO3 <- read.csv("Storms/FRCH_storm3c_06_28_NO3.csv", row.names = 1)
-FRCH_storm3c_06_28_fDOM <- read.csv("Storms/FRCH_storm3c_06_28_fDOM.csv", row.names = 1)
-
-FRCH_storm4a_07_07 <- read.csv("Storms/FRCH_storm4a_07_07.csv", row.names = 1)
-FRCH_storm4a_07_07_Q <- read.csv("Storms/FRCH_storm4a_07_07_Q.csv", row.names = 1)
-FRCH_storm4a_07_07_NO3 <- read.csv("Storms/FRCH_storm4a_07_07_NO3.csv", row.names = 1)
-FRCH_storm4a_07_07_fDOM <- read.csv("Storms/FRCH_storm4a_07_07_fDOM.csv", row.names = 1)
-
-FRCH_storm4b_07_09 <- read.csv("Storms/FRCH_storm4b_07_09.csv", row.names = 1)
-FRCH_storm4b_07_09_Q <- read.csv("Storms/FRCH_storm4b_07_09_Q.csv", row.names = 1)
-FRCH_storm4b_07_09_NO3 <- read.csv("Storms/FRCH_storm4b_07_09_NO3.csv", row.names = 1)
-FRCH_storm4b_07_09_fDOM <- read.csv("Storms/FRCH_storm4b_07_09_fDOM.csv", row.names = 1)
-
-FRCH_storm5_07_16 <- read.csv("Storms/FRCH_storm5_07_16.csv", row.names = 1)
-FRCH_storm5_07_16_Q <- read.csv("Storms/FRCH_storm5_07_16_Q.csv", row.names = 1)
-FRCH_storm5_07_16_NO3 <- read.csv("Storms/FRCH_storm5_07_16_NO3.csv", row.names = 1)
-FRCH_storm5_07_16_fDOM <- read.csv("Storms/FRCH_storm5_07_16_fDOM.csv", row.names = 1)
-
-FRCH_storm6_07_17 <- read.csv("Storms/FRCH_storm6_07_17.csv", row.names = 1)
-FRCH_storm6_07_17_Q <- read.csv("Storms/FRCH_storm6_07_17_Q.csv", row.names = 1)
-FRCH_storm6_07_17_NO3 <- read.csv("Storms/FRCH_storm6_07_17_NO3.csv", row.names = 1)
-FRCH_storm6_07_17_fDOM <- read.csv("Storms/FRCH_storm6_07_17_fDOM.csv", row.names = 1)
-
-FRCH_storm7_07_20 <- read.csv("Storms/FRCH_storm7_07_20.csv", row.names = 1)
-FRCH_storm7_07_20_Q <- read.csv("Storms/FRCH_storm7_07_20_Q.csv", row.names = 1)
-FRCH_storm7_07_20_NO3 <- read.csv("Storms/FRCH_storm7_07_20_NO3.csv", row.names = 1)
-FRCH_storm7_07_20_fDOM <- read.csv("Storms/FRCH_storm7_07_20_fDOM.csv", row.names = 1)
-
-FRCH_storm8_07_26 <- read.csv("Storms/FRCH_storm8_07_26.csv", row.names = 1)
-FRCH_storm8_07_26_Q <- read.csv("Storms/FRCH_storm8_07_26_Q.csv", row.names = 1)
-FRCH_storm8_07_26_NO3 <- read.csv("Storms/FRCH_storm8_07_26_NO3.csv", row.names = 1)
-FRCH_storm8_07_26_fDOM <- read.csv("Storms/FRCH_storm8_07_26_fDOM.csv", row.names = 1)
-
-FRCH_storm9a_08_01 <- read.csv("Storms/FRCH_storm9a_08_01.csv", row.names = 1)
-FRCH_storm9a_08_01_Q <- read.csv("Storms/FRCH_storm9a_08_01_Q.csv", row.names = 1)
-FRCH_storm9a_08_01_NO3 <- read.csv("Storms/FRCH_storm9a_08_01_NO3.csv", row.names = 1)
-FRCH_storm9a_08_01_fDOM <- read.csv("Storms/FRCH_storm9a_08_01_fDOM.csv", row.names = 1)
-
-FRCH_storm9b_08_02 <- read.csv("Storms/FRCH_storm9b_08_02.csv", row.names = 1)
-FRCH_storm9b_08_02_Q <- read.csv("Storms/FRCH_storm9b_08_02_Q.csv", row.names = 1)
-FRCH_storm9b_08_02_NO3 <- read.csv("Storms/FRCH_storm9b_08_02_NO3.csv", row.names = 1)
-FRCH_storm9b_08_02_fDOM <- read.csv("Storms/FRCH_storm9b_08_02_fDOM.csv", row.names = 1)
-
-# VAUL # 
-VAUL_storm1a_06_19 <- read.csv("Storms/VAUL_storm1a_06_19.csv", row.names = 1)
-VAUL_storm1a_06_19_Q <- read.csv("Storms/VAUL_storm1a_06_19_Q.csv", row.names = 1)
-VAUL_storm1a_06_19_NO3 <- read.csv("Storms/VAUL_storm1a_06_19_NO3.csv", row.names = 1)
-VAUL_storm1a_06_19_fDOM <- read.csv("Storms/VAUL_storm1a_06_19_fDOM.csv", row.names = 1)
-
-VAUL_storm1b_06_20 <- read.csv("Storms/VAUL_storm1b_06_20.csv", row.names = 1)
-VAUL_storm1b_06_20_Q <- read.csv("Storms/VAUL_storm1b_06_20_Q.csv", row.names = 1)
-VAUL_storm1b_06_20_NO3 <- read.csv("Storms/VAUL_storm1b_06_20_NO3.csv", row.names = 1)
-VAUL_storm1b_06_20_fDOM <- read.csv("Storms/VAUL_storm1b_06_20_fDOM.csv", row.names = 1)
-
-VAUL_storm1c_06_22 <- read.csv("Storms/VAUL_storm1c_06_22.csv", row.names = 1)
-VAUL_storm1c_06_22_Q <- read.csv("Storms/VAUL_storm1c_06_22_Q.csv", row.names = 1)
-VAUL_storm1c_06_22_NO3 <- read.csv("Storms/VAUL_storm1c_06_22_NO3.csv", row.names = 1)
-VAUL_storm1c_06_22_fDOM <- read.csv("Storms/VAUL_storm1c_06_22_fDOM.csv", row.names = 1)
-
-VAUL_storm2_06_28 <- read.csv("Storms/VAUL_storm2_06_28.csv", row.names = 1)
-VAUL_storm2_06_28_Q <- read.csv("Storms/VAUL_storm2_06_28_Q.csv", row.names = 1)
-VAUL_storm2_06_28_NO3 <- read.csv("Storms/VAUL_storm2_06_28_NO3.csv", row.names = 1)
-VAUL_storm2_06_28_fDOM <- read.csv("Storms/VAUL_storm2_06_28_fDOM.csv", row.names = 1)
-
-VAUL_storm3_07_09 <- read.csv("Storms/VAUL_storm3_07_09.csv", row.names = 1)
-VAUL_storm3_07_09_Q <- read.csv("Storms/VAUL_storm3_07_09_Q.csv", row.names = 1)
-VAUL_storm3_07_09_NO3 <- read.csv("Storms/VAUL_storm3_07_09_NO3.csv", row.names = 1)
-VAUL_storm3_07_09_fDOM <- read.csv("Storms/VAUL_storm3_07_09_fDOM.csv", row.names = 1)
-
-VAUL_storm4_07_12 <- read.csv("Storms/VAUL_storm4_07_12.csv", row.names = 1)
-VAUL_storm4_07_12_Q <- read.csv("Storms/VAUL_storm4_07_12_Q.csv", row.names = 1)
-VAUL_storm4_07_12_NO3 <- read.csv("Storms/VAUL_storm4_07_12_NO3.csv", row.names = 1)
-VAUL_storm4_07_12_fDOM <- read.csv("Storms/VAUL_storm4_07_12_fDOM.csv", row.names = 1)
-
-VAUL_storm5_07_27 <- read.csv("Storms/VAUL_storm5_07_27.csv", row.names = 1)
-VAUL_storm5_07_27_Q <- read.csv("Storms/VAUL_storm5_07_27_Q.csv", row.names = 1)
-VAUL_storm5_07_27_NO3 <- read.csv("Storms/VAUL_storm5_07_27_NO3.csv", row.names = 1)
-VAUL_storm5_07_27_fDOM <- read.csv("Storms/VAUL_storm5_07_27_fDOM.csv", row.names = 1)
-
-VAUL_storm6a_08_01 <- read.csv("Storms/VAUL_storm6a_08_01.csv", row.names = 1)
-VAUL_storm6a_08_01_Q <- read.csv("Storms/VAUL_storm6a_08_01_Q.csv", row.names = 1)
-VAUL_storm6a_08_01_NO3 <- read.csv("Storms/VAUL_storm6a_08_01_NO3.csv", row.names = 1)
-VAUL_storm6a_08_01_fDOM <- read.csv("Storms/VAUL_storm6a_08_01_fDOM.csv", row.names = 1)
-
-VAUL_storm6b_08_02 <- read.csv("Storms/VAUL_storm6b_08_02.csv", row.names = 1)
-VAUL_storm6b_08_02_Q <- read.csv("Storms/VAUL_storm6b_08_02_Q.csv", row.names = 1)
-VAUL_storm6b_08_02_NO3 <- read.csv("Storms/VAUL_storm6b_08_02_NO3.csv", row.names = 1)
-VAUL_storm6b_08_02_fDOM <- read.csv("Storms/VAUL_storm6b_08_02_fDOM.csv", row.names = 1)
-
-VAUL_storm7_08_08 <- read.csv("Storms/VAUL_storm7_08_08.csv", row.names = 1)
-VAUL_storm7_08_08_Q <- read.csv("Storms/VAUL_storm7_08_08_Q.csv", row.names = 1)
-VAUL_storm7_08_08_NO3 <- read.csv("Storms/VAUL_storm7_08_08_NO3.csv", row.names = 1)
-VAUL_storm7_08_08_fDOM <- read.csv("Storms/VAUL_storm7_08_08_fDOM.csv", row.names = 1)
-
-VAUL_storm8_08_11 <- read.csv("Storms/VAUL_storm8_08_11.csv", row.names = 1)
-VAUL_storm8_08_11_Q <- read.csv("Storms/VAUL_storm8_08_11_Q.csv", row.names = 1)
-VAUL_storm8_08_11_NO3 <- read.csv("Storms/VAUL_storm8_08_11_NO3.csv", row.names = 1)
-VAUL_storm8_08_11_fDOM <- read.csv("Storms/VAUL_storm8_08_11_fDOM.csv", row.names = 1)
-
-VAUL_storm9_08_12 <- read.csv("Storms/VAUL_storm9_08_12.csv", row.names = 1)
-VAUL_storm9_08_12_Q <- read.csv("Storms/VAUL_storm9_08_12_Q.csv", row.names = 1)
-VAUL_storm9_08_12_NO3 <- read.csv("Storms/VAUL_storm9_08_12_NO3.csv", row.names = 1)
-VAUL_storm9_08_12_fDOM <- read.csv("Storms/VAUL_storm9_08_12_fDOM.csv", row.names = 1)
-
-VAUL_storm10_08_25 <- read.csv("Storms/VAUL_storm10_08_25.csv", row.names = 1)
-VAUL_storm10_08_25_Q <- read.csv("Storms/VAUL_storm10_08_25_Q.csv", row.names = 1)
-VAUL_storm10_08_25_NO3 <- read.csv("Storms/VAUL_storm10_08_25_NO3.csv", row.names = 1)
-VAUL_storm10_08_25_fDOM <- read.csv("Storms/VAUL_storm10_08_25_fDOM.csv", row.names = 1)
-
-VAUL_storm11_08_27 <- read.csv("Storms/VAUL_storm11_08_27.csv", row.names = 1)
-VAUL_storm11_08_27_Q <- read.csv("Storms/VAUL_storm11_08_27_Q.csv", row.names = 1)
-VAUL_storm11_08_27_NO3 <- read.csv("Storms/VAUL_storm11_08_27_NO3.csv", row.names = 1)
-VAUL_storm11_08_27_fDOM <- read.csv("Storms/VAUL_storm11_08_27_fDOM.csv", row.names = 1)
-
-VAUL_storm12_09_01 <- read.csv("Storms/VAUL_storm12_09_01.csv", row.names = 1)
-VAUL_storm12_09_01_Q <- read.csv("Storms/VAUL_storm12_09_01_Q.csv", row.names = 1)
-VAUL_storm12_09_01_NO3 <- read.csv("Storms/VAUL_storm12_09_01_NO3.csv", row.names = 1)
-VAUL_storm12_09_01_fDOM <- read.csv("Storms/VAUL_storm12_09_01_fDOM.csv", row.names = 1)
-
-VAUL_storm13_09_03 <- read.csv("Storms/VAUL_storm13_09_03.csv", row.names = 1)
-VAUL_storm13_09_03_Q <- read.csv("Storms/VAUL_storm13_09_03_Q.csv", row.names = 1)
-VAUL_storm13_09_03_NO3 <- read.csv("Storms/VAUL_storm13_09_03_NO3.csv", row.names = 1)
-VAUL_storm13_09_03_fDOM <- read.csv("Storms/VAUL_storm13_09_03_fDOM.csv", row.names = 1)
-
-VAUL_storm14_09_06 <- read.csv("Storms/VAUL_storm14_09_06.csv", row.names = 1)
-VAUL_storm14_09_06_Q <- read.csv("Storms/VAUL_storm14_09_06_Q.csv", row.names = 1)
-VAUL_storm14_09_06_NO3 <- read.csv("Storms/VAUL_storm14_09_06_NO3.csv", row.names = 1)
-VAUL_storm14_09_06_fDOM <- read.csv("Storms/VAUL_storm14_09_06_fDOM.csv", row.names = 1)
-
-POKE_storm1_06_09 <- read.csv("Storms/POKE_storm1_06_09.csv", row.names = 1)
-POKE_storm1_06_09_Q <- read.csv("Storms/POKE_storm1_06_09_Q.csv", row.names = 1)
-POKE_storm1_06_09_NO3 <- read.csv("Storms/POKE_storm1_06_09_NO3.csv", row.names = 1)
-POKE_storm1_06_09_fDOM <- read.csv("Storms/POKE_storm1_06_09_fDOM.csv", row.names = 1)
-
-POKE_storm2_06_12 <- read.csv("Storms/POKE_storm2_06_12.csv", row.names = 1)
-POKE_storm2_06_12_Q <- read.csv("Storms/POKE_storm2_06_12_Q.csv", row.names = 1)
-POKE_storm2_06_12_NO3 <- read.csv("Storms/POKE_storm2_06_12_NO3.csv", row.names = 1)
-POKE_storm2_06_12_fDOM <- read.csv("Storms/POKE_storm2_06_12_fDOM.csv", row.names = 1)
-
-POKE_storm3_06_15 <- read.csv("Storms/POKE_storm3_06_15.csv", row.names = 1)
-POKE_storm3_06_15_Q <- read.csv("Storms/POKE_storm3_06_15_Q.csv", row.names = 1)
-POKE_storm3_06_15_NO3 <- read.csv("Storms/POKE_storm3_06_15_NO3.csv", row.names = 1)
-POKE_storm3_06_15_fDOM <- read.csv("Storms/POKE_storm3_06_15_fDOM.csv", row.names = 1)
-
-POKE_storm4a_06_19 <- read.csv("Storms/POKE_storm4a_06_19.csv", row.names = 1)
-POKE_storm4a_06_19_Q <- read.csv("Storms/POKE_storm4a_06_19_Q.csv", row.names = 1)
-POKE_storm4a_06_19_NO3 <- read.csv("Storms/POKE_storm4a_06_19_NO3.csv", row.names = 1)
-POKE_storm4a_06_19_fDOM <- read.csv("Storms/POKE_storm4a_06_19_fDOM.csv", row.names = 1)
-
-POKE_storm4b_06_20 <- read.csv("Storms/POKE_storm4b_06_20.csv", row.names = 1)
-POKE_storm4b_06_20_Q <- read.csv("Storms/POKE_storm4b_06_20_Q.csv", row.names = 1)
-POKE_storm4b_06_20_NO3 <- read.csv("Storms/POKE_storm4b_06_20_NO3.csv", row.names = 1)
-POKE_storm4b_06_20_fDOM <- read.csv("Storms/POKE_storm4b_06_20_fDOM.csv", row.names = 1)
-
-POKE_storm4c_06_21 <- read.csv("Storms/POKE_storm4c_06_21.csv", row.names = 1)
-POKE_storm4c_06_21_Q <- read.csv("Storms/POKE_storm4c_06_21_Q.csv", row.names = 1)
-POKE_storm4c_06_21_NO3 <- read.csv("Storms/POKE_storm4c_06_21_NO3.csv", row.names = 1)
-POKE_storm4c_06_21_fDOM <- read.csv("Storms/POKE_storm4c_06_21_fDOM.csv", row.names = 1)
-
-POKE_storm5_06_22 <- read.csv("Storms/POKE_storm5_06_22.csv", row.names = 1)
-POKE_storm5_06_22_Q <- read.csv("Storms/POKE_storm5_06_22_Q.csv", row.names = 1)
-POKE_storm5_06_22_NO3 <- read.csv("Storms/POKE_storm5_06_22_NO3.csv", row.names = 1)
-POKE_storm5_06_22_fDOM <- read.csv("Storms/POKE_storm5_06_22_fDOM.csv", row.names = 1)
-
-POKE_storm6_06_29 <- read.csv("Storms/POKE_storm6_06_29.csv", row.names = 1)
-POKE_storm6_06_29_Q <- read.csv("Storms/POKE_storm6_06_29_Q.csv", row.names = 1)
-POKE_storm6_06_29_NO3 <- read.csv("Storms/POKE_storm6_06_29_NO3.csv", row.names = 1)
-POKE_storm6_06_29_fDOM <- read.csv("Storms/POKE_storm6_06_29_fDOM.csv", row.names = 1)
-
-POKE_storm7_07_04 <- read.csv("Storms/POKE_storm7_07_04.csv", row.names = 1)
-POKE_storm7_07_04_Q <- read.csv("Storms/POKE_storm7_07_04_Q.csv", row.names = 1)
-POKE_storm7_07_04_NO3 <- read.csv("Storms/POKE_storm7_07_04_NO3.csv", row.names = 1)
-POKE_storm7_07_04_fDOM <- read.csv("Storms/POKE_storm7_07_04_fDOM.csv", row.names = 1)
-
-POKE_storm8_07_09 <- read.csv("Storms/POKE_storm8_07_09.csv", row.names = 1)
-POKE_storm8_07_09_Q <- read.csv("Storms/POKE_storm8_07_09_Q.csv", row.names = 1)
-POKE_storm8_07_09_NO3 <- read.csv("Storms/POKE_storm8_07_09_NO3.csv", row.names = 1)
-POKE_storm8_07_09_fDOM <- read.csv("Storms/POKE_storm8_07_09_fDOM.csv", row.names = 1)
-
-POKE_storm9_07_12 <- read.csv("Storms/POKE_storm9_07_12.csv", row.names = 1)
-POKE_storm9_07_12_Q <- read.csv("Storms/POKE_storm9_07_12_Q.csv", row.names = 1)
-POKE_storm9_07_12_NO3 <- read.csv("Storms/POKE_storm9_07_12_NO3.csv", row.names = 1)
-POKE_storm9_07_12_fDOM <- read.csv("Storms/POKE_storm9_07_12_fDOM.csv", row.names = 1)
-
-POKE_storm10_07_16 <- read.csv("Storms/POKE_storm10_07_16.csv", row.names = 1)
-POKE_storm10_07_16_Q <- read.csv("Storms/POKE_storm10_07_16_Q.csv", row.names = 1)
-POKE_storm10_07_16_NO3 <- read.csv("Storms/POKE_storm10_07_16_NO3.csv", row.names = 1)
-POKE_storm10_07_16_fDOM <- read.csv("Storms/POKE_storm10_07_16_fDOM.csv", row.names = 1)
-
-POKE_storm11_07_18 <- read.csv("Storms/POKE_storm11_07_18.csv", row.names = 1)
-POKE_storm11_07_18_Q <- read.csv("Storms/POKE_storm11_07_18_Q.csv", row.names = 1)
-POKE_storm11_07_18_NO3 <- read.csv("Storms/POKE_storm11_07_18_NO3.csv", row.names = 1)
-POKE_storm11_07_18_fDOM <- read.csv("Storms/POKE_storm11_07_18_fDOM.csv", row.names = 1)
-
-POKE_storm12_07_20 <- read.csv("Storms/POKE_storm12_07_20.csv", row.names = 1)
-POKE_storm12_07_20_Q <- read.csv("Storms/POKE_storm12_07_20_Q.csv", row.names = 1)
-POKE_storm12_07_20_NO3 <- read.csv("Storms/POKE_storm12_07_20_NO3.csv", row.names = 1)
-POKE_storm12_07_20_fDOM <- read.csv("Storms/POKE_storm12_07_20_fDOM.csv", row.names = 1)
-
-POKE_storm13_07_24 <- read.csv("Storms/POKE_storm13_07_24.csv", row.names = 1)
-POKE_storm13_07_24_Q <- read.csv("Storms/POKE_storm13_07_24_Q.csv", row.names = 1)
-POKE_storm13_07_24_NO3 <- read.csv("Storms/POKE_storm13_07_24_NO3.csv", row.names = 1)
-POKE_storm13_07_24_fDOM <- read.csv("Storms/POKE_storm13_07_24_fDOM.csv", row.names = 1)
-
-POKE_storm14_07_26 <- read.csv("Storms/POKE_storm14_07_26.csv", row.names = 1)
-POKE_storm14_07_26_Q <- read.csv("Storms/POKE_storm14_07_26_Q.csv", row.names = 1)
-POKE_storm14_07_26_NO3 <- read.csv("Storms/POKE_storm14_07_26_NO3.csv", row.names = 1)
-POKE_storm14_07_26_fDOM <- read.csv("Storms/POKE_storm14_07_26_fDOM.csv", row.names = 1)
-
-POKE_storm15_08_02 <- read.csv("Storms/POKE_storm15_08_02.csv", row.names = 1)
-POKE_storm15_08_02_Q <- read.csv("Storms/POKE_storm15_08_02_Q.csv", row.names = 1)
-POKE_storm15_08_02_NO3 <- read.csv("Storms/POKE_storm15_08_02_NO3.csv", row.names = 1)
-POKE_storm15_08_02_fDOM <- read.csv("Storms/POKE_storm15_08_02_fDOM.csv", row.names = 1)
-
-POKE_storm16_08_12 <- read.csv("Storms/POKE_storm16_08_12.csv", row.names = 1)
-POKE_storm16_08_12_Q <- read.csv("Storms/POKE_storm16_08_12_Q.csv", row.names = 1)
-POKE_storm16_08_12_NO3 <- read.csv("Storms/POKE_storm16_08_12_NO3.csv", row.names = 1)
-POKE_storm16_08_12_fDOM <- read.csv("Storms/POKE_storm16_08_12_fDOM.csv", row.names = 1)
-
-POKE_storm17_08_24 <- read.csv("Storms/POKE_storm17_08_24.csv", row.names = 1)
-POKE_storm17_08_24_Q <- read.csv("Storms/POKE_storm17_08_24_Q.csv", row.names = 1)
-POKE_storm17_08_24_NO3 <- read.csv("Storms/POKE_storm17_08_24_NO3.csv", row.names = 1)
-POKE_storm17_08_24_fDOM <- read.csv("Storms/POKE_storm17_08_24_fDOM.csv", row.names = 1)
-
-POKE_storm18_08_25 <- read.csv("Storms/POKE_storm18_08_25.csv", row.names = 1)
-POKE_storm18_08_25_Q <- read.csv("Storms/POKE_storm18_08_25_Q.csv", row.names = 1)
-POKE_storm18_08_25_NO3 <- read.csv("Storms/POKE_storm18_08_25_NO3.csv", row.names = 1)
-POKE_storm18_08_25_fDOM <- read.csv("Storms/POKE_storm18_08_25_fDOM.csv", row.names = 1)
-
-POKE_storm19_08_27 <- read.csv("Storms/POKE_storm19_08_27.csv", row.names = 1)
-POKE_storm19_08_27_Q <- read.csv("Storms/POKE_storm19_08_27_Q.csv", row.names = 1)
-POKE_storm19_08_27_NO3 <- read.csv("Storms/POKE_storm19_08_27_NO3.csv", row.names = 1)
-POKE_storm19_08_27_fDOM <- read.csv("Storms/POKE_storm19_08_27_fDOM.csv", row.names = 1)
-
-POKE_storm20_09_01 <- read.csv("Storms/POKE_storm20_09_01.csv", row.names = 1)
-POKE_storm20_09_01_Q <- read.csv("Storms/POKE_storm20_09_01_Q.csv", row.names = 1)
-POKE_storm20_09_01_NO3 <- read.csv("Storms/POKE_storm20_09_01_NO3.csv", row.names = 1)
-POKE_storm20_09_01_fDOM <- read.csv("Storms/POKE_storm20_09_01_fDOM.csv", row.names = 1)
-
-POKE_storm21_09_03 <- read.csv("Storms/POKE_storm21_09_03.csv", row.names = 1)
-POKE_storm21_09_03_Q <- read.csv("Storms/POKE_storm21_09_03_Q.csv", row.names = 1)
-POKE_storm21_09_03_NO3 <- read.csv("Storms/POKE_storm21_09_03_NO3.csv", row.names = 1)
-POKE_storm21_09_03_fDOM <- read.csv("Storms/POKE_storm21_09_03_fDOM.csv", row.names = 1)
-
-POKE_storm22a_09_07 <- read.csv("Storms/POKE_storm22a_09_07.csv", row.names = 1)
-POKE_storm22a_09_07_Q <- read.csv("Storms/POKE_storm22a_09_07_Q.csv", row.names = 1)
-POKE_storm22a_09_07_NO3 <- read.csv("Storms/POKE_storm22a_09_07_NO3.csv", row.names = 1)
-POKE_storm22a_09_07_fDOM <- read.csv("Storms/POKE_storm22a_09_07_fDOM.csv", row.names = 1)
-
-POKE_storm22b_09_09 <- read.csv("Storms/POKE_storm22b_09_09.csv", row.names = 1)
-POKE_storm22b_09_09_Q <- read.csv("Storms/POKE_storm22b_09_09_Q.csv", row.names = 1)
-POKE_storm22b_09_09_NO3 <- read.csv("Storms/POKE_storm22b_09_09_NO3.csv", row.names = 1)
-POKE_storm22b_09_09_fDOM <- read.csv("Storms/POKE_storm22b_09_09_fDOM.csv", row.names = 1)
-######################################## 2018 ##############################################################################
+#MOOS_storm1_06_21 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21.csv")
+MOOS_storm1_06_21_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21_Q.csv")
+MOOS_storm1_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21_NO3.csv")
+MOOS_storm1_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21_fDOM.csv")
+MOOS_storm1_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21_SPC.csv")
+MOOS_storm1_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm1_06_21_Turb.csv")
+
+#MOOS_storm2a_06_29 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29.csv")
+#MOOS_storm2a_06_29_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29_Q.csv")
+#MOOS_storm2a_06_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29_NO3.csv")
+#MOOS_storm2a_06_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29_fDOM.csv")
+#MOOS_storm2a_06_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29_SPC.csv")
+#MOOS_storm2a_06_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2a_06_29_Turb.csv")
+
+#MOOS_storm2b_07_01 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01.csv")
+#MOOS_storm2b_07_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01_Q.csv")
+#MOOS_storm2b_07_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01_NO3.csv")
+#MOOS_storm2b_07_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01_fDOM.csv")
+#MOOS_storm2b_07_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01_SPC.csv")
+#MOOS_storm2b_07_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2b_07_01_Turb.csv")
+
+#MOOS_storm2c_07_04 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04.csv")
+#MOOS_storm2c_07_04_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04_Q.csv")
+#MOOS_storm2c_07_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04_NO3.csv")
+#MOOS_storm2c_07_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04_fDOM.csv")
+#MOOS_storm2c_07_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04_SPC.csv")
+#MOOS_storm2c_07_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm2c_07_04_Turb.csv")
+
+#MOOS_storm3_07_09 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09.csv")
+MOOS_storm3_07_09_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09_Q.csv")
+MOOS_storm3_07_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09_NO3.csv")
+#MOOS_storm3_07_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09_fDOM.csv")
+#MOOS_storm3_07_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09_SPC.csv")
+#MOOS_storm3_07_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm3_07_09_Turb.csv")
+
+#MOOS_storm4_07_15 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15.csv")
+MOOS_storm4_07_15_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15_Q.csv")
+MOOS_storm4_07_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15_NO3.csv")
+MOOS_storm4_07_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15_fDOM.csv")
+MOOS_storm4_07_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15_SPC.csv")
+MOOS_storm4_07_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm4_07_15_Turb.csv")
+
+#MOOS_storm5_08_04 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04.csv")
+MOOS_storm5_08_04_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04_Q.csv")
+MOOS_storm5_08_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04_NO3.csv")
+MOOS_storm5_08_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04_fDOM.csv")
+MOOS_storm5_08_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04_SPC.csv")
+MOOS_storm5_08_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm5_08_04_Turb.csv")
+
+#MOOS_storm6_08_13 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13.csv")
+MOOS_storm6_08_13_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13_Q.csv")
+MOOS_storm6_08_13_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13_NO3.csv")
+MOOS_storm6_08_13_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13_fDOM.csv")
+MOOS_storm6_08_13_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13_SPC.csv")
+MOOS_storm6_08_13_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm6_08_13_Turb.csv")
+
+#MOOS_storm7_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23.csv")
+MOOS_storm7_08_23_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23_Q.csv")
+MOOS_storm7_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23_NO3.csv")
+MOOS_storm7_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23_fDOM.csv")
+MOOS_storm7_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23_SPC.csv")
+MOOS_storm7_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm7_08_23_Turb.csv")
+
+#MOOS_storm8a_08_26 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26.csv")
+MOOS_storm8a_08_26_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26_Q.csv")
+MOOS_storm8a_08_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26_NO3.csv")
+MOOS_storm8a_08_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26_fDOM.csv")
+MOOS_storm8a_08_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26_SPC.csv")
+MOOS_storm8a_08_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8a_08_26_Turb.csv")
+
+#MOOS_storm8b_08_27 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27.csv")
+MOOS_storm8b_08_27_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27_Q.csv")
+MOOS_storm8b_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27_NO3.csv")
+MOOS_storm8b_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27_fDOM.csv")
+MOOS_storm8b_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27_SPC.csv")
+MOOS_storm8b_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm8b_08_27_Turb.csv")
+
+#MOOS_storm9_08_29 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29.csv")
+MOOS_storm9_08_29_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29_Q.csv")
+MOOS_storm9_08_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29_NO3.csv")
+MOOS_storm9_08_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29_fDOM.csv")
+MOOS_storm9_08_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29_SPC.csv")
+MOOS_storm9_08_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm9_08_29_Turb.csv")
+
+#MOOS_storm10_09_01 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01.csv")
+MOOS_storm10_09_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01_Q.csv")
+MOOS_storm10_09_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01_NO3.csv")
+MOOS_storm10_09_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01_fDOM.csv")
+MOOS_storm10_09_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01_SPC.csv")
+MOOS_storm10_09_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm10_09_01_Turb.csv")
+
+#MOOS_storm11a_09_22 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22.csv")
+MOOS_storm11a_09_22_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22_Q.csv")
+MOOS_storm11a_09_22_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22_NO3.csv")
+MOOS_storm11a_09_22_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22_fDOM.csv")
+MOOS_storm11a_09_22_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22_SPC.csv")
+MOOS_storm11a_09_22_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11a_09_22_Turb.csv")
+
+#MOOS_storm11b_09_23 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23.csv")
+MOOS_storm11b_09_23_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23_Q.csv")
+MOOS_storm11b_09_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23_NO3.csv")
+MOOS_storm11b_09_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23_fDOM.csv")
+MOOS_storm11b_09_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23_SPC.csv")
+MOOS_storm11b_09_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm11b_09_23_Turb.csv")
+
+#MOOS_storm12_09_24 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24.csv")
+MOOS_storm12_09_24_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24_Q.csv")
+MOOS_storm12_09_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24_NO3.csv")
+MOOS_storm12_09_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24_fDOM.csv")
+MOOS_storm12_09_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24_SPC.csv")
+MOOS_storm12_09_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/MOOS/MOOS_storm12_09_24_Turb.csv")
+
+# CARI #
+#CARI_storm1_06_10 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10.csv")
+CARI_storm1_06_10_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10_Q.csv")
+#CARI_storm1_06_10_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10_NO3.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+CARI_storm1_06_10_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm1_06_10_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10_SPC.csv")
+CARI_storm1_06_10_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm1_06_10_Turb.csv")
+
+#CARI_storm2_06_21 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21.csv")
+CARI_storm2_06_21_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21_Q.csv")
+CARI_storm2_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21_NO3.csv")
+CARI_storm2_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm2_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21_SPC.csv")
+CARI_storm2_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21_Turb.csv")
+
+#CARI_storm3_06_29 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm2_06_21.csv")
+CARI_storm3_06_29_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm3_06_29_Q.csv")
+CARI_storm3_06_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm3_06_29_NO3.csv")
+CARI_storm3_06_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm3_06_29_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm3_06_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm3_06_29_SPC.csv")
+CARI_storm3_06_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm3_06_29_Turb.csv")
+
+#CARI_storm4a_06_30 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30.csv")
+CARI_storm4a_06_30_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30_Q.csv")
+#CARI_storm4a_06_30_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30_NO3.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+CARI_storm4a_06_30_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30_fDOM.csv")
+CARI_storm4a_06_30_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30_SPC.csv")
+CARI_storm4a_06_30_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4a_06_30_Turb.csv")
+
+#CARI_storm4b_07_01 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01.csv")
+CARI_storm4b_07_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01_Q.csv")
+#CARI_storm4b_07_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01_NO3.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+CARI_storm4b_07_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm4b_07_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01_SPC.csv")
+CARI_storm4b_07_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm4b_07_01_Turb.csv")
+
+#CARI_storm5a_08_04 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04.csv")
+CARI_storm5a_08_04_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04_Q.csv")
+CARI_storm5a_08_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04_NO3.csv")
+CARI_storm5a_08_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm5a_08_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04_SPC.csv")
+CARI_storm5a_08_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5a_08_04_Turb.csv")
+
+#CARI_storm5b_08_05 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05.csv")
+CARI_storm5b_08_05_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05_Q.csv")
+CARI_storm5b_08_05_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05_NO3.csv")
+CARI_storm5b_08_05_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm5b_08_05_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05_SPC.csv")
+CARI_storm5b_08_05_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5b_08_05_Turb.csv")
+
+#CARI_storm5c_08_06 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06.csv")
+CARI_storm5c_08_06_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06_Q.csv")
+CARI_storm5c_08_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06_NO3.csv")
+CARI_storm5c_08_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm5c_08_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06_SPC.csv")
+CARI_storm5c_08_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm5c_08_06_Turb.csv")
+
+#CARI_storm6_08_13 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13.csv")
+CARI_storm6_08_13_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13_Q.csv")
+CARI_storm6_08_13_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13_NO3.csv")
+CARI_storm6_08_13_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm6_08_13_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13_SPC.csv")
+CARI_storm6_08_13_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm6_08_13_Turb.csv")
+
+#CARI_storm7_08_21 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21.csv")
+CARI_storm7_08_21_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21_Q.csv")
+CARI_storm7_08_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21_NO3.csv")
+CARI_storm7_08_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm7_08_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21_SPC.csv")
+CARI_storm7_08_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm7_08_21_Turb.csv")
+
+#CARI_storm8_08_24 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24.csv")
+CARI_storm8_08_24_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24_Q.csv")
+CARI_storm8_08_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24_NO3.csv")
+CARI_storm8_08_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm8_08_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24_SPC.csv")
+CARI_storm8_08_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm8_08_24_Turb.csv")
+
+#CARI_storm9_08_26 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26.csv")
+CARI_storm9_08_26_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26_Q.csv")
+CARI_storm9_08_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26_NO3.csv")
+CARI_storm9_08_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm9_08_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26_SPC.csv")
+CARI_storm9_08_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm9_08_26_Turb.csv")
+
+#CARI_storm10_08_30 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30.csv")
+CARI_storm10_08_30_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30_Q.csv")
+CARI_storm10_08_30_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30_NO3.csv")
+CARI_storm10_08_30_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm10_08_30_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30_SPC.csv")
+CARI_storm10_08_30_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm10_08_30_Turb.csv")
+
+#CARI_storm11_09_02 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02.csv")
+CARI_storm11_09_02_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02_Q.csv")
+CARI_storm11_09_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02_NO3.csv")
+CARI_storm11_09_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm11_09_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02_SPC.csv")
+CARI_storm11_09_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm11_09_02_Turb.csv")
+
+#CARI_storm12a_09_20 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20.csv")
+CARI_storm12a_09_20_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20_Q.csv")
+CARI_storm12a_09_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20_NO3.csv")
+CARI_storm12a_09_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20_fDOM.csv", 
+                                     col_types = cols(datavalue = col_double()))
+CARI_storm12a_09_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20_SPC.csv")
+CARI_storm12a_09_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12a_09_20_Turb.csv")
+
+#CARI_storm12b_09_25 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25.csv")
+CARI_storm12b_09_25_Q <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25_Q.csv")
+CARI_storm12b_09_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25_NO3.csv")
+CARI_storm12b_09_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25_fDOM.csv", 
+                                     col_types = cols(datavalue = col_double()))
+CARI_storm12b_09_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25_SPC.csv")
+CARI_storm12b_09_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2018/CARI/CARI_storm12b_09_25_Turb.csv")
+
+
+# normalize
+dfList <- Filter(function(x) is(x, "data.frame"), mget(ls()))
+
+for(i in 1:length(dfList)) {
+  dfList[[i]][["datavalue"]] = 
+    (dfList[[i]][["datavalue"]] - min(dfList[[i]][["datavalue"]], na.rm=T)) / (max(dfList[[i]][["datavalue"]], na.rm=T) - min(dfList[[i]][["datavalue"]], na.rm=T))
+}
+list2env(dfList ,.GlobalEnv)
 
 # FRCH #
  #fxn: plot hysteresis loop #
@@ -470,6 +413,22 @@ hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
 
 # plot FRCH loops #
 # NO3
+multiplot(FRCH_storm1_06_21_NO3.p)
+multiplot(FRCH_storm2a_06_29_NO3.p)
+multiplot(FRCH_storm2b_07_04_NO3.p)
+
+multiplot(FRCH_storm3_07_10_NO3.p)
+which(FRCH_storm3_07_10_NO3$datavalue< 0.25)
+FRCH_storm3_07_10_NO3[38,3] <- NA
+
+multiplot(FRCH_storm4a_07_15_NO3.p)
+
+multiplot(FRCH_storm4b_07_16_NO3.p)
+which(FRCH_storm4b_07_16_NO3$datavalue < 0.25)
+FRCH_storm4b_07_16_NO3[83,3] <- NA
+
+multiplot(FRCH_storm5_08_04_NO3.p)
+
 FRCH_storm1_06_21_NO3.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_NO3, "FRCH", "NO3", "0621")
 FRCH_storm2a_06_29_NO3.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_NO3, "FRCH", "NO3", "0629")
 FRCH_storm2b_07_04_NO3.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_NO3, "FRCH", "NO3", "0704")
@@ -477,22 +436,53 @@ FRCH_storm3_07_10_NO3.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_NO3, 
 FRCH_storm4a_07_15_NO3.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_NO3, "FRCH", "NO3", "0715a")
 FRCH_storm4b_07_16_NO3.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_NO3, "FRCH", "NO3", "0716b")
 FRCH_storm5_08_04_NO3.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_NO3, "FRCH", "NO3", "0804")
-FRCH_storm6_08_13_NO3.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_NO3, "FRCH", "NO3", "0813")
-FRCH_storm7_08_23_NO3.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_NO3, "FRCH", "NO3", "0823")
-FRCH_storm8a_08_26_NO3.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_NO3, "FRCH", "NO3", "0826a")
-FRCH_storm8b_08_27_NO3.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_NO3, "FRCH", "NO3", "0827b")
-FRCH_storm9_08_29_NO3.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_NO3, "FRCH", "NO3", "0829")
-FRCH_storm10a_09_01_NO3.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_NO3, "FRCH", "NO3", "0901a")
-FRCH_storm10b_09_04_NO3.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_NO3, "FRCH", "NO3", "0904b")
-FRCH_storm11a_09_22_NO3.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_NO3, "FRCH", "NO3", "0922a")
-FRCH_storm11b_09_24_NO3.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_NO3, "FRCH", "NO3", "0924b")
+#FRCH_storm6_08_13_NO3.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_NO3, "FRCH", "NO3", "0813")
+#FRCH_storm7_08_23_NO3.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_NO3, "FRCH", "NO3", "0823")
+#FRCH_storm8a_08_26_NO3.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_NO3, "FRCH", "NO3", "0826a")
+#FRCH_storm8b_08_27_NO3.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_NO3, "FRCH", "NO3", "0827b")
+#FRCH_storm9_08_29_NO3.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_NO3, "FRCH", "NO3", "0829")
+#FRCH_storm10_09_01_NO3.p = hyst_plot(FRCH_storm10_09_01_Q, FRCH_storm10_09_01_NO3, "FRCH", "NO3", "0901")
+#FRCH_storm11a_09_22_NO3.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_NO3, "FRCH", "NO3", "0922a")
+#FRCH_storm11b_09_24_NO3.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_NO3, "FRCH", "NO3", "0924b")
 
 # fDOM #
+multiplot(FRCH_storm1_06_21_fDOM.p)
+which(FRCH_storm1_06_21_fDOM$datavalue < 0.25)
+FRCH_storm1_06_21_fDOM[38,3] <- NA
+
+multiplot(FRCH_storm4b_07_16_fDOM.p)
+which(FRCH_storm4b_07_16_fDOM$datavalue < 0.25)
+FRCH_storm4b_07_16_fDOM[95,3] <- NA
+
+multiplot(FRCH_storm5_08_04_fDOM.p)
+which(FRCH_storm5_08_04_fDOM$datavalue < 0.25)
+FRCH_storm5_08_04_fDOM[c(180:182),3] <- NA
+
+multiplot(FRCH_storm6_08_13_fDOM.p)
+which(FRCH_storm6_08_13_fDOM$datavalue < 0.25)
+FRCH_storm6_08_13_fDOM[c(198,199),3] <- NA
+
+multiplot(FRCH_storm7_08_23_fDOM.p)
+multiplot(FRCH_storm8a_08_26_fDOM.p)
+multiplot(FRCH_storm8b_08_27_fDOM.p)
+
+multiplot(FRCH_storm9_08_29_fDOM.p)
+which(FRCH_storm9_08_29_fDOM$datavalue < 0.25)
+FRCH_storm9_08_29_fDOM[37,3] <- NA
+
+multiplot(FRCH_storm10_09_01_fDOM.p)
+which(FRCH_storm10_09_01_fDOM$datavalue < 0.25)
+FRCH_storm10_09_01_fDOM[591,3] <- NA
+
+multiplot(FRCH_storm11a_09_22_fDOM.p)
+multiplot(FRCH_storm11b_09_24_fDOM.p)
+
+
 FRCH_storm1_06_21_fDOM.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_fDOM, "FRCH", "fDOM", "0621")
-FRCH_storm2a_06_29_fDOM.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_fDOM, "FRCH", "fDOM", "0629")
-FRCH_storm2b_07_04_fDOM.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_fDOM, "FRCH", "fDOM", "0704")
-FRCH_storm3_07_10_fDOM.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_fDOM, "FRCH", "fDOM", "0710")
-FRCH_storm4a_07_15_fDOM.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_fDOM, "FRCH", "fDOM", "0715a")
+#FRCH_storm2a_06_29_fDOM.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_fDOM, "FRCH", "fDOM", "0629")
+#FRCH_storm2b_07_04_fDOM.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_fDOM, "FRCH", "fDOM", "0704")
+#FRCH_storm3_07_10_fDOM.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_fDOM, "FRCH", "fDOM", "0710")
+#FRCH_storm4a_07_15_fDOM.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_fDOM, "FRCH", "fDOM", "0715a")
 FRCH_storm4b_07_16_fDOM.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_fDOM, "FRCH", "fDOM", "0716b")
 FRCH_storm5_08_04_fDOM.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_fDOM, "FRCH", "fDOM", "0804")
 FRCH_storm6_08_13_fDOM.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_fDOM, "FRCH", "fDOM", "0813")
@@ -500,17 +490,48 @@ FRCH_storm7_08_23_fDOM.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_fDOM
 FRCH_storm8a_08_26_fDOM.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_fDOM, "FRCH", "fDOM", "0826a")
 FRCH_storm8b_08_27_fDOM.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_fDOM, "FRCH", "fDOM", "0827b")
 FRCH_storm9_08_29_fDOM.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_fDOM, "FRCH", "fDOM", "0829")
-FRCH_storm10a_09_01_fDOM.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_fDOM, "FRCH", "fDOM", "0901a")
-FRCH_storm10b_09_04_fDOM.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_fDOM, "FRCH", "fDOM", "0904b")
+FRCH_storm10_09_01_fDOM.p = hyst_plot(FRCH_storm10_09_01_Q, FRCH_storm10_09_01_fDOM, "FRCH", "fDOM", "0901a")
 FRCH_storm11a_09_22_fDOM.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_fDOM, "FRCH", "fDOM", "0922a")
 FRCH_storm11b_09_24_fDOM.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_fDOM, "FRCH", "fDOM", "0924b")
 
 # SPC #
+multiplot(FRCH_storm1_06_21_SPC.p)
+
+multiplot(FRCH_storm4b_07_16_SPC.p)
+which(FRCH_storm4b_07_16_SPC$datavalue < 0.25)
+FRCH_storm4b_07_16_SPC[95,3] <- NA
+
+multiplot(FRCH_storm5_08_04_SPC.p)
+which(FRCH_storm5_08_04_SPC$datavalue < 0.25)
+FRCH_storm5_08_04_SPC[c(180:182),3] <- NA
+
+multiplot(FRCH_storm6_08_13_SPC.p)
+which(FRCH_storm6_08_13_SPC$datavalue < 0.25)
+FRCH_storm6_08_13_SPC[c(198,199),3] <- NA
+
+multiplot(FRCH_storm7_08_23_SPC.p)
+multiplot(FRCH_storm8a_08_26_SPC.p)
+multiplot(FRCH_storm8b_08_27_SPC.p)
+
+multiplot(FRCH_storm9_08_29_SPC.p)
+which(FRCH_storm9_08_29_SPC$datavalue < 0.25)
+FRCH_storm9_08_29_SPC[37,3] <- NA
+
+multiplot(FRCH_storm10_09_01_SPC.p)
+which(FRCH_storm10_09_01_SPC$datavalue < 0.25)
+FRCH_storm10_09_01_SPC[591,3] <- NA
+
+multiplot(FRCH_storm11a_09_22_SPC.p)
+
+multiplot(FRCH_storm11b_09_24_SPC.p)
+which(FRCH_storm11b_09_24_SPC$datavalue < 0.25)
+FRCH_storm11b_09_24_SPC[c(213:214),3] <- NA
+
 FRCH_storm1_06_21_SPC.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_SPC, "FRCH", "SPC", "0621")
-FRCH_storm2a_06_29_SPC.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_SPC, "FRCH", "SPC", "0629")
-FRCH_storm2b_07_04_SPC.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_SPC, "FRCH", "SPC", "0704")
-FRCH_storm3_07_10_SPC.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_SPC, "FRCH", "SPC", "0710")
-FRCH_storm4a_07_15_SPC.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_SPC, "FRCH", "SPC", "0715a")
+#FRCH_storm2a_06_29_SPC.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_SPC, "FRCH", "SPC", "0629")
+#FRCH_storm2b_07_04_SPC.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_SPC, "FRCH", "SPC", "0704")
+#FRCH_storm3_07_10_SPC.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_SPC, "FRCH", "SPC", "0710")
+#FRCH_storm4a_07_15_SPC.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_SPC, "FRCH", "SPC", "0715a")
 FRCH_storm4b_07_16_SPC.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_SPC, "FRCH", "SPC", "0716b")
 FRCH_storm5_08_04_SPC.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_SPC, "FRCH", "SPC", "0804")
 FRCH_storm6_08_13_SPC.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_SPC, "FRCH", "SPC", "0813")
@@ -518,17 +539,42 @@ FRCH_storm7_08_23_SPC.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_SPC, 
 FRCH_storm8a_08_26_SPC.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_SPC, "FRCH", "SPC", "0826a")
 FRCH_storm8b_08_27_SPC.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_SPC, "FRCH", "SPC", "0827b")
 FRCH_storm9_08_29_SPC.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_SPC, "FRCH", "SPC", "0829")
-FRCH_storm10a_09_01_SPC.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_SPC, "FRCH", "SPC", "0901a")
-FRCH_storm10b_09_04_SPC.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_SPC, "FRCH", "SPC", "0904b")
+FRCH_storm10_09_01_SPC.p = hyst_plot(FRCH_storm10_09_01_Q, FRCH_storm10_09_01_SPC, "FRCH", "SPC", "0901a")
 FRCH_storm11a_09_22_SPC.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_SPC, "FRCH", "SPC", "0922a")
 FRCH_storm11b_09_24_SPC.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_SPC, "FRCH", "SPC", "0924b")
 
 # turb
+multiplot(FRCH_storm1_06_21_turb.p)
+which(FRCH_storm1_06_21_turb$datavalue > 0.25)
+FRCH_storm1_06_21_turb[38,3] <- NA
+
+multiplot(FRCH_storm4b_07_16_turb.p)
+which(FRCH_storm4b_07_16_turb$datavalue < 0.25)
+FRCH_storm4b_07_16_turb[95,3] <- NA
+
+multiplot(FRCH_storm5_08_04_turb.p)
+
+multiplot(FRCH_storm6_08_13_turb.p)
+which(FRCH_storm6_08_13_turb$datavalue < 0.15)
+FRCH_storm6_08_13_turb[c(198,199),3] <- NA
+
+multiplot(FRCH_storm7_08_23_turb.p)
+multiplot(FRCH_storm8a_08_26_turb.p)
+multiplot(FRCH_storm8b_08_27_turb.p)
+
+multiplot(FRCH_storm9_08_29_turb.p)
+which(FRCH_storm9_08_29_turb$datavalue < 0.15)
+FRCH_storm9_08_29_turb[37,3] <- NA
+
+multiplot(FRCH_storm10_09_01_turb.p)
+multiplot(FRCH_storm11a_09_22_turb.p)
+multiplot(FRCH_storm11b_09_24_turb.p)
+
 FRCH_storm1_06_21_turb.p = hyst_plot(FRCH_storm1_06_21_Q, FRCH_storm1_06_21_turb, "FRCH", "turb", "0621")
-FRCH_storm2a_06_29_turb.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_turb, "FRCH", "turb", "0629")
-FRCH_storm2b_07_04_turb.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_turb, "FRCH", "turb", "0704")
-FRCH_storm3_07_10_turb.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_turb, "FRCH", "turb", "0710")
-FRCH_storm4a_07_15_turb.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_turb, "FRCH", "turb", "0715a")
+#FRCH_storm2a_06_29_turb.p = hyst_plot(FRCH_storm2a_06_29_Q, FRCH_storm2a_06_29_turb, "FRCH", "turb", "0629")
+#FRCH_storm2b_07_04_turb.p = hyst_plot(FRCH_storm2b_07_04_Q, FRCH_storm2b_07_04_turb, "FRCH", "turb", "0704")
+#FRCH_storm3_07_10_turb.p = hyst_plot(FRCH_storm3_07_10_Q, FRCH_storm3_07_10_turb, "FRCH", "turb", "0710")
+#FRCH_storm4a_07_15_turb.p = hyst_plot(FRCH_storm4a_07_15_Q, FRCH_storm4a_07_15_turb, "FRCH", "turb", "0715a")
 FRCH_storm4b_07_16_turb.p = hyst_plot(FRCH_storm4b_07_16_Q, FRCH_storm4b_07_16_turb, "FRCH", "turb", "0716b")
 FRCH_storm5_08_04_turb.p = hyst_plot(FRCH_storm5_08_04_Q, FRCH_storm5_08_04_turb, "FRCH", "turb", "0804")
 FRCH_storm6_08_13_turb.p = hyst_plot(FRCH_storm6_08_13_Q, FRCH_storm6_08_13_turb, "FRCH", "turb", "0813")
@@ -536,8 +582,7 @@ FRCH_storm7_08_23_turb.p = hyst_plot(FRCH_storm7_08_23_Q, FRCH_storm7_08_23_turb
 FRCH_storm8a_08_26_turb.p = hyst_plot(FRCH_storm8a_08_26_Q, FRCH_storm8a_08_26_fDOM, "FRCH", "turb", "0826a")
 FRCH_storm8b_08_27_turb.p = hyst_plot(FRCH_storm8b_08_27_Q, FRCH_storm8b_08_27_turb, "FRCH", "turb", "0827b")
 FRCH_storm9_08_29_turb.p = hyst_plot(FRCH_storm9_08_29_Q, FRCH_storm9_08_29_turb, "FRCH", "turb", "0829")
-FRCH_storm10a_09_01_turb.p = hyst_plot(FRCH_storm10a_09_01_Q, FRCH_storm10a_09_01_turh, "FRCH", "turb", "0901a")
-FRCH_storm10b_09_04_turb.p = hyst_plot(FRCH_storm10b_09_04_Q, FRCH_storm10b_09_04_turb, "FRCH", "turb", "0904b")
+#FRCH_storm10_09_01_turb.p = hyst_plot(FRCH_storm10_09_01_Q, FRCH_storm10_09_01_turh, "FRCH", "turb", "0901a")
 FRCH_storm11a_09_22_turb.p = hyst_plot(FRCH_storm11a_09_22_Q, FRCH_storm11a_09_22_turb, "FRCH", "turb", "0922a")
 FRCH_storm11b_09_24_turb.p = hyst_plot(FRCH_storm11b_09_24_Q, FRCH_storm11b_09_24_turb, "FRCH", "turb", "0924b")
 
@@ -579,39 +624,21 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
-multiplot(FRCH_storm1_06_21_NO3.p, FRCH_storm1_06_21_fDOM.p, FRCH_storm1_06_21_SPC.p, FRCH_storm1_06_21_turb.p) # works 
-multiplot(FRCH_storm2a_06_29_NO3.p, FRCH_storm2a_06_29_fDOM.p, FRCH_storm2a_06_29_SPC.p, FRCH_storm2a_06_29_turb.p) # works 
-multiplot(FRCH_storm2b_07_04_NO3.p, FRCH_storm2b_07_04_fDOM.p, FRCH_storm2b_07_04_SPC.p, FRCH_storm2b_07_04_turb.p) # works 
-multiplot(FRCH_storm3_07_10_NO3.p, FRCH_storm3_07_10_fDOM.p, FRCH_storm3_07_10_SPC.p, FRCH_storm3_07_10_turb.p) # works 
-multiplot(FRCH_storm4a_07_15_NO3.p, FRCH_storm4a_07_15_fDOM.p, FRCH_storm4a_07_15_SPC.p, FRCH_storm4a_07_15_turb.p) # works 
-multiplot(FRCH_storm4b_07_16_NO3.p, FRCH_storm4b_07_16_fDOM.p, FRCH_storm4b_07_16_SPC.p, FRCH_storm4b_07_16_turb.p) # works 
-multiplot(FRCH_storm5_08_04_NO3.p, FRCH_storm5_08_04_fDOM.p, FRCH_storm5_08_04_SPC.p, FRCH_storm5_08_04_turb.p) # works 
-multiplot(FRCH_storm6_08_13_NO3.p, FRCH_storm6_08_13_fDOM.p, FRCH_storm6_08_13_SPC.p, FRCH_storm6_08_13_turb.p) # works 
-multiplot(FRCH_storm7_08_23_NO3.p, FRCH_storm7_08_23_fDOM.p, FRCH_storm7_08_23_SPC.p, FRCH_storm7_08_23_turb.p) # works 
-multiplot(FRCH_storm8a_08_26_NO3.p, FRCH_storm8a_08_26_fDOM.p, FRCH_storm8a_08_26_SPC.p, FRCH_storm8a_08_26_turb.p) # works 
-multiplot(FRCH_storm8b_08_27_NO3.p, FRCH_storm8b_08_27_fDOM.p, FRCH_storm8b_08_27_SPC.p, FRCH_storm8b_08_27_turb.p) # works 
-multiplot(FRCH_storm9_08_29_NO3.p, FRCH_storm9_08_29_fDOM.p, FRCH_storm9_08_29_SPC.p, FRCH_storm9_08_29_turb.p) # works 
-multiplot(FRCH_storm10a_09_01_NO3.p, FRCH_storm10a_09_01_fDOM.p, FRCH_storm10a_09_01_SPC.p) # works 
-multiplot(FRCH_storm10b_09_04_NO3.p, FRCH_storm10b_09_04_fDOM.p, FRCH_storm10b_09_04_SPC.p, FRCH_storm10b_09_04_turb.p) # works 
-multiplot(FRCH_storm11a_09_22_NO3.p, FRCH_storm11a_09_22_fDOM.p, FRCH_storm11a_09_22_SPC.p, FRCH_storm11a_09_22_turb.p) # works 
-multiplot(FRCH_storm11b_09_24_NO3.p, FRCH_storm11b_09_24_fDOM.p, FRCH_storm11b_09_24_SPC.p, FRCH_storm11b_09_24_turb.p) # works 
-
-
 multiplot(FRCH_storm1_06_21_NO3.p, FRCH_storm1_06_21_fDOM.p, FRCH_storm1_06_21_SPC.p, FRCH_storm1_06_21_turb.p,
-          FRCH_storm2a_06_29_NO3.p, FRCH_storm2a_06_29_fDOM.p, FRCH_storm2a_06_29_SPC.p, FRCH_storm2a_06_29_turb.p,
-          FRCH_storm2b_07_04_NO3.p, FRCH_storm2b_07_04_fDOM.p, FRCH_storm2b_07_04_SPC.p, FRCH_storm2b_07_04_turb.p,
-          FRCH_storm3_07_10_NO3.p, FRCH_storm3_07_10_fDOM.p, FRCH_storm3_07_10_SPC.p, FRCH_storm3_07_10_turb.p,
-          FRCH_storm4a_07_15_NO3.p, FRCH_storm4a_07_15_fDOM.p, FRCH_storm4a_07_15_SPC.p, FRCH_storm4a_07_15_turb.p,
+          FRCH_storm2a_06_29_NO3.p,
+          FRCH_storm2b_07_04_NO3.p,
+          FRCH_storm3_07_10_NO3.p,
+          FRCH_storm4a_07_15_NO3.p,
           FRCH_storm4b_07_16_NO3.p, FRCH_storm4b_07_16_fDOM.p, FRCH_storm4b_07_16_SPC.p, FRCH_storm4b_07_16_turb.p,
-          FRCH_storm6_08_13_NO3.p, FRCH_storm6_08_13_fDOM.p, FRCH_storm6_08_13_SPC.p, FRCH_storm6_08_13_turb.p,
-          FRCH_storm7_08_23_NO3.p, FRCH_storm7_08_23_fDOM.p, FRCH_storm7_08_23_SPC.p, FRCH_storm7_08_23_turb.p,
-          FRCH_storm8a_08_26_NO3.p, FRCH_storm8a_08_26_fDOM.p, FRCH_storm8a_08_26_SPC.p, FRCH_storm8a_08_26_turb.p,
-          FRCH_storm8b_08_27_NO3.p, FRCH_storm8b_08_27_fDOM.p, FRCH_storm8b_08_27_SPC.p, FRCH_storm8b_08_27_turb.p,
-          FRCH_storm9_08_29_NO3.p, FRCH_storm9_08_29_fDOM.p, FRCH_storm9_08_29_SPC.p, FRCH_storm9_08_29_turb.p,
-          FRCH_storm10a_09_01_NO3.p, FRCH_storm10a_09_01_fDOM.p, FRCH_storm10a_09_01_SPC.p,
-          FRCH_storm10b_09_04_NO3.p, FRCH_storm10b_09_04_fDOM.p, FRCH_storm10b_09_04_SPC.p, FRCH_storm10b_09_04_turb.p,
-          FRCH_storm11a_09_22_NO3.p, FRCH_storm11a_09_22_fDOM.p, FRCH_storm11a_09_22_SPC.p, FRCH_storm11a_09_22_turb.p,
-          FRCH_storm11b_09_24_NO3.p, FRCH_storm11b_09_24_fDOM.p, FRCH_storm11b_09_24_SPC.p, FRCH_storm11b_09_24_turb.p,
+          FRCH_storm5_08_04_NO3.p, FRCH_storm5_08_04_fDOM.p, FRCH_storm5_08_04_SPC.p, FRCH_storm5_08_04_turb.p,
+          FRCH_storm6_08_13_fDOM.p, FRCH_storm6_08_13_SPC.p, FRCH_storm6_08_13_turb.p,
+          FRCH_storm7_08_23_fDOM.p, FRCH_storm7_08_23_SPC.p, FRCH_storm7_08_23_turb.p,
+          FRCH_storm8a_08_26_fDOM.p, FRCH_storm8a_08_26_SPC.p, FRCH_storm8a_08_26_turb.p,
+          FRCH_storm8b_08_27_fDOM.p, FRCH_storm8b_08_27_SPC.p, FRCH_storm8b_08_27_turb.p,
+          FRCH_storm9_08_29_fDOM.p, FRCH_storm9_08_29_SPC.p, FRCH_storm9_08_29_turb.p,
+          FRCH_storm10_09_01_fDOM.p, FRCH_storm10_09_01_SPC.p,
+          FRCH_storm11a_09_22_fDOM.p, FRCH_storm11a_09_22_SPC.p, FRCH_storm11a_09_22_turb.p,
+          FRCH_storm11b_09_24_fDOM.p, FRCH_storm11b_09_24_SPC.p, FRCH_storm11b_09_24_turb.p,
           cols = 7)
 
 # export pdf 20 x 30
@@ -637,67 +664,184 @@ hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
 
 # plot MOOS loops #
 # NO3
+multiplot(MOOS_storm1_06_21_NO3.p)
+
+multiplot(MOOS_storm3_07_09_NO3.p)
+which(MOOS_storm3_07_09_NO3$datavalue < 0.25)
+MOOS_storm3_07_09_NO3[69,3] <- NA
+
+multiplot(MOOS_storm4_07_15_NO3.p)
+which(MOOS_storm4_07_15_NO3$datavalue < 0.25)
+MOOS_storm4_07_15_NO3[131,3] <- NA
+
+multiplot(MOOS_storm5_08_04_NO3.p)
+multiplot(MOOS_storm6_08_13_NO3.p)
+multiplot(MOOS_storm7_08_23_NO3.p)
+multiplot(MOOS_storm8a_08_26_NO3.p)
+multiplot(MOOS_storm8b_08_27_NO3.p)
+
+multiplot(MOOS_storm9_08_29_NO3.p)
+which(MOOS_storm9_08_29_NO3$datavalue < 0.25)
+which(MOOS_storm9_08_29_NO3$datavalue > 0.9)
+MOOS_storm9_08_29_NO3[c(5:7,60),3] <- NA
+
+multiplot(MOOS_storm10_09_01_NO3.p)
+which(MOOS_storm10_09_01_NO3$datavalue < 0.12)
+which(MOOS_storm10_09_01_NO3$datavalue > 0.8)
+MOOS_storm10_09_01_NO3[c(61,63,64:94,101,102,107),3] <- NA
+
+multiplot(MOOS_storm11a_09_22_NO3.p)
+multiplot(MOOS_storm11b_09_23_NO3.p)
+multiplot(MOOS_storm12_09_24_NO3.p)
+
 MOOS_storm1_06_21_NO3.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_NO3, "MOOS", "NO3", "0621")
-MOOS_storm2a_06_29_NO3.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_NO3, "MOOS", "NO3", "0629a")
-MOOS_storm2b_07_01_NO3.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_NO3, "MOOS", "NO3", "0701b")
-MOOS_storm2c_07_04_NO3.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_NO3, "MOOS", "NO3", "0704c")
+#MOOS_storm2a_06_29_NO3.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_NO3, "MOOS", "NO3", "0629a")
+#MOOS_storm2b_07_01_NO3.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_NO3, "MOOS", "NO3", "0701b")
+#MOOS_storm2c_07_04_NO3.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_NO3, "MOOS", "NO3", "0704c")
 MOOS_storm3_07_09_NO3.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_NO3, "MOOS", "NO3", "0709")
 MOOS_storm4_07_15_NO3.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_NO3, "MOOS", "NO3", "0715")
 MOOS_storm5_08_04_NO3.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_NO3, "MOOS", "NO3", "0804")
 MOOS_storm6_08_13_NO3.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_NO3, "MOOS", "NO3", "0813")
 MOOS_storm7_08_23_NO3.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_NO3, "MOOS", "NO3", "0823")
-MOOS_storm8_08_26_NO3.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_NO3, "MOOS", "NO3", "0826")
+MOOS_storm8a_08_26_NO3.p = hyst_plot(MOOS_storm8a_08_26_Q, MOOS_storm8a_08_26_NO3, "MOOS", "NO3", "0826")
+MOOS_storm8b_08_27_NO3.p = hyst_plot(MOOS_storm8b_08_27_Q, MOOS_storm8b_08_27_NO3, "MOOS", "NO3", "0826")
 MOOS_storm9_08_29_NO3.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_NO3, "MOOS", "NO3", "0829")
 MOOS_storm10_09_01_NO3.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_NO3, "MOOS", "NO3", "0901")
-MOOS_storm11_09_22_NO3.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_NO3, "MOOS", "NO3", "0922")
+MOOS_storm11a_09_22_NO3.p = hyst_plot(MOOS_storm11a_09_22_Q, MOOS_storm11a_09_22_NO3, "MOOS", "NO3", "0922")
+MOOS_storm11b_09_23_NO3.p = hyst_plot(MOOS_storm11b_09_23_Q, MOOS_storm11b_09_23_NO3, "MOOS", "NO3", "0922")
 MOOS_storm12_09_24_NO3.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_NO3, "MOOS", "NO3", "0924")
 
 # fDOM #
+multiplot(MOOS_storm1_06_21_fDOM.p)
+multiplot(MOOS_storm4_07_15_fDOM.p)
+
+multiplot(MOOS_storm5_08_04_fDOM.p)
+which(MOOS_storm5_08_04_fDOM$datavalue < 0.25)
+MOOS_storm5_08_04_fDOM[175,3] <- NA
+
+multiplot(MOOS_storm6_08_13_fDOM.p)
+which(MOOS_storm6_08_13_fDOM$datavalue < 0.50)
+MOOS_storm6_08_13_fDOM[c(59,189),3] <- NA
+
+multiplot(MOOS_storm7_08_23_fDOM.p)
+multiplot(MOOS_storm8a_08_26_fDOM.p)
+multiplot(MOOS_storm8b_08_27_fDOM.p)
+
+multiplot(MOOS_storm9_08_29_fDOM.p)
+which(MOOS_storm9_08_29_fDOM$datavalue < 0.50)
+MOOS_storm9_08_29_fDOM[c(21:23),3] <- NA
+
+multiplot(MOOS_storm10_09_01_fDOM.p)
+multiplot(MOOS_storm11a_09_22_fDOM.p)
+
+multiplot(MOOS_storm11b_09_23_fDOM.p)
+
+multiplot(MOOS_storm12_09_24_fDOM.p)
+which(MOOS_storm12_09_24_fDOM$datavalue < 0.25)
+MOOS_storm12_09_24_fDOM[c(191:192),3] <- NA
+
 MOOS_storm1_06_21_fDOM.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_fDOM, "MOOS", "fDOM", "0621")
-MOOS_storm2a_06_29_fDOM.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_fDOM, "MOOS", "fDOM", "0629a")
-MOOS_storm2b_07_01_fDOM.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_fDOM, "MOOS", "fDOM", "0701b")
-MOOS_storm2c_07_04_fDOM.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_fDOM, "MOOS", "fDOM", "0704c")
-MOOS_storm3_07_09_fDOM.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_fDOM, "MOOS", "fDOM", "0709")
+#MOOS_storm2a_06_29_fDOM.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_fDOM, "MOOS", "fDOM", "0629a")
+#MOOS_storm2b_07_01_fDOM.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_fDOM, "MOOS", "fDOM", "0701b")
+#MOOS_storm2c_07_04_fDOM.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_fDOM, "MOOS", "fDOM", "0704c")
+#MOOS_storm3_07_09_fDOM.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_fDOM, "MOOS", "fDOM", "0709")
 MOOS_storm4_07_15_fDOM.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_fDOM, "MOOS", "fDOM", "0715")
 MOOS_storm5_08_04_fDOM.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_fDOM, "MOOS", "fDOM", "0804")
 MOOS_storm6_08_13_fDOM.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_fDOM, "MOOS", "fDOM", "0813")
 MOOS_storm7_08_23_fDOM.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_fDOM, "MOOS", "fDOM", "0823")
-MOOS_storm8_08_26_fDOM.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_fDOM, "MOOS", "fDOM", "0826")
+MOOS_storm8a_08_26_fDOM.p = hyst_plot(MOOS_storm8a_08_26_Q, MOOS_storm8a_08_26_fDOM, "MOOS", "fDOM", "0826a")
+MOOS_storm8b_08_27_fDOM.p = hyst_plot(MOOS_storm8b_08_27_Q, MOOS_storm8b_08_27_fDOM, "MOOS", "fDOM", "0827b")
 MOOS_storm9_08_29_fDOM.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_fDOM, "MOOS", "fDOM", "0829")
 MOOS_storm10_09_01_fDOM.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_fDOM, "MOOS", "fDOM", "0901")
-MOOS_storm11_09_22_fDOM.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_fDOM, "MOOS", "fDOM", "0922")
+MOOS_storm11a_09_22_fDOM.p = hyst_plot(MOOS_storm11a_09_22_Q, MOOS_storm11a_09_22_fDOM, "MOOS", "fDOM", "0922")
+MOOS_storm11b_09_23_fDOM.p = hyst_plot(MOOS_storm11b_09_23_Q, MOOS_storm11b_09_23_fDOM, "MOOS", "fDOM", "0922")
 MOOS_storm12_09_24_fDOM.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_fDOM, "MOOS", "fDOM", "0924")
 
 # SPC #
+multiplot(MOOS_storm1_06_21_SPC.p)
+multiplot(MOOS_storm4_07_15_SPC.p)
+
+multiplot(MOOS_storm5_08_04_SPC.p)
+which(MOOS_storm5_08_04_SPC$datavalue < 0.25)
+MOOS_storm5_08_04_SPC[175,3] <- NA
+
+multiplot(MOOS_storm6_08_13_SPC.p)
+which(MOOS_storm6_08_13_SPC$datavalue < 0.25)
+MOOS_storm6_08_13_SPC[189,3] <- NA
+
+multiplot(MOOS_storm7_08_23_SPC.p)
+multiplot(MOOS_storm8a_08_26_SPC.p)
+multiplot(MOOS_storm8b_08_27_SPC.p)
+
+multiplot(MOOS_storm9_08_29_SPC.p)
+which(MOOS_storm9_08_29_SPC$datavalue < 0.25)
+MOOS_storm9_08_29_SPC[c(21:23),3] <- NA
+
+multiplot(MOOS_storm10_09_01_SPC.p)
+multiplot(MOOS_storm11a_09_22_SPC.p)
+multiplot(MOOS_storm11b_09_23_SPC.p)
+
+multiplot(MOOS_storm12_09_24_SPC.p)
+which(MOOS_storm12_09_24_SPC$datavalue < 0.25)
+MOOS_storm12_09_24_SPC[c(191:192),3] <- NA
+
 MOOS_storm1_06_21_SPC.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_SPC, "MOOS", "SPC", "0621")
-MOOS_storm2a_06_29_SPC.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_SPC, "MOOS", "SPC", "0629a")
-MOOS_storm2b_07_01_SPC.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_SPC, "MOOS", "SPC", "0701b")
-MOOS_storm2c_07_04_SPC.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_SPC, "MOOS", "SPC", "0704c")
-MOOS_storm3_07_09_SPC.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_SPC, "MOOS", "SPC", "0709")
+#MOOS_storm2a_06_29_SPC.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_SPC, "MOOS", "SPC", "0629a")
+#MOOS_storm2b_07_01_SPC.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_SPC, "MOOS", "SPC", "0701b")
+#MOOS_storm2c_07_04_SPC.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_SPC, "MOOS", "SPC", "0704c")
+#MOOS_storm3_07_09_SPC.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_SPC, "MOOS", "SPC", "0709")
 MOOS_storm4_07_15_SPC.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_SPC, "MOOS", "SPC", "0715")
 MOOS_storm5_08_04_SPC.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_SPC, "MOOS", "SPC", "0804")
 MOOS_storm6_08_13_SPC.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_SPC, "MOOS", "SPC", "0813")
 MOOS_storm7_08_23_SPC.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_SPC, "MOOS", "SPC", "0823")
-MOOS_storm8_08_26_SPC.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_SPC, "MOOS", "SPC", "0826")
+MOOS_storm8a_08_26_SPC.p = hyst_plot(MOOS_storm8a_08_26_Q, MOOS_storm8a_08_26_SPC, "MOOS", "SPC", "0826")
+MOOS_storm8b_08_27_SPC.p = hyst_plot(MOOS_storm8b_08_27_Q, MOOS_storm8b_08_27_SPC, "MOOS", "SPC", "0826")
 MOOS_storm9_08_29_SPC.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_SPC, "MOOS", "SPC", "0829")
 MOOS_storm10_09_01_SPC.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_SPC, "MOOS", "SPC", "0901")
-MOOS_storm11_09_22_SPC.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_SPC, "MOOS", "SPC", "0922")
+MOOS_storm11a_09_22_SPC.p = hyst_plot(MOOS_storm11a_09_22_Q, MOOS_storm11a_09_22_SPC, "MOOS", "SPC", "0922")
+MOOS_storm11b_09_23_SPC.p = hyst_plot(MOOS_storm11b_09_23_Q, MOOS_storm11b_09_23_SPC, "MOOS", "SPC", "0922")
 MOOS_storm12_09_24_SPC.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_SPC, "MOOS", "SPC", "0924")
 
 # turb
+multiplot(MOOS_storm1_06_21_turb.p)
+multiplot(MOOS_storm4_07_15_turb.p)
+
+multiplot(MOOS_storm5_08_04_turb.p)
+which(MOOS_storm5_08_04_turb$datavalue > 0.75)
+MOOS_storm5_08_04_turb[145,3] <- NA
+
+multiplot(MOOS_storm6_08_13_turb.p)
+multiplot(MOOS_storm7_08_23_turb.p)
+multiplot(MOOS_storm8a_08_26_turb.p)
+multiplot(MOOS_storm8b_08_27_turb.p)
+multiplot(MOOS_storm9_08_29_turb.p)
+
+multiplot(MOOS_storm10_09_01_turb.p)
+which(MOOS_storm10_09_01_turb$datavalue > 0.75)
+MOOS_storm10_09_01_turb[43,3] <- NA
+
+multiplot(MOOS_storm11a_09_22_turb.p)
+multiplot(MOOS_storm11b_09_23_turb.p)
+
+multiplot(MOOS_storm12_09_24_turb.p)
+which(MOOS_storm12_09_24_turb$datavalue > 0.75)
+MOOS_storm12_09_24_turb[275,3] <- NA
+
 MOOS_storm1_06_21_turb.p = hyst_plot(MOOS_storm1_06_21_Q, MOOS_storm1_06_21_turb, "MOOS", "turb", "0621")
-MOOS_storm2a_06_29_turb.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_turb, "MOOS", "turb", "0629a")
-MOOS_storm2b_07_01_turb.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_turb, "MOOS", "turb", "0701b")
-MOOS_storm2c_07_04_turb.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_turb, "MOOS", "turb", "0704c")
-MOOS_storm3_07_09_turb.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_turb, "MOOS", "turb", "0709")
+#MOOS_storm2a_06_29_turb.p = hyst_plot(MOOS_storm2a_06_29_Q, MOOS_storm2a_06_29_turb, "MOOS", "turb", "0629a")
+#MOOS_storm2b_07_01_turb.p = hyst_plot(MOOS_storm2b_07_01_Q, MOOS_storm2b_07_01_turb, "MOOS", "turb", "0701b")
+#MOOS_storm2c_07_04_turb.p = hyst_plot(MOOS_storm2c_07_04_Q, MOOS_storm2c_07_04_turb, "MOOS", "turb", "0704c")
+#MOOS_storm3_07_09_turb.p = hyst_plot(MOOS_storm3_07_09_Q, MOOS_storm3_07_09_turb, "MOOS", "turb", "0709")
 MOOS_storm4_07_15_turb.p = hyst_plot(MOOS_storm4_07_15_Q, MOOS_storm4_07_15_turb, "MOOS", "turb", "0715")
 MOOS_storm5_08_04_turb.p = hyst_plot(MOOS_storm5_08_04_Q, MOOS_storm5_08_04_turb, "MOOS", "turb", "0804")
 MOOS_storm6_08_13_turb.p = hyst_plot(MOOS_storm6_08_13_Q, MOOS_storm6_08_13_turb, "MOOS", "turb", "0813")
 MOOS_storm7_08_23_turb.p = hyst_plot(MOOS_storm7_08_23_Q, MOOS_storm7_08_23_turb, "MOOS", "turb", "0823")
-MOOS_storm8_08_26_turb.p = hyst_plot(MOOS_storm8_08_26_Q, MOOS_storm8_08_26_turb, "MOOS", "turb", "0826")
+MOOS_storm8a_08_26_turb.p = hyst_plot(MOOS_storm8a_08_26_Q, MOOS_storm8a_08_26_turb, "MOOS", "turb", "0826")
+MOOS_storm8b_08_27_turb.p = hyst_plot(MOOS_storm8b_08_27_Q, MOOS_storm8b_08_27_turb, "MOOS", "turb", "0826")
 MOOS_storm9_08_29_turb.p = hyst_plot(MOOS_storm9_08_29_Q, MOOS_storm9_08_29_turb, "MOOS", "turb", "0829")
 MOOS_storm10_09_01_turb.p = hyst_plot(MOOS_storm10_09_01_Q, MOOS_storm10_09_01_turb, "MOOS", "turb", "0901")
-MOOS_storm11_09_22_turb.p = hyst_plot(MOOS_storm11_09_22_Q, MOOS_storm11_09_22_turb, "MOOS", "turb", "0922")
+MOOS_storm11a_09_22_turb.p = hyst_plot(MOOS_storm11a_09_22_Q, MOOS_storm11a_09_22_turb, "MOOS", "turb", "0922")
+MOOS_storm11b_09_23_turb.p = hyst_plot(MOOS_storm11b_09_23_Q, MOOS_storm11b_09_23_turb, "MOOS", "turb", "0922")
 MOOS_storm12_09_24_turb.p = hyst_plot(MOOS_storm12_09_24_Q, MOOS_storm12_09_24_turb, "MOOS", "turb", "0924")
 
 # Multiplots of MOOS storms #
@@ -738,41 +882,210 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
-multiplot(MOOS_storm1_06_21_NO3.p, MOOS_storm1_06_21_fDOM.p, MOOS_storm1_06_21_SPC.p, MOOS_storm1_06_21_turb.p) # works 
-multiplot(MOOS_storm2a_06_29_NO3.p, MOOS_storm2a_06_29_fDOM.p, MOOS_storm2a_06_29_SPC.p, MOOS_storm2a_06_29_turb.p) # works/ empty
-multiplot(MOOS_storm2b_07_01_NO3.p, MOOS_storm2b_07_01_fDOM.p, MOOS_storm2b_07_01_SPC.p, MOOS_storm2b_07_01_turb.p) # works/empty
-multiplot(MOOS_storm2c_07_04_NO3.p, MOOS_storm2c_07_04_fDOM.p, MOOS_storm2c_07_04_SPC.p, MOOS_storm2c_07_04_turb.p) # works/empty
-multiplot(MOOS_storm3_07_09_NO3.p, MOOS_storm3_07_09_fDOM.p, MOOS_storm3_07_09_SPC.p, MOOS_storm3_07_09_turb.p) # works 
-multiplot(MOOS_storm4_07_15_NO3.p, MOOS_storm4_07_15_fDOM.p, MOOS_storm4_07_15_SPC.p, MOOS_storm4_07_15_turb.p) # works 
-multiplot(MOOS_storm5_08_04_NO3.p, MOOS_storm5_08_04_fDOM.p, MOOS_storm5_08_04_SPC.p, MOOS_storm5_08_04_turb.p) # works 
-multiplot(MOOS_storm6_08_13_NO3.p, MOOS_storm6_08_13_fDOM.p, MOOS_storm6_08_13_SPC.p, MOOS_storm6_08_13_turb.p) # works 
-multiplot(MOOS_storm7_08_23_NO3.p, MOOS_storm7_08_23_fDOM.p, MOOS_storm7_08_23_SPC.p, MOOS_storm7_08_23_turb.p) # works 
-multiplot(MOOS_storm8_08_26_NO3.p, MOOS_storm8_08_26_fDOM.p, MOOS_storm8_08_26_SPC.p, MOOS_storm8_08_26_turb.p) # works 
-multiplot(MOOS_storm9_08_29_NO3.p, MOOS_storm9_08_29_fDOM.p, MOOS_storm9_08_29_SPC.p, MOOS_storm9_08_29_turb.p) # works 
-multiplot(MOOS_storm10_09_01_NO3.p, MOOS_storm10_09_01_fDOM.p, MOOS_storm10_09_01_SPC.p, MOOS_storm10_09_01_turb.p) # works 
-multiplot(MOOS_storm11_09_22_NO3.p, MOOS_storm11_09_22_fDOM.p, MOOS_storm11_09_22_SPC.p, MOOS_storm11_09_22_turb.p) # works 
-multiplot(MOOS_storm12_09_24_NO3.p, MOOS_storm12_09_24_fDOM.p, MOOS_storm12_09_24_SPC.p, MOOS_storm12_09_24_turb.p) # works 
-
-
 multiplot(MOOS_storm1_06_21_NO3.p, MOOS_storm1_06_21_fDOM.p, MOOS_storm1_06_21_SPC.p, MOOS_storm1_06_21_turb.p,
-          MOOS_storm2a_06_29_NO3.p, MOOS_storm2a_06_29_fDOM.p, MOOS_storm2a_06_29_SPC.p, MOOS_storm2a_06_29_turb.p,
-          MOOS_storm2b_07_01_NO3.p, MOOS_storm2b_07_01_fDOM.p, MOOS_storm2b_07_01_SPC.p, MOOS_storm2b_07_01_turb.p,
-          MOOS_storm2c_07_04_NO3.p, MOOS_storm2c_07_04_fDOM.p, MOOS_storm2c_07_04_SPC.p, MOOS_storm2c_07_04_turb.p,
-          MOOS_storm3_07_09_NO3.p, MOOS_storm3_07_09_fDOM.p, MOOS_storm3_07_09_SPC.p, MOOS_storm3_07_09_turb.p,
+          MOOS_storm3_07_09_NO3.p,
           MOOS_storm4_07_15_NO3.p, MOOS_storm4_07_15_fDOM.p, MOOS_storm4_07_15_SPC.p, MOOS_storm4_07_15_turb.p,
           MOOS_storm5_08_04_NO3.p, MOOS_storm5_08_04_fDOM.p, MOOS_storm5_08_04_SPC.p, MOOS_storm5_08_04_turb.p,
           MOOS_storm6_08_13_NO3.p, MOOS_storm6_08_13_fDOM.p, MOOS_storm6_08_13_SPC.p, MOOS_storm6_08_13_turb.p,
           MOOS_storm7_08_23_NO3.p, MOOS_storm7_08_23_fDOM.p, MOOS_storm7_08_23_SPC.p, MOOS_storm7_08_23_turb.p,
-          MOOS_storm8_08_26_NO3.p, MOOS_storm8_08_26_fDOM.p, MOOS_storm8_08_26_SPC.p, MOOS_storm8_08_26_turb.p,
+          MOOS_storm8a_08_26_NO3.p, MOOS_storm8a_08_26_fDOM.p, MOOS_storm8a_08_26_SPC.p, MOOS_storm8a_08_26_turb.p,
+          MOOS_storm8b_08_27_NO3.p, MOOS_storm8b_08_27_fDOM.p, MOOS_storm8b_08_27_SPC.p, MOOS_storm8b_08_27_turb.p,
           MOOS_storm9_08_29_NO3.p, MOOS_storm9_08_29_fDOM.p, MOOS_storm9_08_29_SPC.p, MOOS_storm9_08_29_turb.p,
           MOOS_storm10_09_01_NO3.p, MOOS_storm10_09_01_fDOM.p, MOOS_storm10_09_01_SPC.p, MOOS_storm10_09_01_turb.p,
-          MOOS_storm11_09_22_NO3.p, MOOS_storm11_09_22_fDOM.p, MOOS_storm11_09_22_SPC.p, MOOS_storm11_09_22_turb.p,
+          MOOS_storm11a_09_22_NO3.p, MOOS_storm11a_09_22_fDOM.p, MOOS_storm11a_09_22_SPC.p, MOOS_storm11a_09_22_turb.p,
+          MOOS_storm11b_09_23_NO3.p, MOOS_storm11b_09_23_fDOM.p, MOOS_storm11b_09_23_SPC.p, MOOS_storm11b_09_23_turb.p,
           MOOS_storm12_09_24_NO3.p, MOOS_storm12_09_24_fDOM.p, MOOS_storm12_09_24_SPC.p, MOOS_storm12_09_24_turb.p,
+          cols = 7
+          )
+
+### CARI ###
+#NO3
+
+multiplot(CARI_storm2_06_21_NO3.p)
+multiplot(CARI_storm3_06_29_NO3.p)
+
+multiplot(CARI_storm5a_08_04_NO3.p)
+multiplot(CARI_storm5b_08_05_NO3.p)
+multiplot(CARI_storm5c_08_06_NO3.p)
+multiplot(CARI_storm6_08_13_NO3.p)
+multiplot(CARI_storm7_08_21_NO3.p)
+multiplot(CARI_storm8_08_24_NO3.p)
+multiplot(CARI_storm9_08_26_NO3.p)
+multiplot(CARI_storm10_08_30_NO3.p)
+multiplot(CARI_storm11_09_02_NO3.p)
+multiplot(CARI_storm12a_09_20_NO3.p)
+multiplot(CARI_storm12b_09_25_NO3.p)
+
+#CARI_storm1_06_10_NO3.p = hyst_plot(CARI_storm1_06_10_Q, CARI_storm1_06_10_NO3, "CARI", "NO3", "0610")
+CARI_storm2_06_21_NO3.p = hyst_plot(CARI_storm2_06_21_Q, CARI_storm2_06_21_NO3, "CARI", "NO3", "0621")
+CARI_storm3_06_29_NO3.p = hyst_plot(CARI_storm3_06_29_Q, CARI_storm3_06_29_NO3, "CARI", "NO3", "0629")
+#CARI_storm4a_06_30_NO3.p = hyst_plot(CARI_storm4a_06_30_Q, CARI_storm4a_06_30_NO3, "CARI", "NO3", "0630a")
+#CARI_storm4b_07_01_NO3.p = hyst_plot(CARI_storm4b_07_01_Q, CARI_storm4b_07_01_NO3, "CARI", "NO3", "0701b")
+CARI_storm5a_08_04_NO3.p = hyst_plot(CARI_storm5a_08_04_Q, CARI_storm5a_08_04_NO3, "CARI", "NO3", "0804a")
+CARI_storm5b_08_05_NO3.p = hyst_plot(CARI_storm5b_08_05_Q, CARI_storm5b_08_05_NO3, "CARI", "NO3", "0805b")
+CARI_storm5c_08_06_NO3.p = hyst_plot(CARI_storm5c_08_06_Q, CARI_storm5c_08_06_NO3, "CARI", "NO3", "0806c")
+CARI_storm6_08_13_NO3.p = hyst_plot(CARI_storm6_08_13_Q, CARI_storm6_08_13_NO3, "CARI", "NO3", "0813")
+CARI_storm7_08_21_NO3.p = hyst_plot(CARI_storm7_08_21_Q, CARI_storm7_08_21_NO3, "CARI", "NO3", "0821")
+CARI_storm8_08_24_NO3.p = hyst_plot(CARI_storm8_08_24_Q, CARI_storm8_08_24_NO3, "CARI", "NO3", "0824")
+CARI_storm9_08_26_NO3.p = hyst_plot(CARI_storm9_08_26_Q, CARI_storm9_08_26_NO3, "CARI", "NO3", "0826")
+CARI_storm10_08_30_NO3.p = hyst_plot(CARI_storm10_08_30_Q, CARI_storm10_08_30_NO3, "CARI", "NO3", "0830")
+CARI_storm11_09_02_NO3.p = hyst_plot(CARI_storm11_09_02_Q, CARI_storm11_09_02_NO3, "CARI", "NO3", "0902")
+CARI_storm12a_09_20_NO3.p = hyst_plot(CARI_storm12a_09_20_Q, CARI_storm12a_09_20_NO3, "CARI", "NO3", "0920a")
+CARI_storm12b_09_25_NO3.p = hyst_plot(CARI_storm12b_09_25_Q, CARI_storm12b_09_25_NO3, "CARI", "NO3", "0925b")
+
+#fDOM
+multiplot(CARI_storm1_06_10_fDOM.p)
+which(CARI_storm1_06_10_fDOM$datavalue < 0.25)
+CARI_storm1_06_10_fDOM[4030,3] <- NA
+
+multiplot(CARI_storm2_06_21_fDOM.p)
+multiplot(CARI_storm3_06_29_fDOM.p)
+multiplot(CARI_storm4a_06_30_fDOM.p)
+
+multiplot(CARI_storm4b_07_01_fDOM.p)
+which(CARI_storm4b_07_01_fDOM$datavalue < 0.25)
+CARI_storm4b_07_01_fDOM[c(106,177), 3] <- NA
+
+multiplot(CARI_storm5a_08_04_fDOM.p)
+multiplot(CARI_storm5b_08_05_fDOM.p)
+
+multiplot(CARI_storm5c_08_06_fDOM.p)
+which(CARI_storm5c_08_06_fDOM$datavalue < 0.25)
+CARI_storm5c_08_06_fDOM[4175, 3] <- NA
+
+multiplot(CARI_storm6_08_13_fDOM.p)
+which(CARI_storm6_08_13_fDOM$datavalue < 0.25)
+CARI_storm6_08_13_fDOM[c(1545,2541,2542), 3] <- NA
+
+multiplot(CARI_storm7_08_21_fDOM.p)
+
+multiplot(CARI_storm8_08_24_fDOM.p)
+which(CARI_storm8_08_24_fDOM$datavalue < 0.25)
+CARI_storm8_08_24_fDOM[c(633,2133,2433), 3] <- NA
+
+multiplot(CARI_storm9_08_26_fDOM.p)
+which(CARI_storm9_08_26_fDOM$datavalue < 0.25)
+CARI_storm9_08_26_fDOM[453, 3] <- NA
+
+multiplot(CARI_storm10_08_30_fDOM.p)
+multiplot(CARI_storm11_09_02_fDOM.p)
+
+multiplot(CARI_storm12a_09_20_fDOM.p)
+which(CARI_storm12a_09_20_fDOM$datavalue < 0.25)
+CARI_storm12a_09_20_fDOM[c(3691,5491,6091), 3] <- NA
+
+multiplot(CARI_storm12b_09_25_fDOM.p)
+which(CARI_storm12b_09_25_fDOM$datavalue < 0.25)
+CARI_storm12b_09_25_fDOM[c(1831,5933,7733), 3] <- NA
+
+CARI_storm1_06_10_fDOM.p = hyst_plot(CARI_storm1_06_10_Q, CARI_storm1_06_10_fDOM, "CARI", "fDOM", "0610")
+CARI_storm2_06_21_fDOM.p = hyst_plot(CARI_storm2_06_21_Q, CARI_storm2_06_21_fDOM, "CARI", "fDOM", "0621")
+CARI_storm3_06_29_fDOM.p = hyst_plot(CARI_storm3_06_29_Q, CARI_storm3_06_29_fDOM, "CARI", "fDOM", "0629")
+CARI_storm4a_06_30_fDOM.p = hyst_plot(CARI_storm4a_06_30_Q, CARI_storm4a_06_30_fDOM, "CARI", "fDOM", "0630a")
+CARI_storm4b_07_01_fDOM.p = hyst_plot(CARI_storm4b_07_01_Q, CARI_storm4b_07_01_fDOM, "CARI", "fDOM", "0701b")
+CARI_storm5a_08_04_fDOM.p = hyst_plot(CARI_storm5a_08_04_Q, CARI_storm5a_08_04_fDOM, "CARI", "fDOM", "0804a")
+CARI_storm5b_08_05_fDOM.p = hyst_plot(CARI_storm5b_08_05_Q, CARI_storm5b_08_05_fDOM, "CARI", "fDOM", "0805b")
+CARI_storm5c_08_06_fDOM.p = hyst_plot(CARI_storm5c_08_06_Q, CARI_storm5c_08_06_fDOM, "CARI", "fDOM", "0806c")
+CARI_storm6_08_13_fDOM.p = hyst_plot(CARI_storm6_08_13_Q, CARI_storm6_08_13_fDOM, "CARI", "fDOM", "0813")
+CARI_storm7_08_21_fDOM.p = hyst_plot(CARI_storm7_08_21_Q, CARI_storm7_08_21_fDOM, "CARI", "fDOM", "0821")
+CARI_storm8_08_24_fDOM.p = hyst_plot(CARI_storm8_08_24_Q, CARI_storm8_08_24_fDOM, "CARI", "fDOM", "0824")
+CARI_storm9_08_26_fDOM.p = hyst_plot(CARI_storm9_08_26_Q, CARI_storm9_08_26_fDOM, "CARI", "fDOM", "0826")
+CARI_storm10_08_30_fDOM.p = hyst_plot(CARI_storm10_08_30_Q, CARI_storm10_08_30_fDOM, "CARI", "fDOM", "0830")
+CARI_storm11_09_02_fDOM.p = hyst_plot(CARI_storm11_09_02_Q, CARI_storm11_09_02_fDOM, "CARI", "fDOM", "0902")
+CARI_storm12a_09_20_fDOM.p = hyst_plot(CARI_storm12a_09_20_Q, CARI_storm12a_09_20_fDOM, "CARI", "fDOM", "0920a")
+CARI_storm12b_09_25_fDOM.p = hyst_plot(CARI_storm12b_09_25_Q, CARI_storm12b_09_25_fDOM, "CARI", "v", "0925b")
+
+#SPC
+multiplot(CARI_storm1_06_10_SPC.p)
+multiplot(CARI_storm2_06_21_SPC.p)
+multiplot(CARI_storm3_06_29_SPC.p)
+multiplot(CARI_storm4a_06_30_SPC.p)
+multiplot(CARI_storm4b_07_01_SPC.p)
+multiplot(CARI_storm5a_08_04_SPC.p)
+multiplot(CARI_storm5b_08_05_SPC.p)
+multiplot(CARI_storm5c_08_06_SPC.p)
+multiplot(CARI_storm6_08_13_SPC.p)
+multiplot(CARI_storm7_08_21_SPC.p)
+multiplot(CARI_storm8_08_24_SPC.p)
+multiplot(CARI_storm9_08_26_SPC.p)
+multiplot(CARI_storm10_08_30_SPC.p)
+multiplot(CARI_storm11_09_02_SPC.p)
+multiplot(CARI_storm12a_09_20_SPC.p)
+multiplot(CARI_storm12b_09_25_SPC.p)
+
+CARI_storm1_06_10_SPC.p = hyst_plot(CARI_storm1_06_10_Q, CARI_storm1_06_10_SPC, "CARI", "SPC", "0610")
+CARI_storm2_06_21_SPC.p = hyst_plot(CARI_storm2_06_21_Q, CARI_storm2_06_21_SPC, "CARI", "SPC", "0621")
+CARI_storm3_06_29_SPC.p = hyst_plot(CARI_storm3_06_29_Q, CARI_storm3_06_29_SPC, "CARI", "SPC", "0629")
+CARI_storm4a_06_30_SPC.p = hyst_plot(CARI_storm4a_06_30_Q, CARI_storm4a_06_30_SPC, "CARI", "SPC", "0630a")
+CARI_storm4b_07_01_SPC.p = hyst_plot(CARI_storm4b_07_01_Q, CARI_storm4b_07_01_SPC, "CARI", "SPC", "0701b")
+CARI_storm5a_08_04_SPC.p = hyst_plot(CARI_storm5a_08_04_Q, CARI_storm5a_08_04_SPC, "CARI", "SPC", "0804a")
+CARI_storm5b_08_05_SPC.p = hyst_plot(CARI_storm5b_08_05_Q, CARI_storm5b_08_05_SPC, "CARI", "SPC", "0805b")
+CARI_storm5c_08_06_SPC.p = hyst_plot(CARI_storm5c_08_06_Q, CARI_storm5c_08_06_SPC, "CARI", "SPC", "0806c")
+CARI_storm6_08_13_SPC.p = hyst_plot(CARI_storm6_08_13_Q, CARI_storm6_08_13_SPC, "CARI", "SPC", "0813")
+CARI_storm7_08_21_SPC.p = hyst_plot(CARI_storm7_08_21_Q, CARI_storm7_08_21_SPC, "CARI", "SPC", "0821")
+CARI_storm8_08_24_SPC.p = hyst_plot(CARI_storm8_08_24_Q, CARI_storm8_08_24_SPC, "CARI", "SPC", "0824")
+CARI_storm9_08_26_SPC.p = hyst_plot(CARI_storm9_08_26_Q, CARI_storm9_08_26_SPC, "CARI", "SPC", "0826")
+CARI_storm10_08_30_SPC.p = hyst_plot(CARI_storm10_08_30_Q, CARI_storm10_08_30_SPC, "CARI", "SPC", "0830")
+CARI_storm11_09_02_SPC.p = hyst_plot(CARI_storm11_09_02_Q, CARI_storm11_09_02_SPC, "CARI", "SPC", "0902")
+CARI_storm12a_09_20_SPC.p = hyst_plot(CARI_storm12a_09_20_Q, CARI_storm12a_09_20_SPC, "CARI", "SPC", "0920a")
+CARI_storm12b_09_25_SPC.p = hyst_plot(CARI_storm12b_09_25_Q, CARI_storm12b_09_25_SPC, "CARI", "SPC", "0925b")
+
+#Turb
+multiplot(CARI_storm1_06_10_turb.p)
+multiplot(CARI_storm2_06_21_turb.p)
+multiplot(CARI_storm3_06_29_turb.p)
+multiplot(CARI_storm4a_06_30_turb.p)
+multiplot(CARI_storm4b_07_01_turb.p)
+multiplot(CARI_storm5a_08_04_turb.p)
+multiplot(CARI_storm5b_08_05_turb.p)
+multiplot(CARI_storm5c_08_06_turb.p)
+multiplot(CARI_storm6_08_13_turb.p)
+multiplot(CARI_storm7_08_21_turb.p)
+multiplot(CARI_storm8_08_24_turb.p)
+multiplot(CARI_storm9_08_26_turb.p)
+multiplot(CARI_storm10_08_30_turb.p)
+multiplot(CARI_storm11_09_02_turb.p)
+multiplot(CARI_storm12a_09_20_turb.p)
+multiplot(CARI_storm12b_09_25_turb.p)
+
+CARI_storm1_06_10_turb.p = hyst_plot(CARI_storm1_06_10_Q, CARI_storm1_06_10_turb, "CARI", "turb", "0610")
+CARI_storm2_06_21_turb.p = hyst_plot(CARI_storm2_06_21_Q, CARI_storm2_06_21_turb, "CARI", "turb", "0621")
+CARI_storm3_06_29_turb.p = hyst_plot(CARI_storm3_06_29_Q, CARI_storm3_06_29_turb, "CARI", "turb", "0629")
+CARI_storm4a_06_30_turb.p = hyst_plot(CARI_storm4a_06_30_Q, CARI_storm4a_06_30_turb, "CARI", "turb", "0630a")
+CARI_storm4b_07_01_turb.p = hyst_plot(CARI_storm4b_07_01_Q, CARI_storm4b_07_01_turb, "CARI", "turb", "0701b")
+CARI_storm5a_08_04_turb.p = hyst_plot(CARI_storm5a_08_04_Q, CARI_storm5a_08_04_turb, "CARI", "turb", "0804a")
+CARI_storm5b_08_05_turb.p = hyst_plot(CARI_storm5b_08_05_Q, CARI_storm5b_08_05_turb, "CARI", "turb", "0805b")
+CARI_storm5c_08_06_turb.p = hyst_plot(CARI_storm5c_08_06_Q, CARI_storm5c_08_06_turb, "CARI", "turb", "0806c")
+CARI_storm6_08_13_turb.p = hyst_plot(CARI_storm6_08_13_Q, CARI_storm6_08_13_turb, "CARI", "turb", "0813")
+CARI_storm7_08_21_turb.p = hyst_plot(CARI_storm7_08_21_Q, CARI_storm7_08_21_turb, "CARI", "turb", "0821")
+CARI_storm8_08_24_turb.p = hyst_plot(CARI_storm8_08_24_Q, CARI_storm8_08_24_turb, "CARI", "turb", "0824")
+CARI_storm9_08_26_turb.p = hyst_plot(CARI_storm9_08_26_Q, CARI_storm9_08_26_turb, "CARI", "turb", "0826")
+CARI_storm10_08_30_turb.p = hyst_plot(CARI_storm10_08_30_Q, CARI_storm10_08_30_turb, "CARI", "turb", "0830")
+CARI_storm11_09_02_turb.p = hyst_plot(CARI_storm11_09_02_Q, CARI_storm11_09_02_turb, "CARI", "turb", "0902")
+CARI_storm12a_09_20_turb.p = hyst_plot(CARI_storm12a_09_20_Q, CARI_storm12a_09_20_turb, "CARI", "turb", "0920a")
+CARI_storm12b_09_25_turb.p = hyst_plot(CARI_storm12b_09_25_Q, CARI_storm12b_09_25_turb, "CARI", "turb", "0925b")
+
+multiplot(CARI_storm1_06_10_fDOM.p,CARI_storm1_06_10_SPC.p,CARI_storm1_06_10_turb.p,
+          CARI_storm2_06_21_NO3.p,CARI_storm2_06_21_fDOM.p,CARI_storm2_06_21_SPC.p,CARI_storm2_06_21_turb.p,
+          CARI_storm3_06_29_NO3.p,CARI_storm3_06_29_fDOM.p,CARI_storm3_06_29_SPC.p,CARI_storm3_06_29_turb.p,
+          CARI_storm4a_06_30_fDOM.p,CARI_storm4a_06_30_SPC.p,CARI_storm4a_06_30_turb.p,
+          CARI_storm4b_07_01_fDOM.p,CARI_storm4b_07_01_SPC.p,CARI_storm4b_07_01_turb.p,
+          CARI_storm5a_08_04_NO3.p, CARI_storm5a_08_04_fDOM.p,CARI_storm5a_08_04_SPC.p,CARI_storm5a_08_04_turb.p,
+          CARI_storm5b_08_05_NO3.p, CARI_storm5b_08_05_fDOM.p,CARI_storm5b_08_05_SPC.p,CARI_storm5b_08_05_turb.p,
+          CARI_storm5c_08_06_NO3.p,CARI_storm5c_08_06_fDOM.p,CARI_storm5c_08_06_SPC.p,CARI_storm5c_08_06_turb.p,
+          CARI_storm6_08_13_NO3.p, CARI_storm6_08_13_fDOM.p,CARI_storm6_08_13_SPC.p,CARI_storm6_08_13_turb.p,
+          CARI_storm7_08_21_NO3.p, CARI_storm7_08_21_fDOM.p,CARI_storm7_08_21_SPC.p,CARI_storm7_08_21_turb.p,
+          CARI_storm8_08_24_NO3.p, CARI_storm8_08_24_fDOM.p,CARI_storm8_08_24_SPC.p,CARI_storm8_08_24_turb.p,
+          CARI_storm9_08_26_NO3.p, CARI_storm9_08_26_fDOM.p,CARI_storm9_08_26_SPC.p,CARI_storm9_08_26_turb.p,
+          CARI_storm10_08_30_NO3.p, CARI_storm10_08_30_fDOM.p,CARI_storm10_08_30_SPC.p,CARI_storm10_08_30_turb.p,
+          CARI_storm11_09_02_NO3.p, CARI_storm11_09_02_fDOM.p,CARI_storm11_09_02_SPC.p,CARI_storm11_09_02_turb.p,
+          CARI_storm12a_09_20_NO3.p, CARI_storm12a_09_20_fDOM.p,CARI_storm12a_09_20_SPC.p,CARI_storm12a_09_20_turb.p,
+          CARI_storm12b_09_25_NO3.p, CARI_storm12b_09_25_fDOM.p,CARI_storm12b_09_25_SPC.p,CARI_storm12b_09_25_turb.p,
           cols = 7
           )
 ############################################### 2019 ##############################################
 # plot on normalized scale #
-#### load data #####
+#### load data #
 #STRT_storm1_05_31 <- read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm1_05_31.csv")
 STRT_storm1_05_31_Q <- read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm1_05_31_Q.csv")
 STRT_storm1_05_31_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm1_05_31_NO3.csv")
@@ -852,14 +1165,6 @@ STRT_storm7c_10_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2019/STRT/S
 
 
 # MOOS #
-dfList <- Filter(function(x) is(x, "data.frame"), mget(ls()))
-
-for(i in 1:length(dfList)) {
-  dfList[[i]][["datavalue"]] = 
-    (dfList[[i]][["datavalue"]] - min(dfList[[i]][["datavalue"]], na.rm=T)) / (max(dfList[[i]][["datavalue"]], na.rm=T) - min(dfList[[i]][["datavalue"]], na.rm=T))
-}
-list2env(dfList ,.GlobalEnv)
-
 #MOOS_storm1_06_01 <- read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm1_06_01.csv", row.names = 1)
 MOOS_storm1_06_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm1_06_01_Q.csv")
 MOOS_storm1_06_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm1_06_01_NO3.csv")
@@ -2129,6 +2434,9 @@ CARI_storm7b_08_13_SPC.p = hyst_plot(CARI_storm7b_08_13_Q, CARI_storm7b_08_13_SP
 CARI_storm8_08_16_SPC.p = hyst_plot(CARI_storm8_08_16_Q, CARI_storm8_08_16_SPC, "CARI", "SPC", "0816")
 
 # turb
+
+#CARI_storm2_06_30_turb <- CARI_storm2_06_30_turb[!duplicated(CARI_storm2_06_30_turb$valuedatetime), ]
+#CARI_storm3_07_12_turb <- CARI_storm3_07_12_turb[-c(1260:2518), ]
 multiplot(CARI_storm1_05_08_turb.p)
 multiplot(CARI_storm2_06_30_turb.p)
 multiplot(CARI_storm3_07_12_turb.p)
@@ -2227,428 +2535,749 @@ multiplot(CARI_storm1_05_08_NO3.p, CARI_storm1_05_08_fDOM.p,CARI_storm1_05_08_SP
 ############################################### 2020 #############################################
 # plot on normalized scale # 
 #### load data #####
-STRT_storm1a_06_19 <- read.csv("Storms/STRT_storm1a_06_19.csv")
-STRT_storm1a_06_19_Q <- read.csv("Storms/STRT_storm1a_06_19_Q.csv")
-STRT_storm1a_06_19_NO3 <- read.csv("Storms/STRT_storm1a_06_19_NO3.csv")
-STRT_storm1a_06_19_fDOM <- read.csv("Storms/STRT_storm1a_06_19_fDOM.csv")
+#STRT_storm1a_06_18 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18.csv")
+STRT_storm1a_06_18_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18_Q.csv")
+STRT_storm1a_06_18_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18_NO3.csv")
+STRT_storm1a_06_18_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18_fDOM.csv")
+STRT_storm1a_06_18_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18_SPC.csv")
+STRT_storm1a_06_18_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1a_06_18_Turb.csv")
 
-STRT_storm1b_06_20 <- read.csv("Storms/STRT_storm1b_06_20.csv")
-STRT_storm1b_06_20_Q <- read.csv("Storms/STRT_storm1b_06_20_Q.csv")
-STRT_storm1b_06_20_NO3 <- read.csv("Storms/STRT_storm1b_06_20_NO3.csv")
-STRT_storm1b_06_20_fDOM <- read.csv("Storms/STRT_storm1b_06_20_fDOM.csv")
+#STRT_storm1b_06_20 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20.csv")
+STRT_storm1b_06_20_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20_Q.csv")
+STRT_storm1b_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20_NO3.csv")
+#STRT_storm1b_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20_fDOM.csv")
+STRT_storm1b_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20_SPC.csv")
+STRT_storm1b_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1b_06_20_Turb.csv")
 
-STRT_storm1c_06_22 <- read.csv("Storms/STRT_storm1c_06_22.csv")
-STRT_storm1c_06_22_Q <- read.csv("Storms/STRT_storm1c_06_22_Q.csv")
-STRT_storm1c_06_22_NO3 <- read.csv("Storms/STRT_storm1c_06_22_NO3.csv")
-STRT_storm1c_06_22_fDOM <- read.csv("Storms/STRT_storm1c_06_22_fDOM.csv")
+#STRT_storm1c_06_21 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21.csv")
+STRT_storm1c_06_21_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21_Q.csv")
+STRT_storm1c_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21_NO3.csv")
+STRT_storm1c_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21_fDOM.csv")
+STRT_storm1c_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21_SPC.csv")
+STRT_storm1c_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1c_06_21_Turb.csv")
 
-STRT_storm1d_06_23 <- read.csv("Storms/STRT_storm1d_06_23.csv")
-STRT_storm1d_06_23_Q <- read.csv("Storms/STRT_storm1d_06_23_Q.csv")
-STRT_storm1d_06_23_NO3 <- read.csv("Storms/STRT_storm1d_06_23_NO3.csv")
-STRT_storm1d_06_23_fDOM <- read.csv("Storms/STRT_storm1d_06_23_fDOM.csv")
+#STRT_storm1d_06_23 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23.csv")
+STRT_storm1d_06_23_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23_Q.csv")
+STRT_storm1d_06_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23_NO3.csv")
+STRT_storm1d_06_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23_fDOM.csv")
+STRT_storm1d_06_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23_SPC.csv")
+STRT_storm1d_06_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1d_06_23_Turb.csv")
 
-STRT_storm1e_06_24 <- read.csv("Storms/STRT_storm1e_06_24.csv")
-STRT_storm1e_06_24_Q <- read.csv("Storms/STRT_storm1e_06_24_Q.csv")
-STRT_storm1e_06_24_NO3 <- read.csv("Storms/STRT_storm1e_06_24_NO3.csv")
-STRT_storm1e_06_24_fDOM <- read.csv("Storms/STRT_storm1e_06_24_fDOM.csv")
+#STRT_storm1e_06_24 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24.csv")
+STRT_storm1e_06_24_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_Q.csv")
+STRT_storm1e_06_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_NO3.csv")
+STRT_storm1e_06_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_fDOM.csv")
+STRT_storm1e_06_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_SPC.csv")
+STRT_storm1e_06_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_Turb.csv")
 
-STRT_storm2_07_09 <- read.csv("Storms/STRT_storm2_07_09.csv")
-STRT_storm2_07_09_Q <- read.csv("Storms/STRT_storm2_07_09_Q.csv")
-STRT_storm2_07_09_NO3 <- read.csv("Storms/STRT_storm2_07_09_NO3.csv")
-STRT_storm2_07_09_fDOM <- read.csv("Storms/STRT_storm2_07_09_fDOM.csv")
+#STRT_storm1e_06_24 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24.csv")
+STRT_storm1e_06_24_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_Q.csv")
+STRT_storm1e_06_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_NO3.csv")
+STRT_storm1e_06_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_fDOM.csv")
+STRT_storm1e_06_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_SPC.csv")
+STRT_storm1e_06_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm1e_06_24_Turb.csv")
 
-STRT_storm3_07_21 <- read.csv("Storms/STRT_storm3_07_21.csv")
-STRT_storm3_07_21_Q <- read.csv("Storms/STRT_storm3_07_21_Q.csv")
-STRT_storm3_07_21_NO3 <- read.csv("Storms/STRT_storm3_07_21_NO3.csv")
-STRT_storm3_07_21_fDOM <- read.csv("Storms/STRT_storm3_07_21_fDOM.csv")
+#STRT_storm2_07_09 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09.csv")
+STRT_storm2_07_09_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09_Q.csv")
+STRT_storm2_07_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09_NO3.csv")
+#STRT_storm2_07_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09_fDOM.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#STRT_storm2_07_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09_SPC.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#STRT_storm2_07_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm2_07_09_Turb.csv", 
+#                                   col_types = cols(datavalue = col_double()))
 
-STRT_storm4a_08_01 <- read.csv("Storms/STRT_storm4a_08_01.csv")
-STRT_storm4a_08_01_Q <- read.csv("Storms/STRT_storm4a_08_01_Q.csv")
-STRT_storm4a_08_01_NO3 <- read.csv("Storms/STRT_storm4a_08_01_NO3.csv")
-STRT_storm4a_08_01_fDOM <- read.csv("Storms/STRT_storm4a_08_01_fDOM.csv")
+#STRT_storm3_07_20 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20.csv")
+STRT_storm3_07_20_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20_Q.csv")
+STRT_storm3_07_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20_NO3.csv")
+STRT_storm3_07_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20_fDOM.csv")
+STRT_storm3_07_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20_SPC.csv")
+STRT_storm3_07_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm3_07_20_Turb.csv")
 
-STRT_storm4b_08_03 <- read.csv("Storms/STRT_storm4b_08_03.csv")
-STRT_storm4b_08_03_Q <- read.csv("Storms/STRT_storm4b_08_03_Q.csv")
-STRT_storm4b_08_03_NO3 <- read.csv("Storms/STRT_storm4b_08_03_NO3.csv")
-STRT_storm4b_08_03_fDOM <- read.csv("Storms/STRT_storm4b_08_03_fDOM.csv")
+#STRT_storm4a_08_01 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01.csv")
+STRT_storm4a_08_01_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01_Q.csv")
+STRT_storm4a_08_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01_NO3.csv")
+STRT_storm4a_08_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01_fDOM.csv")
+STRT_storm4a_08_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01_SPC.csv")
+STRT_storm4a_08_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4a_08_01_Turb.csv")
 
-STRT_storm5_08_09 <- read.csv("Storms/STRT_storm5_08_09.csv")
-STRT_storm5_08_09_Q <- read.csv("Storms/STRT_storm5_08_09_Q.csv")
-STRT_storm5_08_09_NO3 <- read.csv("Storms/STRT_storm5_08_09_NO3.csv")
-STRT_storm5_08_09_fDOM <- read.csv("Storms/STRT_storm5_08_09_fDOM.csv")
+#STRT_storm4b_08_03<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03.csv")
+STRT_storm4b_08_03_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03_Q.csv")
+STRT_storm4b_08_03_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03_NO3.csv")
+STRT_storm4b_08_03_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03_fDOM.csv")
+STRT_storm4b_08_03_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03_SPC.csv")
+STRT_storm4b_08_03_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm4b_08_03_Turb.csv")
 
-STRT_storm6_08_12 <- read.csv("Storms/STRT_storm6_08_12.csv")
-STRT_storm6_08_12_Q <- read.csv("Storms/STRT_storm6_08_12_Q.csv")
-STRT_storm6_08_12_NO3 <- read.csv("Storms/STRT_storm6_08_12_NO3.csv")
-STRT_storm6_08_12_fDOM <- read.csv("Storms/STRT_storm6_08_12_fDOM.csv")
+#STRT_storm5_08_09<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09.csv")
+STRT_storm5_08_09_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09_Q.csv")
+STRT_storm5_08_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09_NO3.csv")
+STRT_storm5_08_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09_fDOM.csv")
+STRT_storm5_08_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09_SPC.csv")
+STRT_storm5_08_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm5_08_09_Turb.csv")
 
-STRT_storm7a_08_20 <- read.csv("Storms/STRT_storm7a_08_20.csv")
-STRT_storm7a_08_20_Q <- read.csv("Storms/STRT_storm7a_08_20_Q.csv")
-STRT_storm7a_08_20_NO3 <- read.csv("Storms/STRT_storm7a_08_20_NO3.csv")
-STRT_storm7a_08_20_fDOM <- read.csv("Storms/STRT_storm7a_08_20_fDOM.csv")
+#STRT_storm6_08_12<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12.csv")
+STRT_storm6_08_12_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12_Q.csv")
+STRT_storm6_08_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12_NO3.csv")
+STRT_storm6_08_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12_fDOM.csv")
+STRT_storm6_08_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12_SPC.csv")
+STRT_storm6_08_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm6_08_12_Turb.csv")
 
-STRT_storm7b_08_21 <- read.csv("Storms/STRT_storm7b_08_21.csv")
-STRT_storm7b_08_21_Q <- read.csv("Storms/STRT_storm7b_08_21_Q.csv",)
-STRT_storm7b_08_21_NO3 <- read.csv("Storms/STRT_storm7b_08_21_NO3.csv")
-STRT_storm7b_08_21_fDOM <- read.csv("Storms/STRT_storm7b_08_21_fDOM.csv")
+#STRT_storm7a_08_20- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20.csv")
+STRT_storm7a_08_20_Q <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20_Q.csv")
+STRT_storm7a_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20_NO3.csv")
+STRT_storm7a_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20_fDOM.csv")
+STRT_storm7a_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20_SPC.csv")
+STRT_storm7a_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm7a_08_20_Turb.csv")
 
-STRT_storm8_08_28 <- read.csv("Storms/STRT_storm8_08_28.csv")
-STRT_storm8_08_28_Q <- read.csv("Storms/STRT_storm8_08_28_Q.csv")
-STRT_storm8_08_28_NO3 <- read.csv("Storms/STRT_storm8_08_28_NO3.csv")
-STRT_storm8_08_28_fDOM <- read.csv("Storms/STRT_storm8_08_28_fDOM.csv")
+#STRT_storm8_08_28 <-  read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28.csv")
+STRT_storm8_08_28_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28_Q.csv")
+STRT_storm8_08_28_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28_NO3.csv")
+STRT_storm8_08_28_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28_fDOM.csv")
+STRT_storm8_08_28_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28_SPC.csv")
+STRT_storm8_08_28_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm8_08_28_Turb.csv")
 
-STRT_storm9a_09_03 <- read.csv("Storms/STRT_storm9a_09_03.csv")
-STRT_storm9a_09_03_Q <- read.csv("Storms/STRT_storm9a_09_03_Q.csv")
-STRT_storm9a_09_03_NO3 <- read.csv("Storms/STRT_storm9a_09_03_NO3.csv")
-STRT_storm9a_09_03_fDOM <- read.csv("Storms/STRT_storm9a_09_03_fDOM.csv")
+#STRT_storm9a_09_03<-  read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03.csv")
+STRT_storm9a_09_03_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03_Q.csv")
+STRT_storm9a_09_03_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03_NO3.csv")
+STRT_storm9a_09_03_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03_fDOM.csv")
+STRT_storm9a_09_03_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03_SPC.csv")
+STRT_storm9a_09_03_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9a_09_03_Turb.csv")
 
-STRT_storm9b_09_06 <- read.csv("Storms/STRT_storm9b_09_06.csv")
-STRT_storm9b_09_06_Q <- read.csv("Storms/STRT_storm9b_09_06_Q.csv")
-STRT_storm9b_09_06_NO3 <- read.csv("Storms/STRT_storm9b_09_06_NO3.csv")
-STRT_storm9b_09_06_fDOM <- read.csv("Storms/STRT_storm9b_09_06_fDOM.csv")
+#STRT_storm9b_09_06<-  read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06.csv")
+STRT_storm9b_09_06_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06_Q.csv")
+STRT_storm9b_09_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06_NO3.csv")
+STRT_storm9b_09_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06_fDOM.csv")
+STRT_storm9b_09_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06_SPC.csv")
+STRT_storm9b_09_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9b_09_06_Turb.csv")
 
-STRT_storm9c_09_09 <- read.csv("Storms/STRT_storm9c_09_09.csv")
-STRT_storm9c_09_09_Q <- read.csv("Storms/STRT_storm9c_09_09_Q.csv")
-STRT_storm9c_09_09_NO3 <- read.csv("Storms/STRT_storm9c_09_09_NO3.csv")
-STRT_storm9c_09_09_fDOM <- read.csv("Storms/STRT_storm9c_09_09_fDOM.csv")
+#STRT_storm9c_09_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09.csv")
+STRT_storm9c_09_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09_Q.csv")
+STRT_storm9c_09_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09_NO3.csv")
+STRT_storm9c_09_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09_fDOM.csv")
+STRT_storm9c_09_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09_SPC.csv")
+STRT_storm9c_09_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm9c_09_09_Turb.csv")
 
-STRT_storm10_09_23 <- read.csv("Storms/STRT_storm10_09_23.csv")
-STRT_storm10_09_23_Q <- read.csv("Storms/STRT_storm10_09_23_Q.csv")
-STRT_storm10_09_23_NO3 <- read.csv("Storms/STRT_storm10_09_23_NO3.csv")
-STRT_storm10_09_23_fDOM <- read.csv("Storms/STRT_storm10_09_23_fDOM.csv")
-
-# MOOS #
-MOOS_storm1_06_21 <- read.csv("Storms/MOOS_storm1_06_21.csv", row.names = 1)
-MOOS_storm1_06_21_Q <- read.csv("Storms/MOOS_storm1_06_21_Q.csv", row.names = 1)
-MOOS_storm1_06_21_NO3 <- read.csv("Storms/MOOS_storm1_06_21_NO3.csv", row.names = 1)
-MOOS_storm1_06_21_fDOM <- read.csv("Storms/MOOS_storm1_06_21_fDOM.csv", row.names = 1)
-
-MOOS_storm2_06_28 <- read.csv("Storms/MOOS_storm2_06_28.csv", row.names = 1)
-MOOS_storm2_06_28_Q <- read.csv("Storms/MOOS_storm2_06_28_Q.csv", row.names = 1)
-MOOS_storm2_06_28_NO3 <- read.csv("Storms/MOOS_storm2_06_28_NO3.csv", row.names = 1)
-MOOS_storm2_06_28_fDOM <- read.csv("Storms/MOOS_storm2_06_28_fDOM.csv", row.names = 1)
-
-MOOS_storm3_07_18 <- read.csv("Storms/MOOS_storm3_07_18.csv", row.names = 1)
-MOOS_storm3_07_18_Q <- read.csv("Storms/MOOS_storm3_07_18_Q.csv", row.names = 1)
-MOOS_storm3_07_18_NO3 <- read.csv("Storms/MOOS_storm3_07_18_NO3.csv", row.names = 1)
-MOOS_storm3_07_18_fDOM <- read.csv("Storms/MOOS_storm3_07_18_fDOM.csv", row.names = 1)
-
-MOOS_storm4_07_20 <- read.csv("Storms/MOOS_storm4_07_20.csv", row.names = 1)
-MOOS_storm4_07_20_Q <- read.csv("Storms/MOOS_storm4_07_20_Q.csv", row.names = 1)
-MOOS_storm4_07_20_NO3 <- read.csv("Storms/MOOS_storm4_07_20_NO3.csv", row.names = 1)
-MOOS_storm4_07_20_fDOM <- read.csv("Storms/MOOS_storm4_07_20_fDOM.csv", row.names = 1)
-
-MOOS_storm5_07_27 <- read.csv("Storms/MOOS_storm5_07_27.csv", row.names = 1)
-MOOS_storm5_07_27_Q <- read.csv("Storms/MOOS_storm5_07_27_Q.csv", row.names = 1)
-MOOS_storm5_07_27_NO3 <- read.csv("Storms/MOOS_storm5_07_27_NO3.csv", row.names = 1)
-MOOS_storm5_07_27_fDOM <- read.csv("Storms/MOOS_storm5_07_27_fDOM.csv", row.names = 1)
-
-MOOS_storm6a_08_01 <- read.csv("Storms/MOOS_storm6a_08_01.csv", row.names = 1)
-MOOS_storm6a_08_01_Q <- read.csv("Storms/MOOS_storm6a_08_01_Q.csv", row.names = 1)
-MOOS_storm6a_08_01_NO3 <- read.csv("Storms/MOOS_storm6a_08_01_NO3.csv", row.names = 1)
-MOOS_storm6a_08_01_fDOM <- read.csv("Storms/MOOS_storm6a_08_01_fDOM.csv", row.names = 1)
-
-MOOS_storm6b_08_03 <- read.csv("Storms/MOOS_storm6b_08_03.csv", row.names = 1)
-MOOS_storm6b_08_03_Q <- read.csv("Storms/MOOS_storm6b_08_03_Q.csv", row.names = 1)
-MOOS_storm6b_08_03_NO3 <- read.csv("Storms/MOOS_storm6b_08_03_NO3.csv", row.names = 1)
-MOOS_storm6b_08_03_fDOM <- read.csv("Storms/MOOS_storm6b_08_03_fDOM.csv", row.names = 1)
-
-MOOS_storm7a_08_09 <- read.csv("Storms/MOOS_storm7a_08_09.csv", row.names = 1)
-MOOS_storm7a_08_09_Q <- read.csv("Storms/MOOS_storm7a_08_09_Q.csv", row.names = 1)
-MOOS_storm7a_08_09_NO3 <- read.csv("Storms/MOOS_storm7a_08_09_NO3.csv", row.names = 1)
-MOOS_storm7a_08_09_fDOM <- read.csv("Storms/MOOS_storm7a_08_09_fDOM.csv", row.names = 1)
-
-MOOS_storm7b_08_12 <- read.csv("Storms/MOOS_storm7b_08_12.csv", row.names = 1)
-MOOS_storm7b_08_12_Q <- read.csv("Storms/MOOS_storm7b_08_12_Q.csv", row.names = 1)
-MOOS_storm7b_08_12_NO3 <- read.csv("Storms/MOOS_storm7b_08_12_NO3.csv", row.names = 1)
-MOOS_storm7b_08_12_fDOM <- read.csv("Storms/MOOS_storm7b_08_12_fDOM.csv", row.names = 1)
-
-MOOS_storm8_09_03 <- read.csv("Storms/MOOS_storm8_09_03.csv", row.names = 1)
-MOOS_storm8_09_03_Q <- read.csv("Storms/MOOS_storm8_09_03_Q.csv", row.names = 1)
-MOOS_storm8_09_03_NO3 <- read.csv("Storms/MOOS_storm8_09_03_NO3.csv", row.names = 1)
-MOOS_storm8_09_03_fDOM <- read.csv("Storms/MOOS_storm8_09_03_fDOM.csv", row.names = 1)
-
-MOOS_storm9_09_09 <- read.csv("Storms/MOOS_storm9_09_09.csv", row.names = 1)
-MOOS_storm9_09_09_Q <- read.csv("Storms/MOOS_storm9_09_09_Q.csv", row.names = 1)
-MOOS_storm9_09_09_NO3 <- read.csv("Storms/MOOS_storm9_09_09_NO3.csv", row.names = 1)
-MOOS_storm9_09_09_fDOM <- read.csv("Storms/MOOS_storm9_09_09_fDOM.csv", row.names = 1)
+#STRT_storm10_09_23<-  read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23.csv")
+STRT_storm10_09_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23_Q.csv")
+STRT_storm10_09_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23_NO3.csv")
+STRT_storm10_09_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23_fDOM.csv")
+STRT_storm10_09_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23_SPC.csv")
+STRT_storm10_09_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/STRT/STRT_storm10_09_23_Turb.csv")
 
 # FRCH #
-FRCH_storm1_06_13 <- read.csv("Storms/FRCH_storm1_06_13.csv", row.names = 1)
-FRCH_storm1_06_13_Q <- read.csv("Storms/FRCH_storm1_06_13_Q.csv", row.names = 1)
-FRCH_storm1_06_13_NO3 <- read.csv("Storms/FRCH_storm1_06_13_NO3.csv", row.names = 1)
-FRCH_storm1_06_13_fDOM <- read.csv("Storms/FRCH_storm1_06_13_fDOM.csv", row.names = 1)
+#FRCH_storm1_06_13 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13.csv")
+FRCH_storm1_06_13_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13_Q.csv")
+FRCH_storm1_06_13_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13_NO3.csv")
+FRCH_storm1_06_13_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13_fDOM.csv")
+FRCH_storm1_06_13_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13_SPC.csv")
+FRCH_storm1_06_13_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm1_06_13_Turb.csv")
 
-FRCH_storm2_06_19 <- read.csv("Storms/FRCH_storm2_06_19.csv", row.names = 1)
-FRCH_storm2_06_19_Q <- read.csv("Storms/FRCH_storm2_06_19_Q.csv", row.names = 1)
-FRCH_storm2_06_19_NO3 <- read.csv("Storms/FRCH_storm2_06_19_NO3.csv", row.names = 1)
-FRCH_storm2_06_19_fDOM <- read.csv("Storms/FRCH_storm2_06_19_fDOM.csv", row.names = 1)
+#FRCH_storm2_06_18 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18.csv")
+FRCH_storm2_06_18_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18_Q.csv")
+FRCH_storm2_06_18_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18_NO3.csv")
+FRCH_storm2_06_18_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18_fDOM.csv")
+FRCH_storm2_06_18_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18_SPC.csv")
+FRCH_storm2_06_18_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm2_06_18_Turb.csv")
 
-FRCH_storm3a_06_20 <- read.csv("Storms/FRCH_storm3a_06_20.csv", row.names = 1)
-FRCH_storm3a_06_20_Q <- read.csv("Storms/FRCH_storm3a_06_20_Q.csv", row.names = 1)
-FRCH_storm3a_06_20_NO3 <- read.csv("Storms/FRCH_storm3a_06_20_NO3.csv", row.names = 1)
-FRCH_storm3a_06_20_fDOM <- read.csv("Storms/FRCH_storm3a_06_20_fDOM.csv", row.names = 1)
+#FRCH_storm3a_06_20 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20.csv")
+FRCH_storm3a_06_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20_Q.csv")
+FRCH_storm3a_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20_NO3.csv")
+FRCH_storm3a_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20_fDOM.csv")
+FRCH_storm3a_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20_SPC.csv")
+FRCH_storm3a_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3a_06_20_Turb.csv")
 
-FRCH_storm3b_06_22 <- read.csv("Storms/FRCH_storm3b_06_22.csv", row.names = 1)
-FRCH_storm3b_06_22_Q <- read.csv("Storms/FRCH_storm3b_06_22_Q.csv", row.names = 1)
-FRCH_storm3b_06_22_NO3 <- read.csv("Storms/FRCH_storm3b_06_22_NO3.csv", row.names = 1)
-FRCH_storm3b_06_22_fDOM <- read.csv("Storms/FRCH_storm3b_06_22_fDOM.csv", row.names = 1)
+#FRCH_storm3b_06_21 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21.csv")
+FRCH_storm3b_06_21_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21_Q.csv")
+FRCH_storm3b_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21_NO3.csv")
+FRCH_storm3b_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21_fDOM.csv")
+FRCH_storm3b_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21_SPC.csv")
+FRCH_storm3b_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3b_06_21_Turb.csv")
 
-FRCH_storm3c_06_28 <- read.csv("Storms/FRCH_storm3c_06_28.csv", row.names = 1)
-FRCH_storm3c_06_28_Q <- read.csv("Storms/FRCH_storm3c_06_28_Q.csv", row.names = 1)
-FRCH_storm3c_06_28_NO3 <- read.csv("Storms/FRCH_storm3c_06_28_NO3.csv", row.names = 1)
-FRCH_storm3c_06_28_fDOM <- read.csv("Storms/FRCH_storm3c_06_28_fDOM.csv", row.names = 1)
+#FRCH_storm3c_06_26 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26.csv")
+FRCH_storm3c_06_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26_Q.csv")
+FRCH_storm3c_06_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26_NO3.csv")
+FRCH_storm3c_06_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26_fDOM.csv")
+FRCH_storm3c_06_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26_SPC.csv")
+FRCH_storm3c_06_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm3c_06_26_Turb.csv")
 
-FRCH_storm4a_07_07 <- read.csv("Storms/FRCH_storm4a_07_07.csv", row.names = 1)
-FRCH_storm4a_07_07_Q <- read.csv("Storms/FRCH_storm4a_07_07_Q.csv", row.names = 1)
-FRCH_storm4a_07_07_NO3 <- read.csv("Storms/FRCH_storm4a_07_07_NO3.csv", row.names = 1)
-FRCH_storm4a_07_07_fDOM <- read.csv("Storms/FRCH_storm4a_07_07_fDOM.csv", row.names = 1)
+#FRCH_storm4a_07_07 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07.csv")
+FRCH_storm4a_07_07_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07_Q.csv")
+FRCH_storm4a_07_07_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07_NO3.csv")
+FRCH_storm4a_07_07_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07_fDOM.csv")
+FRCH_storm4a_07_07_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07_SPC.csv")
+FRCH_storm4a_07_07_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4a_07_07_Turb.csv")
 
-FRCH_storm4b_07_09 <- read.csv("Storms/FRCH_storm4b_07_09.csv", row.names = 1)
-FRCH_storm4b_07_09_Q <- read.csv("Storms/FRCH_storm4b_07_09_Q.csv", row.names = 1)
-FRCH_storm4b_07_09_NO3 <- read.csv("Storms/FRCH_storm4b_07_09_NO3.csv", row.names = 1)
-FRCH_storm4b_07_09_fDOM <- read.csv("Storms/FRCH_storm4b_07_09_fDOM.csv", row.names = 1)
+#FRCH_storm4b_07_09 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FFRCH_storm4b_07_09.csv")
+FRCH_storm4b_07_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4b_07_09_Q.csv")
+FRCH_storm4b_07_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4b_07_09_NO3.csv")
+FRCH_storm4b_07_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4b_07_09_fDOM.csv")
+FRCH_storm4b_07_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4b_07_09_SPC.csv")
+FRCH_storm4b_07_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm4b_07_09_Turb.csv")
 
-FRCH_storm5_07_16 <- read.csv("Storms/FRCH_storm5_07_16.csv", row.names = 1)
-FRCH_storm5_07_16_Q <- read.csv("Storms/FRCH_storm5_07_16_Q.csv", row.names = 1)
-FRCH_storm5_07_16_NO3 <- read.csv("Storms/FRCH_storm5_07_16_NO3.csv", row.names = 1)
-FRCH_storm5_07_16_fDOM <- read.csv("Storms/FRCH_storm5_07_16_fDOM.csv", row.names = 1)
+#FRCH_storm5_07_15 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15csv")
+FRCH_storm5_07_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15_Q.csv")
+FRCH_storm5_07_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15_NO3.csv")
+FRCH_storm5_07_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15_fDOM.csv")
+FRCH_storm5_07_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15_SPC.csv")
+FRCH_storm5_07_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm5_07_15_Turb.csv")
 
-FRCH_storm6_07_17 <- read.csv("Storms/FRCH_storm6_07_17.csv", row.names = 1)
-FRCH_storm6_07_17_Q <- read.csv("Storms/FRCH_storm6_07_17_Q.csv", row.names = 1)
-FRCH_storm6_07_17_NO3 <- read.csv("Storms/FRCH_storm6_07_17_NO3.csv", row.names = 1)
-FRCH_storm6_07_17_fDOM <- read.csv("Storms/FRCH_storm6_07_17_fDOM.csv", row.names = 1)
+#FRCH_storm6_07_17 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_17.csv")
+FRCH_storm6_07_18<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_18_Q.csv")
+FRCH_storm6_07_18_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_18_NO3.csv")
+FRCH_storm6_07_18_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_18_fDOM.csv")
+FRCH_storm6_07_18_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_18_SPC.csv")
+FRCH_storm6_07_18_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm6_07_18_Turb.csv")
 
-FRCH_storm7_07_20 <- read.csv("Storms/FRCH_storm7_07_20.csv", row.names = 1)
-FRCH_storm7_07_20_Q <- read.csv("Storms/FRCH_storm7_07_20_Q.csv", row.names = 1)
-FRCH_storm7_07_20_NO3 <- read.csv("Storms/FRCH_storm7_07_20_NO3.csv", row.names = 1)
-FRCH_storm7_07_20_fDOM <- read.csv("Storms/FRCH_storm7_07_20_fDOM.csv", row.names = 1)
+#FRCH_storm7_07_20 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20.csv")
+FRCH_storm7_07_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20_Q.csv")
+FRCH_storm7_07_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20_NO3.csv")
+FRCH_storm7_07_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20_fDOM.csv")
+FRCH_storm7_07_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20_SPC.csv")
+FRCH_storm7_07_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm7_07_20_Turb.csv")
 
-FRCH_storm8_07_26 <- read.csv("Storms/FRCH_storm8_07_26.csv", row.names = 1)
-FRCH_storm8_07_26_Q <- read.csv("Storms/FRCH_storm8_07_26_Q.csv", row.names = 1)
-FRCH_storm8_07_26_NO3 <- read.csv("Storms/FRCH_storm8_07_26_NO3.csv", row.names = 1)
-FRCH_storm8_07_26_fDOM <- read.csv("Storms/FRCH_storm8_07_26_fDOM.csv", row.names = 1)
+#FRCH_storm8_07_26 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26.csv")
+FRCH_storm8_07_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26_Q.csv")
+FRCH_storm8_07_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26_NO3.csv")
+FRCH_storm8_07_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26_fDOM.csv")
+FRCH_storm8_07_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26_SPC.csv")
+FRCH_storm8_07_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm8_07_26_Turb.csv")
 
-FRCH_storm9a_08_01 <- read.csv("Storms/FRCH_storm9a_08_01.csv", row.names = 1)
-FRCH_storm9a_08_01_Q <- read.csv("Storms/FRCH_storm9a_08_01_Q.csv", row.names = 1)
-FRCH_storm9a_08_01_NO3 <- read.csv("Storms/FRCH_storm9a_08_01_NO3.csv", row.names = 1)
-FRCH_storm9a_08_01_fDOM <- read.csv("Storms/FRCH_storm9a_08_01_fDOM.csv", row.names = 1)
+#FRCH_storm9a_08_01 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01.csv")
+FRCH_storm9a_08_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01_Q.csv")
+FRCH_storm9a_08_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01_NO3.csv")
+FRCH_storm9a_08_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01_fDOM.csv")
+FRCH_storm9a_08_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01_SPC.csv")
+FRCH_storm9a_08_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9a_08_01_Turb.csv")
 
-FRCH_storm9b_08_02 <- read.csv("Storms/FRCH_storm9b_08_02.csv", row.names = 1)
-FRCH_storm9b_08_02_Q <- read.csv("Storms/FRCH_storm9b_08_02_Q.csv", row.names = 1)
-FRCH_storm9b_08_02_NO3 <- read.csv("Storms/FRCH_storm9b_08_02_NO3.csv", row.names = 1)
-FRCH_storm9b_08_02_fDOM <- read.csv("Storms/FRCH_storm9b_08_02_fDOM.csv", row.names = 1)
+#FRCH_storm9b_08_02 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02.csv")
+FRCH_storm9b_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_Q.csv")
+FRCH_storm9b_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_NO3.csv")
+FRCH_storm9b_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_fDOM.csv")
+FRCH_storm9b_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_SPC.csv")
+FRCH_storm9b_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_Turb.csv")
 
-# VAUL # 
-VAUL_storm1a_06_19 <- read.csv("Storms/VAUL_storm1a_06_19.csv", row.names = 1)
-VAUL_storm1a_06_19_Q <- read.csv("Storms/VAUL_storm1a_06_19_Q.csv", row.names = 1)
-VAUL_storm1a_06_19_NO3 <- read.csv("Storms/VAUL_storm1a_06_19_NO3.csv", row.names = 1)
-VAUL_storm1a_06_19_fDOM <- read.csv("Storms/VAUL_storm1a_06_19_fDOM.csv", row.names = 1)
+#FRCH_storm9b_08_02 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02.csv")
+FRCH_storm9b_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_Q.csv")
+FRCH_storm9b_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_NO3.csv")
+FRCH_storm9b_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_fDOM.csv")
+FRCH_storm9b_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_SPC.csv")
+FRCH_storm9b_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm9b_08_02_Turb.csv")
 
-VAUL_storm1b_06_20 <- read.csv("Storms/VAUL_storm1b_06_20.csv", row.names = 1)
-VAUL_storm1b_06_20_Q <- read.csv("Storms/VAUL_storm1b_06_20_Q.csv", row.names = 1)
-VAUL_storm1b_06_20_NO3 <- read.csv("Storms/VAUL_storm1b_06_20_NO3.csv", row.names = 1)
-VAUL_storm1b_06_20_fDOM <- read.csv("Storms/VAUL_storm1b_06_20_fDOM.csv", row.names = 1)
+#FRCH_storm10a_08_09 <-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09.csv")
+FRCH_storm10a_08_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09_Q.csv")
+FRCH_storm10a_08_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09_NO3.csv")
+FRCH_storm10a_08_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09_fDOM.csv")
+FRCH_storm10a_08_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09_SPC.csv")
+FRCH_storm10a_08_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10a_08_09_Turb.csv")
 
-VAUL_storm1c_06_22 <- read.csv("Storms/VAUL_storm1c_06_22.csv", row.names = 1)
-VAUL_storm1c_06_22_Q <- read.csv("Storms/VAUL_storm1c_06_22_Q.csv", row.names = 1)
-VAUL_storm1c_06_22_NO3 <- read.csv("Storms/VAUL_storm1c_06_22_NO3.csv", row.names = 1)
-VAUL_storm1c_06_22_fDOM <- read.csv("Storms/VAUL_storm1c_06_22_fDOM.csv", row.names = 1)
+#FRCH_storm10b_08_12<-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12.csv")
+FRCH_storm10b_08_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12_Q.csv")
+FRCH_storm10b_08_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12_NO3.csv")
+FRCH_storm10b_08_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12_fDOM.csv")
+FRCH_storm10b_08_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12_SPC.csv")
+FRCH_storm10b_08_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm10b_08_12_Turb.csv")
 
-VAUL_storm2_06_28 <- read.csv("Storms/VAUL_storm2_06_28.csv", row.names = 1)
-VAUL_storm2_06_28_Q <- read.csv("Storms/VAUL_storm2_06_28_Q.csv", row.names = 1)
-VAUL_storm2_06_28_NO3 <- read.csv("Storms/VAUL_storm2_06_28_NO3.csv", row.names = 1)
-VAUL_storm2_06_28_fDOM <- read.csv("Storms/VAUL_storm2_06_28_fDOM.csv", row.names = 1)
+#FRCH_storm11_08_20<-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20csv")
+FRCH_storm11_08_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20_Q.csv")
+FRCH_storm11_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20_NO3.csv")
+FRCH_storm11_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20_fDOM.csv")
+FRCH_storm11_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20_SPC.csv")
+FRCH_storm11_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm11_08_20_Turb.csv")
 
-VAUL_storm3_07_09 <- read.csv("Storms/VAUL_storm3_07_09.csv", row.names = 1)
-VAUL_storm3_07_09_Q <- read.csv("Storms/VAUL_storm3_07_09_Q.csv", row.names = 1)
-VAUL_storm3_07_09_NO3 <- read.csv("Storms/VAUL_storm3_07_09_NO3.csv", row.names = 1)
-VAUL_storm3_07_09_fDOM <- read.csv("Storms/VAUL_storm3_07_09_fDOM.csv", row.names = 1)
+#FRCH_storm12_09_06<-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06.csv")
+FRCH_storm12_09_06_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06_Q.csv")
+FRCH_storm12_09_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06_NO3.csv")
+FRCH_storm12_09_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06_fDOM.csv")
+FRCH_storm12_09_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06_SPC.csv")
+FRCH_storm12_09_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm12_09_06_Turb.csv")
 
-VAUL_storm4_07_12 <- read.csv("Storms/VAUL_storm4_07_12.csv", row.names = 1)
-VAUL_storm4_07_12_Q <- read.csv("Storms/VAUL_storm4_07_12_Q.csv", row.names = 1)
-VAUL_storm4_07_12_NO3 <- read.csv("Storms/VAUL_storm4_07_12_NO3.csv", row.names = 1)
-VAUL_storm4_07_12_fDOM <- read.csv("Storms/VAUL_storm4_07_12_fDOM.csv", row.names = 1)
+#FRCH_storm13_09_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09.csv")
+FRCH_storm13_09_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09_Q.csv")
+FRCH_storm13_09_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09_NO3.csv")
+FRCH_storm13_09_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09_fDOM.csv")
+FRCH_storm13_09_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09_SPC.csv")
+FRCH_storm13_09_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/FRCH/FRCH_storm13_09_09_Turb.csv")
 
-VAUL_storm5_07_27 <- read.csv("Storms/VAUL_storm5_07_27.csv", row.names = 1)
-VAUL_storm5_07_27_Q <- read.csv("Storms/VAUL_storm5_07_27_Q.csv", row.names = 1)
-VAUL_storm5_07_27_NO3 <- read.csv("Storms/VAUL_storm5_07_27_NO3.csv", row.names = 1)
-VAUL_storm5_07_27_fDOM <- read.csv("Storms/VAUL_storm5_07_27_fDOM.csv", row.names = 1)
+## MOOS ##
 
-VAUL_storm6a_08_01 <- read.csv("Storms/VAUL_storm6a_08_01.csv", row.names = 1)
-VAUL_storm6a_08_01_Q <- read.csv("Storms/VAUL_storm6a_08_01_Q.csv", row.names = 1)
-VAUL_storm6a_08_01_NO3 <- read.csv("Storms/VAUL_storm6a_08_01_NO3.csv", row.names = 1)
-VAUL_storm6a_08_01_fDOM <- read.csv("Storms/VAUL_storm6a_08_01_fDOM.csv", row.names = 1)
+#MOOS_storm1_06_20<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20.csv")
+MOOS_storm1_06_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20_Q.csv")
+MOOS_storm1_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20_NO3.csv")
+MOOS_storm1_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20_fDOM.csv")
+MOOS_storm1_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20_SPC.csv")
+MOOS_storm1_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm1_06_20_Turb.csv")
 
-VAUL_storm6b_08_02 <- read.csv("Storms/VAUL_storm6b_08_02.csv", row.names = 1)
-VAUL_storm6b_08_02_Q <- read.csv("Storms/VAUL_storm6b_08_02_Q.csv", row.names = 1)
-VAUL_storm6b_08_02_NO3 <- read.csv("Storms/VAUL_storm6b_08_02_NO3.csv", row.names = 1)
-VAUL_storm6b_08_02_fDOM <- read.csv("Storms/VAUL_storm6b_08_02_fDOM.csv", row.names = 1)
+#MOOS_storm2_06_28<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28.csv")
+MOOS_storm2_06_28_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28_Q.csv")
+MOOS_storm2_06_28_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28_NO3.csv")
+MOOS_storm2_06_28_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28_fDOM.csv")
+MOOS_storm2_06_28_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28_SPC.csv")
+MOOS_storm2_06_28_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm2_06_28_Turb.csv")
 
-VAUL_storm7_08_08 <- read.csv("Storms/VAUL_storm7_08_08.csv", row.names = 1)
-VAUL_storm7_08_08_Q <- read.csv("Storms/VAUL_storm7_08_08_Q.csv", row.names = 1)
-VAUL_storm7_08_08_NO3 <- read.csv("Storms/VAUL_storm7_08_08_NO3.csv", row.names = 1)
-VAUL_storm7_08_08_fDOM <- read.csv("Storms/VAUL_storm7_08_08_fDOM.csv", row.names = 1)
+#MOOS_storm3_07_18<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18.csv")
+MOOS_storm3_07_18_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18_Q.csv")
+MOOS_storm3_07_18_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18_NO3.csv")
+MOOS_storm3_07_18_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18_fDOM.csv")
+MOOS_storm3_07_18_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18_SPC.csv")
+MOOS_storm3_07_18_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm3_07_18_Turb.csv")
 
-VAUL_storm8_08_11 <- read.csv("Storms/VAUL_storm8_08_11.csv", row.names = 1)
-VAUL_storm8_08_11_Q <- read.csv("Storms/VAUL_storm8_08_11_Q.csv", row.names = 1)
-VAUL_storm8_08_11_NO3 <- read.csv("Storms/VAUL_storm8_08_11_NO3.csv", row.names = 1)
-VAUL_storm8_08_11_fDOM <- read.csv("Storms/VAUL_storm8_08_11_fDOM.csv", row.names = 1)
+#MOOS_storm4_07_20<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20.csv")
+MOOS_storm4_07_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20_Q.csv")
+MOOS_storm4_07_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20_NO3.csv")
+MOOS_storm4_07_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20_fDOM.csv")
+MOOS_storm4_07_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20_SPC.csv")
+MOOS_storm4_07_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm4_07_20_Turb.csv")
 
-VAUL_storm9_08_12 <- read.csv("Storms/VAUL_storm9_08_12.csv", row.names = 1)
-VAUL_storm9_08_12_Q <- read.csv("Storms/VAUL_storm9_08_12_Q.csv", row.names = 1)
-VAUL_storm9_08_12_NO3 <- read.csv("Storms/VAUL_storm9_08_12_NO3.csv", row.names = 1)
-VAUL_storm9_08_12_fDOM <- read.csv("Storms/VAUL_storm9_08_12_fDOM.csv", row.names = 1)
+#MOOS_storm5_07_26<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26.csv")
+MOOS_storm5_07_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26_Q.csv")
+MOOS_storm5_07_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26_NO3.csv")
+MOOS_storm5_07_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26_fDOM.csv")
+MOOS_storm5_07_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26_SPC.csv")
+MOOS_storm5_07_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm5_07_26_Turb.csv")
 
-VAUL_storm10_08_25 <- read.csv("Storms/VAUL_storm10_08_25.csv", row.names = 1)
-VAUL_storm10_08_25_Q <- read.csv("Storms/VAUL_storm10_08_25_Q.csv", row.names = 1)
-VAUL_storm10_08_25_NO3 <- read.csv("Storms/VAUL_storm10_08_25_NO3.csv", row.names = 1)
-VAUL_storm10_08_25_fDOM <- read.csv("Storms/VAUL_storm10_08_25_fDOM.csv", row.names = 1)
+#MOOS_storm6a_08_01<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01.csv")
+MOOS_storm6a_08_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01_Q.csv")
+MOOS_storm6a_08_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01_NO3.csv")
+MOOS_storm6a_08_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01_fDOM.csv")
+MOOS_storm6a_08_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01_SPC.csv")
+MOOS_storm6a_08_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6a_08_01_Turb.csv")
 
-VAUL_storm11_08_27 <- read.csv("Storms/VAUL_storm11_08_27.csv", row.names = 1)
-VAUL_storm11_08_27_Q <- read.csv("Storms/VAUL_storm11_08_27_Q.csv", row.names = 1)
-VAUL_storm11_08_27_NO3 <- read.csv("Storms/VAUL_storm11_08_27_NO3.csv", row.names = 1)
-VAUL_storm11_08_27_fDOM <- read.csv("Storms/VAUL_storm11_08_27_fDOM.csv", row.names = 1)
+#MOOS_storm6b_08_02<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02.csv")
+MOOS_storm6b_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02_Q.csv")
+MOOS_storm6b_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02_NO3.csv")
+MOOS_storm6b_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02_fDOM.csv")
+MOOS_storm6b_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02_SPC.csv")
+MOOS_storm6b_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm6b_08_02_Turb.csv")
 
-VAUL_storm12_09_01 <- read.csv("Storms/VAUL_storm12_09_01.csv", row.names = 1)
-VAUL_storm12_09_01_Q <- read.csv("Storms/VAUL_storm12_09_01_Q.csv", row.names = 1)
-VAUL_storm12_09_01_NO3 <- read.csv("Storms/VAUL_storm12_09_01_NO3.csv", row.names = 1)
-VAUL_storm12_09_01_fDOM <- read.csv("Storms/VAUL_storm12_09_01_fDOM.csv", row.names = 1)
+#MOOS_storm7a_08_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09.csv")
+MOOS_storm7a_08_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09_Q.csv")
+MOOS_storm7a_08_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09_NO3.csv")
+MOOS_storm7a_08_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09_fDOM.csv")
+MOOS_storm7a_08_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09_SPC.csv")
+MOOS_storm7a_08_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7a_08_09_Turb.csv")
 
-VAUL_storm13_09_03 <- read.csv("Storms/VAUL_storm13_09_03.csv", row.names = 1)
-VAUL_storm13_09_03_Q <- read.csv("Storms/VAUL_storm13_09_03_Q.csv", row.names = 1)
-VAUL_storm13_09_03_NO3 <- read.csv("Storms/VAUL_storm13_09_03_NO3.csv", row.names = 1)
-VAUL_storm13_09_03_fDOM <- read.csv("Storms/VAUL_storm13_09_03_fDOM.csv", row.names = 1)
+#MOOS_storm7b_08_12<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12.csv")
+MOOS_storm7b_08_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12_Q.csv")
+MOOS_storm7b_08_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12_NO3.csv")
+MOOS_storm7b_08_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12_fDOM.csv")
+MOOS_storm7b_08_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12_SPC.csv")
+MOOS_storm7b_08_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm7b_08_12_Turb.csv")
 
-VAUL_storm14_09_06 <- read.csv("Storms/VAUL_storm14_09_06.csv", row.names = 1)
-VAUL_storm14_09_06_Q <- read.csv("Storms/VAUL_storm14_09_06_Q.csv", row.names = 1)
-VAUL_storm14_09_06_NO3 <- read.csv("Storms/VAUL_storm14_09_06_NO3.csv", row.names = 1)
-VAUL_storm14_09_06_fDOM <- read.csv("Storms/VAUL_storm14_09_06_fDOM.csv", row.names = 1)
+#MOOS_storm8_09_06<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06.csv")
+MOOS_storm8_09_06_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06_Q.csv")
+MOOS_storm8_09_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06_NO3.csv")
+MOOS_storm8_09_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06_fDOM.csv")
+MOOS_storm8_09_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06_SPC.csv")
+MOOS_storm8_09_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm8_09_06_Turb.csv")
 
-POKE_storm1_06_09 <- read.csv("Storms/POKE_storm1_06_09.csv", row.names = 1)
-POKE_storm1_06_09_Q <- read.csv("Storms/POKE_storm1_06_09_Q.csv", row.names = 1)
-POKE_storm1_06_09_NO3 <- read.csv("Storms/POKE_storm1_06_09_NO3.csv", row.names = 1)
-POKE_storm1_06_09_fDOM <- read.csv("Storms/POKE_storm1_06_09_fDOM.csv", row.names = 1)
+#MOOS_storm9_09_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09.csv")
+MOOS_storm9_09_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09_Q.csv")
+MOOS_storm9_09_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09_NO3.csv")
+MOOS_storm9_09_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09_fDOM.csv")
+MOOS_storm9_09_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09_SPC.csv")
+MOOS_storm9_09_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/MOOS/MOOS_storm9_09_09_Turb.csv")
 
-POKE_storm2_06_12 <- read.csv("Storms/POKE_storm2_06_12.csv", row.names = 1)
-POKE_storm2_06_12_Q <- read.csv("Storms/POKE_storm2_06_12_Q.csv", row.names = 1)
-POKE_storm2_06_12_NO3 <- read.csv("Storms/POKE_storm2_06_12_NO3.csv", row.names = 1)
-POKE_storm2_06_12_fDOM <- read.csv("Storms/POKE_storm2_06_12_fDOM.csv", row.names = 1)
+## VAUL ## 
+#VAUL_storm1a_06_19<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19.csv")
+VAUL_storm1a_06_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19_Q.csv")
+VAUL_storm1a_06_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19_NO3.csv")
+VAUL_storm1a_06_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19_fDOM.csv")
+VAUL_storm1a_06_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19_SPC.csv")
+VAUL_storm1a_06_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1a_06_19_Turb.csv")
 
-POKE_storm3_06_15 <- read.csv("Storms/POKE_storm3_06_15.csv", row.names = 1)
-POKE_storm3_06_15_Q <- read.csv("Storms/POKE_storm3_06_15_Q.csv", row.names = 1)
-POKE_storm3_06_15_NO3 <- read.csv("Storms/POKE_storm3_06_15_NO3.csv", row.names = 1)
-POKE_storm3_06_15_fDOM <- read.csv("Storms/POKE_storm3_06_15_fDOM.csv", row.names = 1)
+#VAUL_storm1b_06_20<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20.csv")
+VAUL_storm1b_06_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20_Q.csv")
+VAUL_storm1b_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20_NO3.csv")
+VAUL_storm1b_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20_fDOM.csv")
+VAUL_storm1b_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20_SPC.csv")
+VAUL_storm1b_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1b_06_20_Turb.csv")
 
-POKE_storm4a_06_19 <- read.csv("Storms/POKE_storm4a_06_19.csv", row.names = 1)
-POKE_storm4a_06_19_Q <- read.csv("Storms/POKE_storm4a_06_19_Q.csv", row.names = 1)
-POKE_storm4a_06_19_NO3 <- read.csv("Storms/POKE_storm4a_06_19_NO3.csv", row.names = 1)
-POKE_storm4a_06_19_fDOM <- read.csv("Storms/POKE_storm4a_06_19_fDOM.csv", row.names = 1)
+#VAUL_storm1c_06_22<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22.csv")
+VAUL_storm1c_06_22_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22_Q.csv")
+VAUL_storm1c_06_22_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22_NO3.csv")
+#VAUL_storm1c_06_22_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22_fDOM.csv", 
+#                                    col_types = cols(datavalue = col_double()))
+#VAUL_storm1c_06_22_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22_SPC.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+#VAUL_storm1c_06_22_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm1c_06_22_Turb.csv", 
+#                                    col_types = cols(datavalue = col_double()))
 
-POKE_storm4b_06_20 <- read.csv("Storms/POKE_storm4b_06_20.csv", row.names = 1)
-POKE_storm4b_06_20_Q <- read.csv("Storms/POKE_storm4b_06_20_Q.csv", row.names = 1)
-POKE_storm4b_06_20_NO3 <- read.csv("Storms/POKE_storm4b_06_20_NO3.csv", row.names = 1)
-POKE_storm4b_06_20_fDOM <- read.csv("Storms/POKE_storm4b_06_20_fDOM.csv", row.names = 1)
+#VAUL_storm2_06_28<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28.csv")
+VAUL_storm2_06_28_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28_Q.csv")
+VAUL_storm2_06_28_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28_NO3.csv")
+#VAUL_storm2_06_28_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28_fDOM.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#VAUL_storm2_06_28_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28_SPC.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+#VAUL_storm2_06_28_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm2_06_28_Turb.csv", 
+#                                   col_types = cols(datavalue = col_double()))
 
-POKE_storm4c_06_21 <- read.csv("Storms/POKE_storm4c_06_21.csv", row.names = 1)
-POKE_storm4c_06_21_Q <- read.csv("Storms/POKE_storm4c_06_21_Q.csv", row.names = 1)
-POKE_storm4c_06_21_NO3 <- read.csv("Storms/POKE_storm4c_06_21_NO3.csv", row.names = 1)
-POKE_storm4c_06_21_fDOM <- read.csv("Storms/POKE_storm4c_06_21_fDOM.csv", row.names = 1)
+#VAUL_storm3_07_08<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08.csv")
+VAUL_storm3_07_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08_Q.csv")
+VAUL_storm3_07_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08_NO3.csv")
+VAUL_storm3_07_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08_fDOM.csv")
+VAUL_storm3_07_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08_SPC.csv")
+VAUL_storm3_07_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm3_07_08_Turb.csv")
 
-POKE_storm5_06_22 <- read.csv("Storms/POKE_storm5_06_22.csv", row.names = 1)
-POKE_storm5_06_22_Q <- read.csv("Storms/POKE_storm5_06_22_Q.csv", row.names = 1)
-POKE_storm5_06_22_NO3 <- read.csv("Storms/POKE_storm5_06_22_NO3.csv", row.names = 1)
-POKE_storm5_06_22_fDOM <- read.csv("Storms/POKE_storm5_06_22_fDOM.csv", row.names = 1)
+#VAUL_storm4_07_12<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12.csv")
+VAUL_storm4_07_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12_Q.csv")
+VAUL_storm4_07_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12_NO3.csv")
+VAUL_storm4_07_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12_fDOM.csv")
+VAUL_storm4_07_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12_SPC.csv")
+VAUL_storm4_07_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm4_07_12_Turb.csv")
 
-POKE_storm6_06_29 <- read.csv("Storms/POKE_storm6_06_29.csv", row.names = 1)
-POKE_storm6_06_29_Q <- read.csv("Storms/POKE_storm6_06_29_Q.csv", row.names = 1)
-POKE_storm6_06_29_NO3 <- read.csv("Storms/POKE_storm6_06_29_NO3.csv", row.names = 1)
-POKE_storm6_06_29_fDOM <- read.csv("Storms/POKE_storm6_06_29_fDOM.csv", row.names = 1)
+#VAUL_storm5_07_26<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26.csv")
+VAUL_storm5_07_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26_Q.csv")
+VAUL_storm5_07_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26_NO3.csv")
+VAUL_storm5_07_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26_fDOM.csv")
+VAUL_storm5_07_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26_SPC.csv")
+VAUL_storm5_07_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm5_07_26_Turb.csv")
 
-POKE_storm7_07_04 <- read.csv("Storms/POKE_storm7_07_04.csv", row.names = 1)
-POKE_storm7_07_04_Q <- read.csv("Storms/POKE_storm7_07_04_Q.csv", row.names = 1)
-POKE_storm7_07_04_NO3 <- read.csv("Storms/POKE_storm7_07_04_NO3.csv", row.names = 1)
-POKE_storm7_07_04_fDOM <- read.csv("Storms/POKE_storm7_07_04_fDOM.csv", row.names = 1)
+#VAUL_storm6a_08_01<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01.csv")
+VAUL_storm6a_08_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01_Q.csv")
+VAUL_storm6a_08_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01_NO3.csv")
+VAUL_storm6a_08_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01_fDOM.csv")
+VAUL_storm6a_08_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01_SPC.csv")
+VAUL_storm6a_08_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6a_08_01_Turb.csv")
 
-POKE_storm8_07_09 <- read.csv("Storms/POKE_storm8_07_09.csv", row.names = 1)
-POKE_storm8_07_09_Q <- read.csv("Storms/POKE_storm8_07_09_Q.csv", row.names = 1)
-POKE_storm8_07_09_NO3 <- read.csv("Storms/POKE_storm8_07_09_NO3.csv", row.names = 1)
-POKE_storm8_07_09_fDOM <- read.csv("Storms/POKE_storm8_07_09_fDOM.csv", row.names = 1)
+#VAUL_storm6b_08_02<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02.csv")
+VAUL_storm6b_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02_Q.csv")
+VAUL_storm6b_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02_NO3.csv")
+VAUL_storm6b_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02_fDOM.csv")
+VAUL_storm6b_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02_SPC.csv")
+VAUL_storm6b_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm6b_08_02_Turb.csv")
 
-POKE_storm9_07_12 <- read.csv("Storms/POKE_storm9_07_12.csv", row.names = 1)
-POKE_storm9_07_12_Q <- read.csv("Storms/POKE_storm9_07_12_Q.csv", row.names = 1)
-POKE_storm9_07_12_NO3 <- read.csv("Storms/POKE_storm9_07_12_NO3.csv", row.names = 1)
-POKE_storm9_07_12_fDOM <- read.csv("Storms/POKE_storm9_07_12_fDOM.csv", row.names = 1)
+#VAUL_storm7_08_08<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08.csv")
+VAUL_storm7_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08_Q.csv")
+VAUL_storm7_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08_NO3.csv")
+VAUL_storm7_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08_fDOM.csv")
+VAUL_storm7_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08_SPC.csv")
+VAUL_storm7_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm7_08_08_Turb.csv")
 
-POKE_storm10_07_16 <- read.csv("Storms/POKE_storm10_07_16.csv", row.names = 1)
-POKE_storm10_07_16_Q <- read.csv("Storms/POKE_storm10_07_16_Q.csv", row.names = 1)
-POKE_storm10_07_16_NO3 <- read.csv("Storms/POKE_storm10_07_16_NO3.csv", row.names = 1)
-POKE_storm10_07_16_fDOM <- read.csv("Storms/POKE_storm10_07_16_fDOM.csv", row.names = 1)
+#VAUL_storm8_08_11<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11.csv")
+VAUL_storm8_08_11_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11_Q.csv")
+VAUL_storm8_08_11_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11_NO3.csv")
+VAUL_storm8_08_11_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11_fDOM.csv")
+VAUL_storm8_08_11_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11_SPC.csv")
+VAUL_storm8_08_11_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm8_08_11_Turb.csv")
 
-POKE_storm11_07_18 <- read.csv("Storms/POKE_storm11_07_18.csv", row.names = 1)
-POKE_storm11_07_18_Q <- read.csv("Storms/POKE_storm11_07_18_Q.csv", row.names = 1)
-POKE_storm11_07_18_NO3 <- read.csv("Storms/POKE_storm11_07_18_NO3.csv", row.names = 1)
-POKE_storm11_07_18_fDOM <- read.csv("Storms/POKE_storm11_07_18_fDOM.csv", row.names = 1)
+#VAUL_storm9_08_12<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12.csv")
+VAUL_storm9_08_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12_Q.csv")
+VAUL_storm9_08_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12_NO3.csv")
+VAUL_storm9_08_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12_fDOM.csv")
+VAUL_storm9_08_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12_SPC.csv")
+VAUL_storm9_08_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm9_08_12_Turb.csv")
 
-POKE_storm12_07_20 <- read.csv("Storms/POKE_storm12_07_20.csv", row.names = 1)
-POKE_storm12_07_20_Q <- read.csv("Storms/POKE_storm12_07_20_Q.csv", row.names = 1)
-POKE_storm12_07_20_NO3 <- read.csv("Storms/POKE_storm12_07_20_NO3.csv", row.names = 1)
-POKE_storm12_07_20_fDOM <- read.csv("Storms/POKE_storm12_07_20_fDOM.csv", row.names = 1)
+#VAUL_storm10_08_25<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25.csv")
+VAUL_storm10_08_25_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25_Q.csv")
+VAUL_storm10_08_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25_NO3.csv")
+VAUL_storm10_08_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25_fDOM.csv")
+VAUL_storm10_08_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25_SPC.csv")
+VAUL_storm10_08_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm10_08_25_Turb.csv")
 
-POKE_storm13_07_24 <- read.csv("Storms/POKE_storm13_07_24.csv", row.names = 1)
-POKE_storm13_07_24_Q <- read.csv("Storms/POKE_storm13_07_24_Q.csv", row.names = 1)
-POKE_storm13_07_24_NO3 <- read.csv("Storms/POKE_storm13_07_24_NO3.csv", row.names = 1)
-POKE_storm13_07_24_fDOM <- read.csv("Storms/POKE_storm13_07_24_fDOM.csv", row.names = 1)
+#VAUL_storm11_08_27<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27.csv")
+VAUL_storm11_08_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27_Q.csv")
+VAUL_storm11_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27_NO3.csv")
+VAUL_storm11_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27_fDOM.csv")
+VAUL_storm11_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27_SPC.csv")
+VAUL_storm11_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm11_08_27_Turb.csv")
 
-POKE_storm14_07_26 <- read.csv("Storms/POKE_storm14_07_26.csv", row.names = 1)
-POKE_storm14_07_26_Q <- read.csv("Storms/POKE_storm14_07_26_Q.csv", row.names = 1)
-POKE_storm14_07_26_NO3 <- read.csv("Storms/POKE_storm14_07_26_NO3.csv", row.names = 1)
-POKE_storm14_07_26_fDOM <- read.csv("Storms/POKE_storm14_07_26_fDOM.csv", row.names = 1)
+#VAUL_storm12_09_01<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01.csv")
+VAUL_storm12_09_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01_Q.csv")
+VAUL_storm12_09_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01_NO3.csv")
+VAUL_storm12_09_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01_fDOM.csv")
+VAUL_storm12_09_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01_SPC.csv")
+VAUL_storm12_09_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm12_09_01_Turb.csv")
 
-POKE_storm15_08_02 <- read.csv("Storms/POKE_storm15_08_02.csv", row.names = 1)
-POKE_storm15_08_02_Q <- read.csv("Storms/POKE_storm15_08_02_Q.csv", row.names = 1)
-POKE_storm15_08_02_NO3 <- read.csv("Storms/POKE_storm15_08_02_NO3.csv", row.names = 1)
-POKE_storm15_08_02_fDOM <- read.csv("Storms/POKE_storm15_08_02_fDOM.csv", row.names = 1)
+#VAUL_storm13_09_03<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03.csv")
+VAUL_storm13_09_03_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03_Q.csv")
+VAUL_storm13_09_03_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03_NO3.csv")
+VAUL_storm13_09_03_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03_fDOM.csv")
+VAUL_storm13_09_03_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03_SPC.csv")
+VAUL_storm13_09_03_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm13_09_03_Turb.csv")
 
-POKE_storm16_08_12 <- read.csv("Storms/POKE_storm16_08_12.csv", row.names = 1)
-POKE_storm16_08_12_Q <- read.csv("Storms/POKE_storm16_08_12_Q.csv", row.names = 1)
-POKE_storm16_08_12_NO3 <- read.csv("Storms/POKE_storm16_08_12_NO3.csv", row.names = 1)
-POKE_storm16_08_12_fDOM <- read.csv("Storms/POKE_storm16_08_12_fDOM.csv", row.names = 1)
+#VAUL_storm14_09_06<-  read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06.csv")
+VAUL_storm14_09_06_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06_Q.csv")
+VAUL_storm14_09_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06_NO3.csv")
+VAUL_storm14_09_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06_fDOM.csv")
+VAUL_storm14_09_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06_SPC.csv")
+VAUL_storm14_09_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/VAUL/VAUL_storm14_09_06_Turb.csv")
 
-POKE_storm17_08_24 <- read.csv("Storms/POKE_storm17_08_24.csv", row.names = 1)
-POKE_storm17_08_24_Q <- read.csv("Storms/POKE_storm17_08_24_Q.csv", row.names = 1)
-POKE_storm17_08_24_NO3 <- read.csv("Storms/POKE_storm17_08_24_NO3.csv", row.names = 1)
-POKE_storm17_08_24_fDOM <- read.csv("Storms/POKE_storm17_08_24_fDOM.csv", row.names = 1)
+## POKE ## 
+#POKE_storm1_06_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09.csv")
+POKE_storm1_06_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09_Q.csv")
+POKE_storm1_06_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09_NO3.csv")
+POKE_storm1_06_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09_fDOM.csv")
+POKE_storm1_06_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09_SPC.csv")
+POKE_storm1_06_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm1_06_09_Turb.csv")
 
-POKE_storm18_08_25 <- read.csv("Storms/POKE_storm18_08_25.csv", row.names = 1)
-POKE_storm18_08_25_Q <- read.csv("Storms/POKE_storm18_08_25_Q.csv", row.names = 1)
-POKE_storm18_08_25_NO3 <- read.csv("Storms/POKE_storm18_08_25_NO3.csv", row.names = 1)
-POKE_storm18_08_25_fDOM <- read.csv("Storms/POKE_storm18_08_25_fDOM.csv", row.names = 1)
+#POKE_storm2_06_12<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12.csv")
+POKE_storm2_06_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12_Q.csv")
+POKE_storm2_06_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12_NO3.csv")
+POKE_storm2_06_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12_fDOM.csv")
+POKE_storm2_06_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12_SPC.csv")
+POKE_storm2_06_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm2_06_12_Turb.csv")
 
-POKE_storm19_08_27 <- read.csv("Storms/POKE_storm19_08_27.csv", row.names = 1)
-POKE_storm19_08_27_Q <- read.csv("Storms/POKE_storm19_08_27_Q.csv", row.names = 1)
-POKE_storm19_08_27_NO3 <- read.csv("Storms/POKE_storm19_08_27_NO3.csv", row.names = 1)
-POKE_storm19_08_27_fDOM <- read.csv("Storms/POKE_storm19_08_27_fDOM.csv", row.names = 1)
+#POKE_storm3_06_15<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15.csv")
+POKE_storm3_06_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15_Q.csv")
+POKE_storm3_06_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15_NO3.csv")
+POKE_storm3_06_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15_fDOM.csv")
+POKE_storm3_06_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15_SPC.csv")
+POKE_storm3_06_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm3_06_15_Turb.csv")
 
-POKE_storm20_09_01 <- read.csv("Storms/POKE_storm20_09_01.csv", row.names = 1)
-POKE_storm20_09_01_Q <- read.csv("Storms/POKE_storm20_09_01_Q.csv", row.names = 1)
-POKE_storm20_09_01_NO3 <- read.csv("Storms/POKE_storm20_09_01_NO3.csv", row.names = 1)
-POKE_storm20_09_01_fDOM <- read.csv("Storms/POKE_storm20_09_01_fDOM.csv", row.names = 1)
+#POKE_storm4a_06_19<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19.csv")
+POKE_storm4a_06_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19_Q.csv")
+POKE_storm4a_06_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19_NO3.csv")
+POKE_storm4a_06_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19_fDOM.csv")
+POKE_storm4a_06_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19_SPC.csv")
+POKE_storm4a_06_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4a_06_19_Turb.csv")
 
-POKE_storm21_09_03 <- read.csv("Storms/POKE_storm21_09_03.csv", row.names = 1)
-POKE_storm21_09_03_Q <- read.csv("Storms/POKE_storm21_09_03_Q.csv", row.names = 1)
-POKE_storm21_09_03_NO3 <- read.csv("Storms/POKE_storm21_09_03_NO3.csv", row.names = 1)
-POKE_storm21_09_03_fDOM <- read.csv("Storms/POKE_storm21_09_03_fDOM.csv", row.names = 1)
+#POKE_storm4b_06_20<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20.csv")
+POKE_storm4b_06_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20_Q.csv")
+POKE_storm4b_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20_NO3.csv")
+POKE_storm4b_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20_fDOM.csv")
+POKE_storm4b_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20_SPC.csv")
+POKE_storm4b_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4b_06_20_Turb.csv")
 
-POKE_storm22a_09_07 <- read.csv("Storms/POKE_storm22a_09_07.csv", row.names = 1)
-POKE_storm22a_09_07_Q <- read.csv("Storms/POKE_storm22a_09_07_Q.csv", row.names = 1)
-POKE_storm22a_09_07_NO3 <- read.csv("Storms/POKE_storm22a_09_07_NO3.csv", row.names = 1)
-POKE_storm22a_09_07_fDOM <- read.csv("Storms/POKE_storm22a_09_07_fDOM.csv", row.names = 1)
+#POKE_storm4c_06_21<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21.csv")
+POKE_storm4c_06_21_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21_Q.csv")
+POKE_storm4c_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21_NO3.csv")
+POKE_storm4c_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21_fDOM.csv")
+POKE_storm4c_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21_SPC.csv")
+POKE_storm4c_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm4c_06_21_Turb.csv")
 
-POKE_storm22b_09_09 <- read.csv("Storms/POKE_storm22b_09_09.csv", row.names = 1)
-POKE_storm22b_09_09_Q <- read.csv("Storms/POKE_storm22b_09_09_Q.csv", row.names = 1)
-POKE_storm22b_09_09_NO3 <- read.csv("Storms/POKE_storm22b_09_09_NO3.csv", row.names = 1)
-POKE_storm22b_09_09_fDOM <- read.csv("Storms/POKE_storm22b_09_09_fDOM.csv", row.names = 1)
+#POKE_storm5_06_22<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22.csv")
+POKE_storm5_06_22_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22_Q.csv")
+POKE_storm5_06_22_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22_NO3.csv")
+POKE_storm5_06_22_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22_fDOM.csv")
+POKE_storm5_06_22_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22_SPC.csv")
+POKE_storm5_06_22_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm5_06_22_Turb.csv")
+
+#POKE_storm6_06_29<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29.csv")
+POKE_storm6_06_29_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29_Q.csv")
+POKE_storm6_06_29_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29_NO3.csv")
+POKE_storm6_06_29_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29_fDOM.csv")
+POKE_storm6_06_29_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29_SPC.csv")
+POKE_storm6_06_29_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm6_06_29_Turb.csv")
+
+#POKE_storm7_07_04<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04.csv")
+POKE_storm7_07_04_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04_Q.csv")
+POKE_storm7_07_04_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04_NO3.csv")
+POKE_storm7_07_04_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04_fDOM.csv")
+POKE_storm7_07_04_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04_SPC.csv")
+POKE_storm7_07_04_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm7_07_04_Turb.csv")
+
+#POKE_storm8_07_09<-  read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09.csv")
+POKE_storm8_07_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09_Q.csv")
+POKE_storm8_07_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09_NO3.csv")
+POKE_storm8_07_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09_fDOM.csv")
+POKE_storm8_07_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09_SPC.csv")
+POKE_storm8_07_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm8_07_09_Turb.csv")
+
+#POKE_storm9_07_12 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12.csv")
+POKE_storm9_07_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12_Q.csv")
+POKE_storm9_07_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12_NO3.csv")
+POKE_storm9_07_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12_fDOM.csv")
+POKE_storm9_07_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12_SPC.csv")
+POKE_storm9_07_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm9_07_12_Turb.csv")
+
+#POKE_storm10_07_16 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16.csv")
+POKE_storm10_07_16_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16_Q.csv")
+POKE_storm10_07_16_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16_NO3.csv")
+POKE_storm10_07_16_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16_fDOM.csv")
+POKE_storm10_07_16_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16_SPC.csv")
+POKE_storm10_07_16_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm10_07_16_Turb.csv")
+
+#POKE_storm11_07_18 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18.csv")
+POKE_storm11_07_18_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18_Q.csv")
+POKE_storm11_07_18_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18_NO3.csv")
+POKE_storm11_07_18_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18_fDOM.csv")
+POKE_storm11_07_18_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18_SPC.csv")
+POKE_storm11_07_18_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm11_07_18_Turb.csv")
+
+#POKE_storm12_07_20 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20.csv")
+POKE_storm12_07_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20_Q.csv")
+POKE_storm12_07_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20_NO3.csv")
+POKE_storm12_07_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20_fDOM.csv")
+POKE_storm12_07_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20_SPC.csv")
+POKE_storm12_07_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm12_07_20_Turb.csv")
+
+#POKE_storm13_07_24 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24.csv")
+POKE_storm13_07_24_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24_Q.csv")
+POKE_storm13_07_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24_NO3.csv")
+POKE_storm13_07_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24_fDOM.csv")
+POKE_storm13_07_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24_SPC.csv")
+POKE_storm13_07_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm13_07_24_Turb.csv")
+
+#POKE_storm14_07_26 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26.csv")
+POKE_storm14_07_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26_Q.csv")
+POKE_storm14_07_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26_NO3.csv")
+POKE_storm14_07_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26_fDOM.csv")
+POKE_storm14_07_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26_SPC.csv")
+POKE_storm14_07_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm14_07_26_Turb.csv")
+
+#POKE_storm15_08_02 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02.csv")
+POKE_storm15_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02_Q.csv")
+POKE_storm15_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02_NO3.csv")
+POKE_storm15_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02_fDOM.csv")
+POKE_storm15_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02_SPC.csv")
+POKE_storm15_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm15_08_02_Turb.csv")
+
+#POKE_storm16_08_12 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12.csv")
+POKE_storm16_08_12_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12_Q.csv")
+POKE_storm16_08_12_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12_NO3.csv")
+POKE_storm16_08_12_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12_fDOM.csv")
+POKE_storm16_08_12_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12_SPC.csv")
+POKE_storm16_08_12_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm16_08_12_Turb.csv")
+
+#POKE_storm17_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23.csv")
+POKE_storm17_08_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23_Q.csv")
+POKE_storm17_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23_NO3.csv")
+POKE_storm17_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23_fDOM.csv")
+POKE_storm17_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23_SPC.csv")
+POKE_storm17_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm17_08_23_Turb.csv")
+
+#POKE_storm18_08_25 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25.csv")
+POKE_storm18_08_25_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25_Q.csv")
+POKE_storm18_08_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25_NO3.csv")
+POKE_storm18_08_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25_fDOM.csv")
+POKE_storm18_08_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25_SPC.csv")
+POKE_storm18_08_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm18_08_25_Turb.csv")
+
+#POKE_storm19_08_27 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27.csv")
+POKE_storm19_08_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27_Q.csv")
+POKE_storm19_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27_NO3.csv")
+POKE_storm19_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27_fDOM.csv")
+POKE_storm19_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27_SPC.csv")
+POKE_storm19_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm19_08_27_Turb.csv")
+
+#POKE_storm20_09_01 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01.csv")
+POKE_storm20_09_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01_Q.csv")
+POKE_storm20_09_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01_NO3.csv")
+POKE_storm20_09_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01_fDOM.csv")
+POKE_storm20_09_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01_SPC.csv")
+POKE_storm20_09_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm20_09_01_Turb.csv")
+
+#POKE_storm21_09_03 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03.csv")
+POKE_storm21_09_03_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03_Q.csv")
+POKE_storm21_09_03_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03_NO3.csv")
+POKE_storm21_09_03_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03_fDOM.csv")
+POKE_storm21_09_03_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03_SPC.csv")
+POKE_storm21_09_03_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm21_09_03_Turb.csv")
+
+#POKE_storm22a_09_07 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07.csv")
+POKE_storm22a_09_07_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07_Q.csv")
+POKE_storm22a_09_07_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07_NO3.csv")
+POKE_storm22a_09_07_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07_fDOM.csv")
+POKE_storm22a_09_07_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07_SPC.csv")
+POKE_storm22a_09_07_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22a_09_07_Turb.csv")
+
+#POKE_storm22b_09_08 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08.csv")
+POKE_storm22b_09_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08_Q.csv")
+POKE_storm22b_09_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08_NO3.csv")
+POKE_storm22b_09_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08_fDOM.csv")
+POKE_storm22b_09_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08_SPC.csv")
+POKE_storm22b_09_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/POKE/POKE_storm22b_09_08_Turb.csv")
+
+## CARI ## 
+#CARI_storm1_06_15 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15.csv")
+CARI_storm1_06_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15_Q.csv")
+#CARI_storm1_06_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15_NO3.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+CARI_storm1_06_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm1_06_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15_SPC.csv")
+CARI_storm1_06_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm1_06_15_Turb.csv")
+
+#CARI_storm2a_06_19 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19.csv")
+CARI_storm2a_06_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19_Q.csv")
+CARI_storm2a_06_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19_NO3.csv")
+CARI_storm2a_06_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm2a_06_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19_SPC.csv")
+CARI_storm2a_06_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2a_06_19_Turb.csv")
+
+#CARI_storm2b_06_20 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20.csv")
+CARI_storm2b_06_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20_Q.csv")
+CARI_storm2b_06_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20_NO3.csv")
+CARI_storm2b_06_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm2b_06_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20_SPC.csv")
+CARI_storm2b_06_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2b_06_20_Turb.csv")
+
+#CARI_storm2c_06_21 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21.csv")
+CARI_storm2c_06_21_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21_Q.csv")
+CARI_storm2c_06_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21_NO3.csv")
+#CARI_storm2c_06_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21_fDOM.csv", 
+#                                    col_types = cols(datavalue = col_double()))
+CARI_storm2c_06_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21_SPC.csv")
+CARI_storm2c_06_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm2c_06_21_Turb.csv")
+
+#CARI_storm3_06_23 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23.csv")
+CARI_storm3_06_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23_Q.csv")
+CARI_storm3_06_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23_NO3.csv")
+CARI_storm3_06_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm3_06_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23_SPC.csv")
+CARI_storm3_06_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm3_06_23_Turb.csv")
+
+#CARI_storm4_07_09 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09.csv")
+CARI_storm4_07_09_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09_Q.csv")
+CARI_storm4_07_09_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09_NO3.csv")
+CARI_storm4_07_09_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm4_07_09_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09_SPC.csv")
+CARI_storm4_07_09_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm4_07_09_Turb.csv")
+
+#CARI_storm5_07_13 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13.csv")
+CARI_storm5_07_13_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13_Q.csv")
+CARI_storm5_07_13_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13_NO3.csv",
+                          col_types = cols(datavalue = col_double()))
+CARI_storm5_07_13_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm5_07_13_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13_SPC.csv")
+CARI_storm5_07_13_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm5_07_13_Turb.csv")
+
+#CARI_storm6_07_24 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24.csv")
+CARI_storm6_07_24_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24_Q.csv")
+CARI_storm6_07_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24_NO3.csv", 
+                      col_types = cols(datavalue = col_double()))
+CARI_storm6_07_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm6_07_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24_SPC.csv")
+CARI_storm6_07_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm6_07_24_Turb.csv")
+
+#CARI_storm7_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27.csv")
+CARI_storm7_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27_Q.csv")
+CARI_storm7_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27_NO3.csv")
+CARI_storm7_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm7_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27_SPC.csv")
+CARI_storm7_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm7_07_27_Turb.csv")
+
+#CARI_storm8a_08_02 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02.csv")
+CARI_storm8a_08_02_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02_Q.csv")
+CARI_storm8a_08_02_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02_NO3.csv")
+CARI_storm8a_08_02_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm8a_08_02_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02_SPC.csv")
+CARI_storm8a_08_02_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8a_08_02_Turb.csv")
+
+#CARI_storm8b_08_03 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03.csv")
+CARI_storm8b_08_03_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03_Q.csv")
+CARI_storm8b_08_03_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03_NO3.csv")
+CARI_storm8b_08_03_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03_fDOM.csv", 
+                                    col_types = cols(datavalue = col_double()))
+CARI_storm8b_08_03_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03_SPC.csv")
+CARI_storm8b_08_03_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm8b_08_03_Turb.csv")
+
+#CARI_storm9_09_07 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07.csv")
+CARI_storm9_09_07_Q<- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07_Q.csv")
+CARI_storm9_09_07_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07_NO3.csv")
+CARI_storm9_09_07_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07_fDOM.csv", 
+                                   col_types = cols(datavalue = col_double()))
+CARI_storm9_09_07_SPC <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07_SPC.csv")
+CARI_storm9_09_07_turb <- read_csv("~/Documents/Storms/Storm_Events/2020/CARI/CARI_storm9_09_07_Turb.csv")
 
 # normalize data #
 dfList <- Filter(function(x) is(x, "data.frame"), mget(ls()))
@@ -2679,19 +3308,38 @@ hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
 
 # plot STRT loops #
 # NO3
+multiplot(STRT_storm1a_06_18_NO3.p) # works 
+multiplot(STRT_storm1b_06_20_NO3.p)# fdom  does not work
+multiplot(STRT_storm1c_06_21_NO3.p) # works 
+multiplot(STRT_storm1d_06_23_NO3.p) # works 
+multiplot(STRT_storm1e_06_24_NO3.p) # works
+multiplot(STRT_storm2_07_09_NO3.p) 
+multiplot(STRT_storm3_07_20_NO3.p) # works 
+multiplot(STRT_storm4a_08_01_NO3.p) # works
+multiplot(STRT_storm4b_08_03_NO3.p) # works 
+multiplot(STRT_storm5_08_09_NO3.p) # works 
+multiplot(STRT_storm6_08_12_NO3.p) # works 
+multiplot(STRT_storm7a_08_20_NO3.p) # works
+#multiplot(STRT_storm7b_08_21_NO3.p) # works 
+multiplot(STRT_storm8_08_28_NO3.p) # works
+multiplot(STRT_storm9a_09_03_NO3.p)
+multiplot(STRT_storm9b_09_06_NO3.p)
+multiplot(STRT_storm9c_09_09_NO3.p) # works
+multiplot(STRT_storm10_09_23_NO3.p) # works 
+
 STRT_storm1a_06_18_NO3.p = hyst_plot(STRT_storm1a_06_18_Q, STRT_storm1a_06_18_NO3, "STRT", "NO3", "0618a")
-STRT_storm1b_06_19_NO3.p = hyst_plot(STRT_storm1b_06_19_Q, STRT_storm1b_06_19_NO3, "STRT", "NO3", "0619b")
+STRT_storm1b_06_20_NO3.p = hyst_plot(STRT_storm1b_06_20_Q, STRT_storm1b_06_20_NO3, "STRT", "NO3", "0620b")
 STRT_storm1c_06_21_NO3.p = hyst_plot(STRT_storm1c_06_21_Q, STRT_storm1c_06_21_NO3, "STRT", "NO3", "0621c")
-STRT_storm1d_06_22_NO3.p = hyst_plot(STRT_storm1d_06_22_Q, STRT_storm1d_06_22_NO3, "STRT", "NO3", "0622d")
-STRT_storm1e_06_23_NO3.p = hyst_plot(STRT_storm1e_06_23_Q, STRT_storm1e_06_23_NO3, "STRT", "NO3", "0623e")
+STRT_storm1d_06_23_NO3.p = hyst_plot(STRT_storm1d_06_23_Q, STRT_storm1d_06_23_NO3, "STRT", "NO3", "0623d")
+STRT_storm1e_06_24_NO3.p = hyst_plot(STRT_storm1e_06_24_Q, STRT_storm1e_06_24_NO3, "STRT", "NO3", "0624e")
 STRT_storm2_07_09_NO3.p = hyst_plot(STRT_storm2_07_09_Q, STRT_storm2_07_09_NO3, "STRT", "NO3", "0709")
 STRT_storm3_07_20_NO3.p = hyst_plot(STRT_storm3_07_20_Q, STRT_storm3_07_20_NO3, "STRT", "NO3", "0720")
 STRT_storm4a_08_01_NO3.p = hyst_plot(STRT_storm4a_08_01_Q, STRT_storm4a_08_01_NO3, "STRT", "NO3", "0801a")
-STRT_storm4b_08_02_NO3.p = hyst_plot(STRT_storm4b_08_02_Q, STRT_storm4b_08_02_NO3, "STRT", "NO3", "0802b")
+STRT_storm4b_08_03_NO3.p = hyst_plot(STRT_storm4b_08_03_Q, STRT_storm4b_08_03_NO3, "STRT", "NO3", "0803b")
 STRT_storm5_08_09_NO3.p = hyst_plot(STRT_storm5_08_09_Q, STRT_storm5_08_09_NO3, "STRT", "NO3", "0809")
 STRT_storm6_08_12_NO3.p = hyst_plot(STRT_storm6_08_12_Q, STRT_storm6_08_12_NO3, "STRT", "NO3", "0812")
 STRT_storm7a_08_20_NO3.p = hyst_plot(STRT_storm7a_08_20_Q, STRT_storm7a_08_20_NO3, "STRT", "NO3", "0820a")
-STRT_storm7b_08_21_NO3.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_NO3, "STRT", "NO3", "0821b")
+#STRT_storm7b_08_21_NO3.p = hyst_plot(STRT_storm7b, STRT_storm7b_08_21_NO3, "STRT", "NO3", "0821b")
 STRT_storm8_08_28_NO3.p = hyst_plot(STRT_storm8_08_28_Q, STRT_storm8_08_28_NO3, "STRT", "NO3", "0828")
 STRT_storm9a_09_03_NO3.p = hyst_plot(STRT_storm9a_09_03_Q, STRT_storm9a_09_03_NO3, "STRT", "NO3", "0903a")
 STRT_storm9b_09_06_NO3.p = hyst_plot(STRT_storm9b_09_06_Q, STRT_storm9b_09_06_NO3, "STRT", "NO3", "0906b")
@@ -2699,19 +3347,38 @@ STRT_storm9c_09_09_NO3.p = hyst_plot(STRT_storm9c_09_09_Q, STRT_storm9c_09_09_NO
 STRT_storm10_09_23_NO3.p = hyst_plot(STRT_storm10_09_23_Q, STRT_storm10_09_23_NO3, "STRT", "NO3", "0923")
 
 # fDOM #
+multiplot(STRT_storm1a_06_18_fDOM.p) 
+#multiplot(STRT_storm1b_06_20_fDOM.p) # doesnt work
+multiplot(STRT_storm1c_06_21_fDOM.p) 
+multiplot(STRT_storm1d_06_23_fDOM.p) 
+multiplot(STRT_storm1e_06_24_fDOM.p) 
+# multiplot(STRT_storm2_07_09_fDOM.p) # doesnt work
+multiplot(STRT_storm3_07_20_fDOM.p) 
+multiplot(STRT_storm4a_08_01_fDOM.p) 
+multiplot(STRT_storm4b_08_03_fDOM.p) 
+multiplot(STRT_storm5_08_09_fDOM.p) 
+multiplot(STRT_storm6_08_12_fDOM.p) 
+multiplot(STRT_storm7a_08_20_fDOM.p) 
+#multiplot(STRT_storm7b_08_21_fDOM.p) 
+multiplot(STRT_storm8_08_28_fDOM.p) 
+multiplot(STRT_storm9a_09_03_fDOM.p)
+multiplot(STRT_storm9b_09_06_fDOM.p)
+multiplot(STRT_storm9c_09_09_fDOM.p) 
+multiplot(STRT_storm10_09_23_fDOM.p) 
+
 STRT_storm1a_06_18_fDOM.p = hyst_plot(STRT_storm1a_06_18_Q, STRT_storm1a_06_18_fDOM, "STRT", "fDOM", "0618a")
-STRT_storm1b_06_19_fDOM.p = hyst_plot(STRT_storm1b_06_19_Q, STRT_storm1b_06_19_fDOM, "STRT", "fDOM", "0619b")
+STRT_storm1b_06_20_fDOM.p = hyst_plot(STRT_storm1b_06_20_Q, STRT_storm1b_06_20_fDOM, "STRT", "fDOM", "0620b")
 STRT_storm1c_06_21_fDOM.p = hyst_plot(STRT_storm1c_06_21_Q, STRT_storm1c_06_21_fDOM, "STRT", "fDOM", "0621c")
-STRT_storm1d_06_22_fDOM.p = hyst_plot(STRT_storm1d_06_22_Q, STRT_storm1d_06_22_fDOM, "STRT", "fDOM", "0622d")
-STRT_storm1e_06_23_fDOM.p = hyst_plot(STRT_storm1e_06_23_Q, STRT_storm1e_06_23_fDOM, "STRT", "fDOM", "0623e")
+STRT_storm1d_06_23_fDOM.p = hyst_plot(STRT_storm1d_06_23_Q, STRT_storm1d_06_23_fDOM, "STRT", "fDOM", "0623d")
+STRT_storm1e_06_24_fDOM.p = hyst_plot(STRT_storm1e_06_24_Q, STRT_storm1e_06_24_fDOM, "STRT", "fDOM", "0624e")
 STRT_storm2_07_09_fDOM.p = hyst_plot(STRT_storm2_07_09_Q, STRT_storm2_07_09_fDOM, "STRT", "fDOM", "0709")
 STRT_storm3_07_20_fDOM.p = hyst_plot(STRT_storm3_07_20_Q, STRT_storm3_07_20_fDOM, "STRT", "fDOM", "0720")
 STRT_storm4a_08_01_fDOM.p = hyst_plot(STRT_storm4a_08_01_Q, STRT_storm4a_08_01_fDOM, "STRT", "fDOM", "0801a")
-STRT_storm4b_08_02_fDOM.p = hyst_plot(STRT_storm4b_08_02_Q, STRT_storm4b_08_02_fDOM, "STRT", "fDOM", "0803b")
+STRT_storm4b_08_03_fDOM.p = hyst_plot(STRT_storm4b_08_03_Q, STRT_storm4b_08_03_fDOM, "STRT", "fDOM", "0803b")
 STRT_storm5_08_09_fDOM.p = hyst_plot(STRT_storm5_08_09_Q, STRT_storm5_08_09_fDOM, "STRT", "fDOM", "0809")
 STRT_storm6_08_12_fDOM.p = hyst_plot(STRT_storm6_08_12_Q, STRT_storm6_08_12_fDOM, "STRT", "fDOM", "0812")
 STRT_storm7a_08_20_fDOM.p = hyst_plot(STRT_storm7a_08_20_Q, STRT_storm7a_08_20_fDOM, "STRT", "fDOM", "0820a")
-STRT_storm7b_08_21_fDOM.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_fDOM, "STRT", "fDOM", "0821b")
+#STRT_storm7b_08_21_fDOM.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_fDOM, "STRT", "fDOM", "0821b")
 STRT_storm8_08_28_fDOM.p = hyst_plot(STRT_storm8_08_28_Q, STRT_storm8_08_28_fDOM, "STRT", "fDOM", "0828")
 STRT_storm9a_09_03_fDOM.p = hyst_plot(STRT_storm9a_09_03_Q, STRT_storm9a_09_03_fDOM, "STRT", "fDOM", "0903a")
 STRT_storm9b_09_06_fDOM.p = hyst_plot(STRT_storm9b_09_06_Q, STRT_storm9b_09_06_fDOM, "STRT", "fDOM", "0906b")
@@ -2719,19 +3386,38 @@ STRT_storm9c_09_09_fDOM.p = hyst_plot(STRT_storm9c_09_09_Q, STRT_storm9c_09_09_f
 STRT_storm10_09_23_fDOM.p = hyst_plot(STRT_storm10_09_23_Q, STRT_storm10_09_23_fDOM, "STRT", "fDOM", "0923")
 
 # SPC #
+multiplot(STRT_storm1a_06_18_SPC.p) 
+multiplot(STRT_storm1b_06_20_SPC.p)
+multiplot(STRT_storm1c_06_21_SPC.p) 
+multiplot(STRT_storm1d_06_23_SPC.p) 
+multiplot(STRT_storm1e_06_24_SPC.p) 
+#multiplot(STRT_storm2_07_09_SPC.p)  # doesnt work
+multiplot(STRT_storm3_07_20_SPC.p) 
+multiplot(STRT_storm4a_08_01_SPC.p) 
+multiplot(STRT_storm4b_08_03_SPC.p) 
+multiplot(STRT_storm5_08_09_SPC.p) 
+multiplot(STRT_storm6_08_12_SPC.p) 
+multiplot(STRT_storm7a_08_20_SPC.p) 
+#multiplot(STRT_storm7b_08_21_NO3.p) 
+multiplot(STRT_storm8_08_28_SPC.p) 
+multiplot(STRT_storm9a_09_03_SPC.p)
+multiplot(STRT_storm9b_09_06_SPC.p)
+multiplot(STRT_storm9c_09_09_SPC.p) 
+multiplot(STRT_storm10_09_23_SPC.p) 
+
 STRT_storm1a_06_18_SPC.p = hyst_plot(STRT_storm1a_06_18_Q, STRT_storm1a_06_18_SPC, "STRT", "SPC", "0618a")
-STRT_storm1b_06_19_SPC.p = hyst_plot(STRT_storm1b_06_19_Q, STRT_storm1b_06_19_SPC, "STRT", "SPC", "0619b")
+STRT_storm1b_06_20_SPC.p = hyst_plot(STRT_storm1b_06_20_Q, STRT_storm1b_06_20_SPC, "STRT", "SPC", "0620b")
 STRT_storm1c_06_21_SPC.p = hyst_plot(STRT_storm1c_06_21_Q, STRT_storm1c_06_21_SPC, "STRT", "SPC", "0621c")
-STRT_storm1d_06_22_SPC.p = hyst_plot(STRT_storm1d_06_22_Q, STRT_storm1d_06_22_SPC, "STRT", "SPC", "0622d")
-STRT_storm1e_06_23_SPC.p = hyst_plot(STRT_storm1e_06_23_Q, STRT_storm1e_06_23_SPC, "STRT", "SPC", "0623e")
+STRT_storm1d_06_23_SPC.p = hyst_plot(STRT_storm1d_06_23_Q, STRT_storm1d_06_23_SPC, "STRT", "SPC", "0623d")
+STRT_storm1e_06_24_SPC.p = hyst_plot(STRT_storm1e_06_24_Q, STRT_storm1e_06_24_SPC, "STRT", "SPC", "0624e")
 STRT_storm2_07_09_SPC.p = hyst_plot(STRT_storm2_07_09_Q, STRT_storm2_07_09_SPC, "STRT", "SPC", "0709")
 STRT_storm3_07_20_SPC.p = hyst_plot(STRT_storm3_07_20_Q, STRT_storm3_07_20_SPC, "STRT", "SPC", "0720")
 STRT_storm4a_08_01_SPC.p = hyst_plot(STRT_storm4a_08_01_Q, STRT_storm4a_08_01_SPC, "STRT", "SPC", "0801a")
-STRT_storm4b_08_02_SPC.p = hyst_plot(STRT_storm4b_08_02_Q, STRT_storm4b_08_02_SPC, "STRT", "SPC", "0803b")
+STRT_storm4b_08_03_SPC.p = hyst_plot(STRT_storm4b_08_03_Q, STRT_storm4b_08_03_SPC, "STRT", "SPC", "0803b")
 STRT_storm5_08_09_SPC.p = hyst_plot(STRT_storm5_08_09_Q, STRT_storm5_08_09_SPC, "STRT", "SPC", "0809")
 STRT_storm6_08_12_SPC.p = hyst_plot(STRT_storm6_08_12_Q, STRT_storm6_08_12_SPC, "STRT", "SPC", "0812")
 STRT_storm7a_08_20_SPC.p = hyst_plot(STRT_storm7a_08_20_Q, STRT_storm7a_08_20_SPC, "STRT", "SPC", "0820a")
-STRT_storm7b_08_21_SPC.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_SPC, "STRT", "SPC", "0821b")
+#STRT_storm7b_08_21_SPC.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_SPC, "STRT", "SPC", "0821b")
 STRT_storm8_08_28_SPC.p = hyst_plot(STRT_storm8_08_28_Q, STRT_storm8_08_28_SPC, "STRT", "SPC", "0828")
 STRT_storm9a_09_03_SPC.p = hyst_plot(STRT_storm9a_09_03_Q, STRT_storm9a_09_03_SPC, "STRT", "SPC", "0903a")
 STRT_storm9b_09_06_SPC.p = hyst_plot(STRT_storm9b_09_06_Q, STRT_storm9b_09_06_SPC, "STRT", "SPC", "0906b")
@@ -2739,19 +3425,38 @@ STRT_storm9c_09_09_SPC.p = hyst_plot(STRT_storm9c_09_09_Q, STRT_storm9c_09_09_SP
 STRT_storm10_09_23_SPC.p = hyst_plot(STRT_storm10_09_23_Q, STRT_storm10_09_23_SPC, "STRT", "SPC", "0923")
 
 # turb
+multiplot(STRT_storm1a_06_18_turb.p) 
+multiplot(STRT_storm1b_06_20_turb.p)
+multiplot(STRT_storm1c_06_21_turb.p) 
+multiplot(STRT_storm1d_06_23_turb.p) 
+multiplot(STRT_storm1e_06_24_turb.p) 
+#multiplot(STRT_storm2_07_09_turb.p) 
+multiplot(STRT_storm3_07_20_turb.p) 
+multiplot(STRT_storm4a_08_01_turb.p) 
+multiplot(STRT_storm4b_08_03_turb.p) 
+multiplot(STRT_storm5_08_09_turb.p) 
+multiplot(STRT_storm6_08_12_turb.p) 
+multiplot(STRT_storm7a_08_20_turb.p) 
+#multiplot(STRT_storm7b_08_21_NO3.p) 
+multiplot(STRT_storm8_08_28_turb.p) 
+multiplot(STRT_storm9a_09_03_turb.p)
+multiplot(STRT_storm9b_09_06_turb.p)
+multiplot(STRT_storm9c_09_09_turb.p) 
+multiplot(STRT_storm10_09_23_turb.p)
+
 STRT_storm1a_06_18_turb.p = hyst_plot(STRT_storm1a_06_18_Q, STRT_storm1a_06_18_turb, "STRT", "turb", "0618a")
-STRT_storm1b_06_19_turb.p = hyst_plot(STRT_storm1b_06_19_Q, STRT_storm1b_06_19_turb, "STRT", "turb", "0619b")
+STRT_storm1b_06_20_turb.p = hyst_plot(STRT_storm1b_06_20_Q, STRT_storm1b_06_20_turb, "STRT", "turb", "0620b")
 STRT_storm1c_06_21_turb.p = hyst_plot(STRT_storm1c_06_21_Q, STRT_storm1c_06_21_turb, "STRT", "turb", "0621c")
-STRT_storm1d_06_22_turb.p = hyst_plot(STRT_storm1d_06_22_Q, STRT_storm1d_06_22_turb, "STRT", "turb", "0622d")
-STRT_storm1e_06_23_turb.p = hyst_plot(STRT_storm1e_06_23_Q, STRT_storm1e_06_23_turb, "STRT", "turb", "0623e")
+STRT_storm1d_06_23_turb.p = hyst_plot(STRT_storm1d_06_23_Q, STRT_storm1d_06_23_turb, "STRT", "turb", "0623d")
+STRT_storm1e_06_24_turb.p = hyst_plot(STRT_storm1e_06_24_Q, STRT_storm1e_06_24_turb, "STRT", "turb", "0624e")
 STRT_storm2_07_09_turb.p = hyst_plot(STRT_storm2_07_09_Q, STRT_storm2_07_09_turb, "STRT", "turb", "0709")
 STRT_storm3_07_20_turb.p = hyst_plot(STRT_storm3_07_20_Q, STRT_storm3_07_20_turb, "STRT", "turb", "0720")
 STRT_storm4a_08_01_turb.p = hyst_plot(STRT_storm4a_08_01_Q, STRT_storm4a_08_01_turb, "STRT", "turb", "0801a")
-STRT_storm4b_08_02_turb.p = hyst_plot(STRT_storm4b_08_02_Q, STRT_storm4b_08_02_turb, "STRT", "turb", "0803b")
+STRT_storm4b_08_03_turb.p = hyst_plot(STRT_storm4b_08_03_Q, STRT_storm4b_08_03_turb, "STRT", "turb", "0803b")
 STRT_storm5_08_09_turb.p = hyst_plot(STRT_storm5_08_09_Q, STRT_storm5_08_09_turb, "STRT", "turb", "0809")
 STRT_storm6_08_12_turb.p = hyst_plot(STRT_storm6_08_12_Q, STRT_storm6_08_12_turb, "STRT", "turb", "0812")
 STRT_storm7a_08_20_turb.p = hyst_plot(STRT_storm7a_08_20_Q, STRT_storm7a_08_20_turb, "STRT", "turb", "0820a")
-STRT_storm7b_08_21_turb.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_turb, "STRT", "turb", "0821b")
+#STRT_storm7b_08_21_turb.p = hyst_plot(STRT_storm7b_08_21_Q, STRT_storm7b_08_21_turb, "STRT", "turb", "0821b")
 STRT_storm8_08_28_turb.p = hyst_plot(STRT_storm8_08_28_Q, STRT_storm8_08_28_turb, "STRT", "turb", "0828")
 STRT_storm9a_09_03_turb.p = hyst_plot(STRT_storm9a_09_03_Q, STRT_storm9a_09_03_turb, "STRT", "turb", "0903a")
 STRT_storm9b_09_06_turb.p = hyst_plot(STRT_storm9b_09_06_Q, STRT_storm9b_09_06_turb, "STRT", "turb", "0906b")
@@ -2798,80 +3503,18 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 
-multiplot(STRT_storm1a_06_19_NO3.p, STRT_storm1a_06_19_fDOM.p) # works 
-multiplot(STRT_storm1b_06_20_NO3.p, STRT_storm1b_06_20_fDOM.p)# fdom  does not work
-multiplot(STRT_storm1c_06_22_NO3.p, STRT_storm1c_06_22_fDOM.p) # works 
-multiplot(STRT_storm1d_06_23_NO3.p, STRT_storm1d_06_23_fDOM.p) # works 
-multiplot(STRT_storm1e_06_24_NO3.p, STRT_storm1e_06_24_fDOM.p) # works
-
-multiplot(STRT_storm2_07_09_NO3.p, STRT_storm2_07_09_fDOM.p) # fDOM is full of NAs
-multiplot(STRT_storm3_07_21_NO3.p, STRT_storm3_07_21_fDOM.p) # works 
-multiplot(STRT_storm4a_08_01_NO3.p, STRT_storm4a_08_01_fDOM.p) # works
-multiplot(STRT_storm4b_08_03_NO3.p, STRT_storm4b_08_03_fDOM.p) # works 
-multiplot(STRT_storm5_08_09_NO3.p, STRT_storm5_08_09_fDOM.p) # works 
-multiplot(STRT_storm6_08_12_NO3.p, STRT_storm6_08_12_fDOM.p) # works 
-multiplot(STRT_storm7a_08_20_NO3.p, STRT_storm7a_08_20_fDOM.p) # works
-multiplot(STRT_storm7b_08_21_NO3.p, STRT_storm7b_08_21_fDOM.p) # works 
-multiplot(STRT_storm8_08_28_NO3.p, STRT_storm8_08_28_fDOM.p) # works
-multiplot(STRT_storm9a_09_03_NO3.p, STRT_storm9a_09_03_fDOM.p,
-          STRT_storm9b_09_06_NO3.p, STRT_storm9b_09_06_fDOM.p,
-          STRT_storm9c_09_09_NO3.p, STRT_storm9c_09_09_fDOM.p) # works
-multiplot(STRT_storm10_09_23_NO3.p, STRT_storm10_09_23_fDOM.p) # works 
-
-# SPC #
-multiplot(STRT_storm1a_06_18_SPC.p) # works 
-multiplot(STRT_storm1b_06_19_SPC.p) # works 
-multiplot(STRT_storm1c_06_21_SPC.p) # works 
-multiplot(STRT_storm1d_06_22_SPC.p) # works 
-multiplot(STRT_storm1e_06_23_SPC.p) # works 
-multiplot(STRT_storm2_07_09_SPC.p) # empty
-multiplot(STRT_storm3_07_20_SPC.p) # works 
-multiplot(STRT_storm4a_08_01_SPC.p) # works 
-multiplot(STRT_storm4b_08_02_SPC.p) # works 
-multiplot(STRT_storm5_08_09_SPC.p) # works 
-multiplot(STRT_storm6_08_12_SPC.p) # works 
-multiplot(STRT_storm7a_08_20_SPC.p) # works 
-multiplot(STRT_storm7b_08_21_SPC.p) # works 
-multiplot(STRT_storm8_08_28_SPC.p) # works 
-multiplot(STRT_storm9a_09_03_SPC.p) # works 
-multiplot(STRT_storm9b_09_06_SPC.p) # works 
-multiplot(STRT_storm9c_09_09_SPC.p) # works 
-multiplot(STRT_storm10_09_23_SPC.p) # works 
-
-# turb # 
-# SPC #
-multiplot(STRT_storm1a_06_18_turb.p) # works 
-multiplot(STRT_storm1b_06_19_turb.p) # works 
-multiplot(STRT_storm1c_06_21_turb.p) # works 
-multiplot(STRT_storm1d_06_22_turb.p) # works 
-multiplot(STRT_storm1e_06_23_turb.p) # works 
-multiplot(STRT_storm2_07_09_turb.p) # empty
-multiplot(STRT_storm3_07_20_turb.p) # works 
-multiplot(STRT_storm4a_08_01_turb.p) # works 
-multiplot(STRT_storm4b_08_02_turb.p) # works 
-multiplot(STRT_storm5_08_09_turb.p) # works 
-multiplot(STRT_storm6_08_12_turb.p) # works 
-multiplot(STRT_storm7a_08_20_turb.p) # works 
-multiplot(STRT_storm7b_08_21_turb.p) # works 
-multiplot(STRT_storm8_08_28_turb.p) # works 
-multiplot(STRT_storm9a_09_03_turb.p) # works 
-multiplot(STRT_storm9b_09_06_turb.p) # works 
-multiplot(STRT_storm9c_09_09_turb.p) # works 
-multiplot(STRT_storm10_09_23_turb.p) # works 
-
 multiplot(STRT_storm1a_06_18_NO3.p, STRT_storm1a_06_18_fDOM.p, STRT_storm1a_06_18_SPC.p, STRT_storm1a_06_18_turb.p,
-          STRT_storm1b_06_19_SPC.p, STRT_storm1b_06_19_turb.p,
+          STRT_storm1b_06_20_SPC.p, STRT_storm1b_06_20_turb.p,
           STRT_storm1c_06_21_NO3.p, STRT_storm1c_06_21_fDOM.p, STRT_storm1c_06_21_SPC.p, STRT_storm1c_06_21_turb.p,
-          STRT_storm1d_06_22_NO3.p, STRT_storm1d_06_22_fDOM.p, STRT_storm1d_06_22_SPC.p, STRT_storm1d_06_22_turb.p,
-          STRT_storm1e_06_23_NO3.p, STRT_storm1e_06_23_fDOM.p, STRT_storm1e_06_23_SPC.p, STRT_storm1e_06_23_turb.p,
-          STRT_storm2_07_09_SPC.p, STRT_storm2_07_09_turb.p,
+          STRT_storm1d_06_23_NO3.p, STRT_storm1d_06_23_fDOM.p, STRT_storm1d_06_23_SPC.p, STRT_storm1d_06_23_turb.p,
+          STRT_storm1e_06_24_NO3.p, STRT_storm1e_06_24_fDOM.p, STRT_storm1e_06_24_SPC.p, STRT_storm1e_06_24_turb.p,
+          STRT_storm2_07_09_SPC.p,
           STRT_storm3_07_20_NO3.p, STRT_storm3_07_20_fDOM.p, STRT_storm3_07_20_SPC.p, STRT_storm3_07_20_turb.p,
           STRT_storm4a_08_01_NO3.p, STRT_storm4a_08_01_fDOM.p, STRT_storm4a_08_01_SPC.p, STRT_storm4a_08_01_turb.p,
-          STRT_storm4b_08_02_NO3.p, STRT_storm4b_08_02_fDOM.p, STRT_storm4b_08_02_SPC.p, STRT_storm4b_08_02_turb.p,
+          STRT_storm4b_08_03_NO3.p, STRT_storm4b_08_03_fDOM.p, STRT_storm4b_08_03_SPC.p, STRT_storm4b_08_03_turb.p,
           STRT_storm5_08_09_NO3.p, STRT_storm5_08_09_fDOM.p, STRT_storm5_08_09_SPC.p, STRT_storm5_08_09_turb.p,
           STRT_storm6_08_12_NO3.p, STRT_storm6_08_12_fDOM.p, STRT_storm6_08_12_SPC.p, STRT_storm6_08_12_turb.p,
           STRT_storm7a_08_20_NO3.p, STRT_storm7a_08_20_fDOM.p, STRT_storm7a_08_20_SPC.p, STRT_storm7a_08_20_turb.p,
-          STRT_storm7b_08_21_NO3.p, STRT_storm7b_08_21_fDOM.p, STRT_storm7b_08_21_SPC.p, STRT_storm7b_08_21_turb.p,
           STRT_storm8_08_28_NO3.p, STRT_storm8_08_28_fDOM.p, STRT_storm8_08_28_SPC.p, STRT_storm8_08_28_turb.p,
           STRT_storm9a_09_03_NO3.p, STRT_storm9a_09_03_fDOM.p, STRT_storm9a_09_03_SPC.p, STRT_storm9a_09_03_turb.p,
           STRT_storm9b_09_06_NO3.p, STRT_storm9b_09_06_fDOM.p, STRT_storm9b_09_06_SPC.p, STRT_storm9b_09_06_turb.p,
@@ -3185,13 +3828,13 @@ multiplot(FRCH_storm1_06_13_NO3.p, FRCH_storm1_06_13_fDOM.p, FRCH_storm1_06_13_S
 POKE_storm1_06_09_NO3.p = hyst_plot(POKE_storm1_06_09_Q, POKE_storm1_06_09_NO3, "POKE", "NO3", "0609")
 POKE_storm2_06_12_NO3.p = hyst_plot(POKE_storm2_06_12_Q, POKE_storm2_06_12_NO3, "POKE", "NO3", "0612")
 POKE_storm3_06_15_NO3.p = hyst_plot(POKE_storm3_06_15_Q, POKE_storm3_06_15_NO3, "POKE", "NO3", "0615")
-POKE_storm4a_06_18_NO3.p = hyst_plot(POKE_storm4a_06_18_Q, POKE_storm4a_06_18_NO3, "POKE", "NO3", "0619a")
+POKE_storm4a_06_19_NO3.p = hyst_plot(POKE_storm4a_06_19_Q, POKE_storm4a_06_19_NO3, "POKE", "NO3", "0619a")
 POKE_storm4b_06_20_NO3.p = hyst_plot(POKE_storm4b_06_20_Q, POKE_storm4b_06_20_NO3, "POKE", "NO3", "0620b")
 POKE_storm4c_06_21_NO3.p = hyst_plot(POKE_storm4c_06_21_Q, POKE_storm4c_06_21_NO3, "POKE", "NO3", "0621c")
 POKE_storm5_06_22_NO3.p = hyst_plot(POKE_storm5_06_22_Q, POKE_storm5_06_22_NO3, "POKE", "NO3", "0622")
 POKE_storm6_06_29_NO3.p = hyst_plot(POKE_storm6_06_29_Q, POKE_storm6_06_29_NO3, "POKE", "NO3", "0629")
-POKE_storm7_07_03_NO3.p = hyst_plot(POKE_storm7_07_03_Q, POKE_storm7_07_03_NO3, "POKE", "NO3", "0704")
-POKE_storm8_07_08_NO3.p = hyst_plot(POKE_storm8_07_08_Q, POKE_storm8_07_08_NO3, "POKE", "NO3", "0709")
+POKE_storm7_07_04_NO3.p = hyst_plot(POKE_storm7_07_04_Q, POKE_storm7_07_04_NO3, "POKE", "NO3", "0704")
+POKE_storm8_07_09_NO3.p = hyst_plot(POKE_storm8_07_09_Q, POKE_storm8_07_09_NO3, "POKE", "NO3", "0709")
 POKE_storm9_07_12_NO3.p = hyst_plot(POKE_storm9_07_12_Q, POKE_storm9_07_12_NO3, "POKE", "NO3", "0712")
 POKE_storm10_07_16_NO3.p = hyst_plot(POKE_storm10_07_16_Q, POKE_storm10_07_16_NO3, "POKE", "NO3", "0716")
 POKE_storm11_07_18_NO3.p = hyst_plot(POKE_storm11_07_18_Q, POKE_storm11_07_18_NO3, "POKE", "NO3", "0718")
@@ -3201,23 +3844,23 @@ POKE_storm14_07_26_NO3.p = hyst_plot(POKE_storm14_07_26_Q, POKE_storm14_07_26_NO
 POKE_storm15_08_02_NO3.p = hyst_plot(POKE_storm15_08_02_Q, POKE_storm15_08_02_NO3, "POKE", "NO3", "0802")
 POKE_storm16_08_12_NO3.p = hyst_plot(POKE_storm16_08_12_Q, POKE_storm16_08_12_NO3, "POKE", "NO3", "0812")
 POKE_storm17_08_23_NO3.p = hyst_plot(POKE_storm17_08_23_Q, POKE_storm17_08_23_NO3, "POKE", "NO3", "0824")
-POKE_storm18_08_24_NO3.p = hyst_plot(POKE_storm18_08_24_Q, POKE_storm18_08_24_NO3, "POKE", "NO3", "0825")
+POKE_storm18_08_25_NO3.p = hyst_plot(POKE_storm18_08_25_Q, POKE_storm18_08_25_NO3, "POKE", "NO3", "0825")
 POKE_storm19_08_27_NO3.p = hyst_plot(POKE_storm19_08_27_Q, POKE_storm19_08_27_NO3, "POKE", "NO3", "0827")
 POKE_storm20_09_01_NO3.p = hyst_plot(POKE_storm20_09_01_Q, POKE_storm20_09_01_NO3, "POKE", "NO3", "0901")
 POKE_storm21_09_03_NO3.p = hyst_plot(POKE_storm21_09_03_Q, POKE_storm21_09_03_NO3, "POKE", "NO3", "0903")
 POKE_storm22a_09_07_NO3.p = hyst_plot(POKE_storm22a_09_07_Q, POKE_storm22a_09_07_NO3, "POKE", "NO3", "0907a")
-POKE_storm22b_09_08_NO3.p = hyst_plot(POKE_storm22b_09_08_Q, POKE_storm22b_09_08_NO3, "POKE", "NO3", "0909b")
+POKE_storm22b_09_09_NO3.p = hyst_plot(POKE_storm22b_09_09_Q, POKE_storm22b_09_09_NO3, "POKE", "NO3", "0909b")
 
 POKE_storm1_06_09_fDOM.p = hyst_plot(POKE_storm1_06_09_Q, POKE_storm1_06_09_fDOM, "POKE", "fDOM", "0609")
 POKE_storm2_06_12_fDOM.p = hyst_plot(POKE_storm2_06_12_Q, POKE_storm2_06_12_fDOM, "POKE", "fDOM", "0612")
 POKE_storm3_06_15_fDOM.p = hyst_plot(POKE_storm3_06_15_Q, POKE_storm3_06_15_fDOM, "POKE", "fDOM", "0615")
-POKE_storm4a_06_18_fDOM.p = hyst_plot(POKE_storm4a_06_18_Q, POKE_storm4a_06_18_fDOM, "POKE", "fDOM", "0619a")
+POKE_storm4a_06_19_fDOM.p = hyst_plot(POKE_storm4a_06_19_Q, POKE_storm4a_06_19_fDOM, "POKE", "fDOM", "0619a")
 POKE_storm4b_06_20_fDOM.p = hyst_plot(POKE_storm4b_06_20_Q, POKE_storm4b_06_20_fDOM, "POKE", "fDOM", "0620b")
 POKE_storm4c_06_21_fDOM.p = hyst_plot(POKE_storm4c_06_21_Q, POKE_storm4c_06_21_fDOM, "POKE", "fDOM", "0621c")
 POKE_storm5_06_22_fDOM.p = hyst_plot(POKE_storm5_06_22_Q, POKE_storm5_06_22_fDOM, "POKE", "fDOM", "0622")
 POKE_storm6_06_29_fDOM.p = hyst_plot(POKE_storm6_06_29_Q, POKE_storm6_06_29_fDOM, "POKE", "fDOM", "0629")
-POKE_storm7_07_03_fDOM.p = hyst_plot(POKE_storm7_07_03_Q, POKE_storm7_07_03_fDOM, "POKE", "fDOM", "0704")
-POKE_storm8_07_08_fDOM.p = hyst_plot(POKE_storm8_07_08_Q, POKE_storm8_07_08_fDOM, "POKE", "fDOM", "0709")
+POKE_storm7_07_04_fDOM.p = hyst_plot(POKE_storm7_07_04_Q, POKE_storm7_07_04_fDOM, "POKE", "fDOM", "0704")
+POKE_storm8_07_09_fDOM.p = hyst_plot(POKE_storm8_07_09_Q, POKE_storm8_07_09_fDOM, "POKE", "fDOM", "0709")
 POKE_storm9_07_12_fDOM.p = hyst_plot(POKE_storm9_07_12_Q, POKE_storm9_07_12_fDOM, "POKE", "fDOM", "0712")
 POKE_storm10_07_16_fDOM.p = hyst_plot(POKE_storm10_07_16_Q, POKE_storm10_07_16_fDOM, "POKE", "fDOM", "0716")
 POKE_storm12_07_20_fDOM.p = hyst_plot(POKE_storm12_07_20_Q, POKE_storm12_07_20_fDOM, "POKE", "fDOM", "0720")
@@ -3227,24 +3870,24 @@ POKE_storm14_07_26_fDOM.p = hyst_plot(POKE_storm14_07_26_Q, POKE_storm14_07_26_f
 POKE_storm15_08_02_fDOM.p = hyst_plot(POKE_storm15_08_02_Q, POKE_storm15_08_02_fDOM, "POKE", "fDOM", "0802")
 POKE_storm16_08_12_fDOM.p = hyst_plot(POKE_storm16_08_12_Q, POKE_storm16_08_12_fDOM, "POKE", "fDOM", "0812")
 POKE_storm17_08_23_fDOM.p = hyst_plot(POKE_storm17_08_23_Q, POKE_storm17_08_23_fDOM, "POKE", "fDOM", "0824")
-POKE_storm18_08_24_fDOM.p = hyst_plot(POKE_storm18_08_24_Q, POKE_storm18_08_24_fDOM, "POKE", "fDOM", "0825")
+POKE_storm18_08_25_fDOM.p = hyst_plot(POKE_storm18_08_25_Q, POKE_storm18_08_25_fDOM, "POKE", "fDOM", "0825")
 POKE_storm19_08_27_fDOM.p = hyst_plot(POKE_storm19_08_27_Q, POKE_storm19_08_27_fDOM, "POKE", "fDOM", "0827")
 POKE_storm20_09_01_fDOM.p = hyst_plot(POKE_storm20_09_01_Q, POKE_storm20_09_01_fDOM, "POKE", "fDOM", "0901")
 POKE_storm21_09_03_fDOM.p = hyst_plot(POKE_storm21_09_03_Q, POKE_storm21_09_03_fDOM, "POKE", "fDOM", "0903")
 POKE_storm22a_09_07_fDOM.p = hyst_plot(POKE_storm22a_09_07_Q, POKE_storm22a_09_07_fDOM, "POKE", "fDOM", "0907a")
-POKE_storm22b_09_08_fDOM.p = hyst_plot(POKE_storm22b_09_08_Q, POKE_storm22b_09_08_fDOM, "POKE", "fDOM", "0909b")
+POKE_storm22b_09_09_fDOM.p = hyst_plot(POKE_storm22b_09_09_Q, POKE_storm22b_09_09_fDOM, "POKE", "fDOM", "0909b")
 
 
 POKE_storm1_06_09_SPC.p = hyst_plot(POKE_storm1_06_09_Q, POKE_storm1_06_09_SPC, "POKE", "SPC", "0609")
 POKE_storm2_06_12_SPC.p = hyst_plot(POKE_storm2_06_12_Q, POKE_storm2_06_12_SPC, "POKE", "SPC", "0612")
 POKE_storm3_06_15_SPC.p = hyst_plot(POKE_storm3_06_15_Q, POKE_storm3_06_15_SPC, "POKE", "SPC", "0615")
-POKE_storm4a_06_18_SPC.p = hyst_plot(POKE_storm4a_06_18_Q, POKE_storm4a_06_18_SPC, "POKE", "SPC", "0619a")
+POKE_storm4a_06_19_SPC.p = hyst_plot(POKE_storm4a_06_19_Q, POKE_storm4a_06_19_SPC, "POKE", "SPC", "0619a")
 POKE_storm4b_06_20_SPC.p = hyst_plot(POKE_storm4b_06_20_Q, POKE_storm4b_06_20_SPC, "POKE", "SPC", "0620b")
 POKE_storm4c_06_21_SPC.p = hyst_plot(POKE_storm4c_06_21_Q, POKE_storm4c_06_219_SPC, "POKE", "SPC", "0621c")
 POKE_storm5_06_22_SPC.p = hyst_plot(POKE_storm5_06_22_Q, POKE_storm5_06_22_SPC, "POKE", "SPC", "0622")
 POKE_storm6_06_29_SPC.p = hyst_plot(POKE_storm6_06_29_Q, POKE_storm6_06_29_SPC, "POKE", "SPC", "0629")
-POKE_storm7_07_03_SPC.p = hyst_plot(POKE_storm7_07_03_Q, POKE_storm7_07_03_SPC, "POKE", "SPC", "0704")
-POKE_storm8_07_08_SPC.p = hyst_plot(POKE_storm8_07_08_Q, POKE_storm8_07_08_SPC, "POKE", "SPC", "0709")
+POKE_storm7_07_04_SPC.p = hyst_plot(POKE_storm7_07_04_Q, POKE_storm7_07_04_SPC, "POKE", "SPC", "0704")
+POKE_storm8_07_09_SPC.p = hyst_plot(POKE_storm8_07_09_Q, POKE_storm8_07_09_SPC, "POKE", "SPC", "0709")
 POKE_storm9_07_12_SPC.p = hyst_plot(POKE_storm9_07_12_Q, POKE_storm9_07_12_SPC, "POKE", "SPC", "0712")
 POKE_storm10_07_16_SPC.p = hyst_plot(POKE_storm10_07_16_Q, POKE_storm10_07_16_SPC, "POKE", "SPC", "0716")
 POKE_storm11_07_18_SPC.p = hyst_plot(POKE_storm11_07_18_Q, POKE_storm11_07_18_SPC, "POKE", "SPC", "0718")
@@ -3254,23 +3897,23 @@ POKE_storm14_07_26_SPC.p = hyst_plot(POKE_storm14_07_26_Q, POKE_storm14_07_26_SP
 POKE_storm15_08_02_SPC.p = hyst_plot(POKE_storm15_08_02_Q, POKE_storm15_08_02_SPC, "POKE", "SPC", "0802")
 POKE_storm16_08_12_SPC.p = hyst_plot(POKE_storm16_08_12_Q, POKE_storm16_08_12_SPC, "POKE", "SPC", "0812")
 POKE_storm17_08_23_SPC.p = hyst_plot(POKE_storm17_08_23_Q, POKE_storm17_08_23_SPC, "POKE", "SPC", "0824")
-POKE_storm18_08_24_SPC.p = hyst_plot(POKE_storm18_08_24_Q, POKE_storm18_08_24_SPC, "POKE", "SPC", "0825")
+POKE_storm18_08_25_SPC.p = hyst_plot(POKE_storm18_08_25_Q, POKE_storm18_08_25_SPC, "POKE", "SPC", "0825")
 POKE_storm19_08_27_SPC.p = hyst_plot(POKE_storm19_08_27_Q, POKE_storm19_08_27_SPC, "POKE", "SPC", "0827")
 POKE_storm20_09_01_SPC.p = hyst_plot(POKE_storm20_09_01_Q, POKE_storm20_09_01_SPC, "POKE", "SPC", "0901")
 POKE_storm21_09_03_SPC.p = hyst_plot(POKE_storm21_09_03_Q, POKE_storm21_09_03_SPC, "POKE", "SPC", "0903")
 POKE_storm22a_09_07_SPC.p = hyst_plot(POKE_storm22a_09_07_Q, POKE_storm22a_09_07_SPC, "POKE", "SPC", "0907a")
-POKE_storm22b_09_08_SPC.p = hyst_plot(POKE_storm22b_09_08_Q, POKE_storm22b_09_08_SPC, "POKE", "SPC", "0909b")
+POKE_storm22b_09_09_SPC.p = hyst_plot(POKE_storm22b_09_09_Q, POKE_storm22b_09_09_SPC, "POKE", "SPC", "0909b")
 
 POKE_storm1_06_09_turb.p = hyst_plot(POKE_storm1_06_09_Q, POKE_storm1_06_09_turb, "POKE", "turb", "0609")
 POKE_storm2_06_12_turb.p = hyst_plot(POKE_storm2_06_12_Q, POKE_storm2_06_12_turb, "POKE", "turb", "0612")
 POKE_storm3_06_15_turb.p = hyst_plot(POKE_storm3_06_15_Q, POKE_storm3_06_15_turb, "POKE", "turb", "0615")
-POKE_storm4a_06_18_turb.p = hyst_plot(POKE_storm4a_06_18_Q, POKE_storm4a_06_18_turb, "POKE", "turb", "0619a")
+POKE_storm4a_06_19_turb.p = hyst_plot(POKE_storm4a_06_19_Q, POKE_storm4a_06_19_turb, "POKE", "turb", "0619a")
 POKE_storm4b_06_20_turb.p = hyst_plot(POKE_storm4b_06_20_Q, POKE_storm4b_06_20_turb, "POKE", "turb", "0620b")
 POKE_storm4c_06_21_turb.p = hyst_plot(POKE_storm4c_06_21_Q, POKE_storm4c_06_219_turb, "POKE", "turb", "0621c")
 POKE_storm5_06_22_turb.p = hyst_plot(POKE_storm5_06_22_Q, POKE_storm5_06_22_turb, "POKE", "turb", "0622")
 POKE_storm6_06_29_turb.p = hyst_plot(POKE_storm6_06_29_Q, POKE_storm6_06_29_turb, "POKE", "turb", "0629")
-POKE_storm7_07_03_turb.p = hyst_plot(POKE_storm7_07_03_Q, POKE_storm7_07_03_turb, "POKE", "turb", "0704")
-POKE_storm8_07_08_turb.p = hyst_plot(POKE_storm8_07_08_Q, POKE_storm8_07_08_turb, "POKE", "turb", "0709")
+POKE_storm7_07_04_turb.p = hyst_plot(POKE_storm7_07_04_Q, POKE_storm7_07_04_turb, "POKE", "turb", "0704")
+POKE_storm8_07_09_turb.p = hyst_plot(POKE_storm8_07_09_Q, POKE_storm8_07_09_turb, "POKE", "turb", "0709")
 POKE_storm9_07_12_turb.p = hyst_plot(POKE_storm9_07_12_Q, POKE_storm9_07_12_turb, "POKE", "turb", "0712")
 POKE_storm10_07_16_turb.p = hyst_plot(POKE_storm10_07_16_Q, POKE_storm10_07_16_turb, "POKE", "turb", "0716")
 POKE_storm11_07_18_turb.p = hyst_plot(POKE_storm11_07_18_Q, POKE_storm11_07_18_turb, "POKE", "turb", "0718")
@@ -3280,12 +3923,12 @@ POKE_storm14_07_26_turb.p = hyst_plot(POKE_storm14_07_26_Q, POKE_storm14_07_26_t
 POKE_storm15_08_02_turb.p = hyst_plot(POKE_storm15_08_02_Q, POKE_storm15_08_02_turb, "POKE", "turb", "0802")
 POKE_storm16_08_12_turb.p = hyst_plot(POKE_storm16_08_12_Q, POKE_storm16_08_12_turb, "POKE", "turb", "0812")
 POKE_storm17_08_23_turb.p = hyst_plot(POKE_storm17_08_23_Q, POKE_storm17_08_23_turb, "POKE", "turb", "0824")
-POKE_storm18_08_24_turb.p = hyst_plot(POKE_storm18_08_24_Q, POKE_storm18_08_24_turb, "POKE", "turb", "0825")
+POKE_storm18_08_25_turb.p = hyst_plot(POKE_storm18_08_25_Q, POKE_storm18_08_25_turb, "POKE", "turb", "0825")
 POKE_storm19_08_27_turb.p = hyst_plot(POKE_storm19_08_27_Q, POKE_storm19_08_27_turb, "POKE", "turb", "0827")
 POKE_storm20_09_01_turb.p = hyst_plot(POKE_storm20_09_01_Q, POKE_storm20_09_01_turb, "POKE", "turb", "0901")
 POKE_storm21_09_03_turb.p = hyst_plot(POKE_storm21_09_03_Q, POKE_storm21_09_03_turb, "POKE", "turb", "0903")
 POKE_storm22a_09_07_turb.p = hyst_plot(POKE_storm22a_09_07_Q, POKE_storm22a_09_07_turb, "POKE", "turb", "0907a")
-POKE_storm22b_09_08_turb.p = hyst_plot(POKE_storm22b_09_08_Q, POKE_storm22b_09_08_turb, "POKE", "turb", "0909b")
+POKE_storm22b_09_09_turb.p = hyst_plot(POKE_storm22b_09_09_Q, POKE_storm22b_09_09_turb, "POKE", "turb", "0909b")
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
@@ -3382,8 +4025,8 @@ multiplot(POKE_storm1_06_09_NO3.p, POKE_storm1_06_09_fDOM.p, POKE_storm1_06_09_S
 VAUL_storm1a_06_19_NO3.p = hyst_plot(VAUL_storm1a_06_19_Q, VAUL_storm1a_06_19_NO3, "VAUL", "NO3", "0619a")
 VAUL_storm1b_06_20_NO3.p = hyst_plot(VAUL_storm1b_06_20_Q, VAUL_storm1b_06_20_NO3, "VAUL", "NO3", "0620b")
 VAUL_storm1c_06_22_NO3.p = hyst_plot(VAUL_storm1c_06_22_Q, VAUL_storm1c_06_22_NO3, "VAUL", "NO3", "0622c")
-VAUL_storm2_06_27_NO3.p = hyst_plot(VAUL_storm2_06_27_Q, VAUL_storm2_06_27_NO3, "VAUL", "NO3", "0627")
-VAUL_storm3_07_08_NO3.p = hyst_plot(VAUL_storm3_07_08_Q, VAUL_storm3_07_08_NO3, "VAUL", "NO3", "0708")
+VAUL_storm2_06_28_NO3.p = hyst_plot(VAUL_storm2_06_28_Q, VAUL_storm2_06_28_NO3, "VAUL", "NO3", "0628")
+VAUL_storm3_07_09_NO3.p = hyst_plot(VAUL_storm3_07_09_Q, VAUL_storm3_07_09_NO3, "VAUL", "NO3", "0709")
 VAUL_storm4_07_12_NO3.p = hyst_plot(VAUL_storm4_07_12_Q, VAUL_storm4_07_12_NO3, "VAUL", "NO3", "0712")
 VAUL_storm5_07_26_NO3.p = hyst_plot(VAUL_storm5_07_26_Q, VAUL_storm5_07_26_NO3, "VAUL", "NO3", "0726")
 VAUL_storm6a_08_01_NO3.p = hyst_plot(VAUL_storm6a_08_01_Q, VAUL_storm6a_08_01_NO3, "VAUL", "NO3", "0801a")
@@ -3401,8 +4044,8 @@ VAUL_storm14_09_06_NO3.p = hyst_plot(VAUL_storm14_09_06_Q, VAUL_storm14_09_06_NO
 VAUL_storm1a_06_19_fDOM.p = hyst_plot(VAUL_storm1a_06_19_Q, VAUL_storm1a_06_19_fDOM, "VAUL", "fDOM", "0619a")
 VAUL_storm1b_06_20_fDOM.p = hyst_plot(VAUL_storm1b_06_20_Q, VAUL_storm1b_06_20_fDOM, "VAUL", "fDOM", "0620b")
 VAUL_storm1c_06_22_fDOM.p = hyst_plot(VAUL_storm1c_06_22_Q, VAUL_storm1c_06_22_fDOM, "VAUL", "fDOM", "0622c")
-VAUL_storm2_06_27_fDOM.p = hyst_plot(VAUL_storm2_06_27_Q, VAUL_storm2_06_27_fDOM, "VAUL", "fDOM", "0627")
-VAUL_storm3_07_08_fDOM.p = hyst_plot(VAUL_storm3_07_08_Q, VAUL_storm3_07_08_fDOM, "VAUL", "fDOM", "0708")
+VAUL_storm2_06_28_fDOM.p = hyst_plot(VAUL_storm2_06_28_Q, VAUL_storm2_06_28_fDOM, "VAUL", "fDOM", "0628")
+VAUL_storm3_07_09_fDOM.p = hyst_plot(VAUL_storm3_07_09_Q, VAUL_storm3_07_09_fDOM, "VAUL", "fDOM", "0709")
 VAUL_storm4_07_12_fDOM.p = hyst_plot(VAUL_storm4_07_12_Q, VAUL_storm4_07_12_fDOM, "VAUL", "fDOM", "0712")
 VAUL_storm5_07_26_fDOM.p = hyst_plot(VAUL_storm5_07_26_Q, VAUL_storm5_07_26_fDOM, "VAUL", "fDOM", "0726")
 VAUL_storm6a_08_01_fDOM.p = hyst_plot(VAUL_storm6a_08_01_Q, VAUL_storm6a_08_01_fDOM, "VAUL", "fDOM", "0801a")
@@ -3419,8 +4062,8 @@ VAUL_storm14_09_06_fDOM.p = hyst_plot(VAUL_storm14_09_06_Q, VAUL_storm14_09_06_f
 VAUL_storm1a_06_19_SPC.p = hyst_plot(VAUL_storm1a_06_19_Q, VAUL_storm1a_06_19_SPC, "VAUL", "SPC", "0619a")
 VAUL_storm1b_06_20_SPC.p = hyst_plot(VAUL_storm1b_06_20_Q, VAUL_storm1b_06_20_SPC, "VAUL", "SPC", "0620b")
 VAUL_storm1c_06_22_SPC.p = hyst_plot(VAUL_storm1c_06_22_Q, VAUL_storm1c_06_22_SPC, "VAUL", "SPC", "0622c")
-VAUL_storm2_06_27_SPC.p = hyst_plot(VAUL_storm2_06_27_Q, VAUL_storm2_06_27_SPC, "VAUL", "SPC", "0627")
-VAUL_storm3_07_08_SPC.p = hyst_plot(VAUL_storm3_07_08_Q, VAUL_storm3_07_08_SPC, "VAUL", "SPC", "0708")
+VAUL_storm2_06_28_SPC.p = hyst_plot(VAUL_storm2_06_28_Q, VAUL_storm2_06_28_SPC, "VAUL", "SPC", "0628")
+VAUL_storm3_07_09_SPC.p = hyst_plot(VAUL_storm3_07_09_Q, VAUL_storm3_07_09_SPC, "VAUL", "SPC", "0709")
 VAUL_storm4_07_12_SPC.p = hyst_plot(VAUL_storm4_07_12_Q, VAUL_storm4_07_12_SPC, "VAUL", "SPC", "0712")
 VAUL_storm5_07_26_SPC.p = hyst_plot(VAUL_storm5_07_26_Q, VAUL_storm5_07_26_SPC, "VAUL", "SPC", "0726")
 VAUL_storm6a_08_01_SPC.p = hyst_plot(VAUL_storm6a_08_01_Q, VAUL_storm6a_08_01_SPC, "VAUL", "SPC", "0801a")
@@ -3438,8 +4081,8 @@ VAUL_storm14_09_06_SPC.p = hyst_plot(VAUL_storm14_09_06_Q, VAUL_storm14_09_06_SP
 VAUL_storm1a_06_19_turb.p = hyst_plot(VAUL_storm1a_06_19_Q, VAUL_storm1a_06_19_turb, "VAUL", "turb", "0619a")
 VAUL_storm1b_06_20_turb.p = hyst_plot(VAUL_storm1b_06_20_Q, VAUL_storm1b_06_20_turb, "VAUL", "turb", "0620b")
 VAUL_storm1c_06_22_turb.p = hyst_plot(VAUL_storm1c_06_22_Q, VAUL_storm1c_06_22_turb, "VAUL", "turb", "0622c")
-VAUL_storm2_06_27_turb.p = hyst_plot(VAUL_storm2_06_27_Q, VAUL_storm2_06_27_turb, "VAUL", "turb", "0627")
-VAUL_storm3_07_08_turb.p = hyst_plot(VAUL_storm3_07_08_Q, VAUL_storm3_07_08_turb, "VAUL", "turb", "0708")
+VAUL_storm2_06_28_turb.p = hyst_plot(VAUL_storm2_06_28_Q, VAUL_storm2_06_28_turb, "VAUL", "turb", "0628")
+VAUL_storm3_07_09_turb.p = hyst_plot(VAUL_storm3_07_09_Q, VAUL_storm3_07_09_turb, "VAUL", "turb", "0709")
 VAUL_storm4_07_12_turb.p = hyst_plot(VAUL_storm4_07_12_Q, VAUL_storm4_07_12_turb, "VAUL", "turb", "0712")
 VAUL_storm5_07_26_turb.p = hyst_plot(VAUL_storm5_07_26_Q, VAUL_storm5_07_26_turb, "VAUL", "turb", "0726")
 VAUL_storm6a_08_01_turb.p = hyst_plot(VAUL_storm6a_08_01_Q, VAUL_storm6a_08_01_turb, "VAUL", "turb", "0801a")
@@ -3512,8 +4155,812 @@ multiplot(VAUL_storm1a_06_19_NO3.p, VAUL_storm1a_06_19_fDOM.p, VAUL_storm1a_06_1
 # export pdf 20 x 30
 
 
+#### CARI Hysteresis ####
+# NO3-#
+multiplot(CARI_storm2a_06_19_NO3.p)
+multiplot(CARI_storm2b_06_20_NO3.p)
+multiplot(CARI_storm2c_06_21_NO3.p) 
+multiplot(CARI_storm3_06_23_NO3.p)
+multiplot(CARI_storm4_07_09_NO3.p)
+multiplot(CARI_storm5_07_13_NO3.p)
+multiplot(CARI_storm6_07_24_NO3.p)
+multiplot(CARI_storm7_07_27_NO3.p)
+multiplot(CARI_storm8a_08_02_NO3.p)
+multiplot(CARI_storm8b_08_03_NO3.p)
+multiplot(CARI_storm9_09_07_NO3.p)
+which(CARI_storm9_09_07_NO3$datavalue > 0.75)
+CARI_storm9_09_07_NO3[c(375,1874), 3] <- NA
 
-##################################### 2021 ###########################################
+#CARI_storm1_06_15_NO3.p = hyst_plot(CARI_storm1_06_15_Q, CARI_storm1_06_15_NO3, "CARI", "NO3", "0615")
+CARI_storm2a_06_19_NO3.p = hyst_plot(CARI_storm2a_06_19_Q, CARI_storm2a_06_19_NO3, "CARI", "NO3", "0619a")
+CARI_storm2b_06_20_NO3.p = hyst_plot(CARI_storm2b_06_20_Q, CARI_storm2b_06_20_NO3, "CARI", "NO3", "0620b")
+CARI_storm2c_06_21_NO3.p = hyst_plot(CARI_storm2c_06_21_Q, CARI_storm2c_06_21_NO3, "CARI", "NO3", "0621c")
+CARI_storm3_06_23_NO3.p = hyst_plot(CARI_storm3_06_23_Q, CARI_storm3_06_23_NO3, "CARI", "NO3", "0623")
+CARI_storm4_07_09_NO3.p = hyst_plot(CARI_storm4_07_09_Q, CARI_storm4_07_09_NO3, "CARI", "NO3", "0709")
+CARI_storm5_07_13_NO3.p = hyst_plot(CARI_storm5_07_13_Q, CARI_storm5_07_13_NO3, "CARI", "NO3", "0713")
+CARI_storm6_07_24_NO3.p = hyst_plot(CARI_storm6_07_24_Q, CARI_storm6_07_24_NO3, "CARI", "NO3", "0724")
+CARI_storm7_07_27_NO3.p = hyst_plot(CARI_storm7_07_27_Q, CARI_storm7_07_27_NO3, "CARI", "NO3", "0727")
+CARI_storm8a_08_02_NO3.p = hyst_plot(CARI_storm8a_08_02_Q, CARI_storm8a_08_02_NO3, "CARI", "NO3", "0802a")
+CARI_storm8b_08_03_NO3.p = hyst_plot(CARI_storm8b_08_03_Q, CARI_storm8b_08_03_NO3, "CARI", "NO3", "0803b")
+CARI_storm9_09_07_NO3.p = hyst_plot(CARI_storm9_09_07_Q, CARI_storm9_09_07_NO3, "CARI", "NO3", "0907")
+
+#fDOM#
+# fDOM
+multiplot(CARI_storm1_06_15_fDOM.p)
+
+multiplot(CARI_storm2a_06_19_fDOM.p)
+which(CARI_storm2a_06_19_fDOM$datavalue < 0.25)
+CARI_storm2a_06_19_fDOM[c(1572,1613,1691,1711,1782,1799), 3] <- NA
+
+multiplot(CARI_storm2b_06_20_fDOM.p)
+which(CARI_storm2b_06_20_fDOM$datavalue < 0.35)
+CARI_storm2b_06_20_fDOM[c(1739,1740,2071:2073), 3] <- NA
+
+#multiplot(CARI_storm2c_06_21_fDOM.p) # diddnt work 
+multiplot(CARI_storm3_06_23_fDOM.p)
+
+multiplot(CARI_storm4_07_09_fDOM.p)
+which(CARI_storm4_07_09_fDOM$datavalue < 0.35)
+CARI_storm4_07_09_fDOM[2512, 3] <- NA
+
+multiplot(CARI_storm5_07_13_fDOM.p)
+
+multiplot(CARI_storm6_07_24_fDOM.p)
+which(CARI_storm6_07_24_fDOM$datavalue > 0.75)
+CARI_storm6_07_24_fDOM[4107, 3] <- NA
+
+multiplot(CARI_storm7_07_27_fDOM.p)
+multiplot(CARI_storm8a_08_02_fDOM.p)
+multiplot(CARI_storm8b_08_03_fDOM.p)
+multiplot(CARI_storm9_09_07_fDOM.p)
+
+CARI_storm1_06_15_fDOM.p = hyst_plot(CARI_storm1_06_15_Q, CARI_storm1_06_15_fDOM, "CARI", "fDOM", "0615")
+CARI_storm2a_06_19_fDOM.p = hyst_plot(CARI_storm2a_06_19_Q, CARI_storm2a_06_19_fDOM, "CARI", "fDOM", "0619a")
+CARI_storm2b_06_20_fDOM.p = hyst_plot(CARI_storm2b_06_20_Q, CARI_storm2b_06_20_fDOM, "CARI", "fDOM", "0620b")
+CARI_storm2c_06_21_fDOM.p = hyst_plot(CARI_storm2c_06_21_Q, CARI_storm2c_06_21_fDOM, "CARI", "fDOM", "0621c")
+CARI_storm3_06_23_fDOM.p = hyst_plot(CARI_storm3_06_23_Q, CARI_storm3_06_23_fDOM, "CARI", "fDOM", "0623")
+CARI_storm4_07_09_fDOM.p = hyst_plot(CARI_storm4_07_09_Q, CARI_storm4_07_09_fDOM, "CARI", "fDOM", "0709")
+CARI_storm5_07_13_fDOM.p = hyst_plot(CARI_storm5_07_13_Q, CARI_storm5_07_13_fDOM, "CARI", "fDOM", "0713")
+CARI_storm6_07_24_fDOM.p = hyst_plot(CARI_storm6_07_24_Q, CARI_storm6_07_24_fDOM, "CARI", "fDOM", "0724")
+CARI_storm7_07_27_fDOM.p = hyst_plot(CARI_storm7_07_27_Q, CARI_storm7_07_27_fDOM, "CARI", "fDOM", "0727")
+CARI_storm8a_08_02_fDOM.p = hyst_plot(CARI_storm8a_08_02_Q, CARI_storm8a_08_02_fDOM, "CARI", "fDOM", "0802a")
+CARI_storm8b_08_03_fDOM.p = hyst_plot(CARI_storm8b_08_03_Q, CARI_storm8b_08_03_fDOM, "CARI", "fDOM", "0803b")
+CARI_storm9_09_07_fDOM.p = hyst_plot(CARI_storm9_09_07_Q, CARI_storm9_09_07_fDOM, "CARI", "fDOM", "0907")
+
+#SPC #
+CARI_storm1_06_15_SPC <- na.omit(CARI_storm1_06_15_SPC)
+CARI_storm1_06_15_SPC <- CARI_storm1_06_15_SPC[!duplicated(CARI_storm1_06_15_SPC$valuedatetime), ]
+
+CARI_storm2a_06_19_Q <- CARI_storm2a_06_19_Q[!duplicated(CARI_storm2a_06_19_Q$valuedatetime), ]
+CARI_storm2a_06_19_SPC <- CARI_storm2a_06_19_SPC[!duplicated(CARI_storm2a_06_19_SPC$valuedatetime), ]
+
+CARI_storm2b_06_20_Q <- CARI_storm2b_06_20_Q[!duplicated(CARI_storm2b_06_20_Q$valuedatetime), ]
+CARI_storm2b_06_20_SPC <- CARI_storm2b_06_20_SPC[!duplicated(CARI_storm2b_06_20_SPC$valuedatetime), ]
+
+CARI_storm3_06_23_Q <- CARI_storm3_06_23_Q[!duplicated(CARI_storm3_06_23_Q$valuedatetime), ]
+CARI_storm3_06_23_SPC <- CARI_storm3_06_23_SPC[!duplicated(CARI_storm3_06_23_SPC$valuedatetime), ]
+
+CARI_storm4_07_09_Q <- CARI_storm4_07_09_Q[!duplicated(CARI_storm4_07_09_Q$valuedatetime), ]
+CARI_storm4_07_09_SPC <- CARI_storm4_07_09_SPC[!duplicated(CARI_storm4_07_09_SPC$valuedatetime), ]
+
+CARI_storm5_07_13_Q <- CARI_storm5_07_13_Q[!duplicated(CARI_storm5_07_13_Q$valuedatetime), ]
+CARI_storm5_07_13_SPC <- CARI_storm5_07_13_SPC[!duplicated(CARI_storm5_07_13_SPC$valuedatetime), ]
+
+CARI_storm6_07_24_Q <- CARI_storm6_07_24_Q[!duplicated(CARI_storm6_07_24_Q$valuedatetime), ]
+CARI_storm6_07_24_SPC <- CARI_storm6_07_24_SPC[!duplicated(CARI_storm6_07_24_SPC$valuedatetime), ]
+
+CARI_storm7_07_27_Q <- CARI_storm7_07_27_Q[!duplicated(CARI_storm7_07_27_Q$valuedatetime), ]
+CARI_storm7_07_27_SPC <- CARI_storm7_07_27_SPC[!duplicated(CARI_storm7_07_27_SPC$valuedatetime), ]
+
+CARI_storm8a_08_02_Q <- CARI_storm8a_08_02_Q[!duplicated(CARI_storm8a_08_02_Q$valuedatetime), ]
+CARI_storm8a_08_02_SPC <- CARI_storm8a_08_02_SPC[!duplicated(CARI_storm8a_08_02_SPC$valuedatetime), ]
+
+CARI_storm8b_08_03_Q <- CARI_storm8b_08_03_Q[!duplicated(CARI_storm8b_08_03_Q$valuedatetime), ]
+CARI_storm8b_08_03_SPC <- CARI_storm8b_08_03_SPC[!duplicated(CARI_storm8b_08_03_SPC$valuedatetime), ]
+
+CARI_storm9_09_07_Q <- CARI_storm9_09_07_Q[!duplicated(CARI_storm9_09_07_Q$valuedatetime), ]
+CARI_storm9_09_07_SPC <- CARI_storm9_09_07_SPC[!duplicated(CARI_storm9_09_07_SPC$valuedatetime), ]
+
+multiplot(CARI_storm1_06_15_SPC.p)
+multiplot(CARI_storm2a_06_19_SPC.p)
+multiplot(CARI_storm2b_06_20_SPC.p)
+#multiplot(CARI_storm2c_06_21_SPC.p) # didnt work 
+
+multiplot(CARI_storm3_06_23_SPC.p)
+which(CARI_storm3_06_23_SPC$datavalue < 0.25)
+CARI_storm3_06_23_SPC[c(3394,3395,3400:3403), 3] <- NA
+
+multiplot(CARI_storm4_07_09_SPC.p)
+which(CARI_storm4_07_09_SPC$datavalue> 0.75)
+CARI_storm4_07_09_SPC[1554,3] <- NA
+
+multiplot(CARI_storm5_07_13_SPC.p)
+multiplot(CARI_storm6_07_24_SPC.p)
+
+multiplot(CARI_storm7_07_27_SPC.p)
+which(CARI_storm7_07_27_SPC$datavalue>0.75)
+CARI_storm7_07_27_SPC[3268,3] <- NA
+
+multiplot(CARI_storm8a_08_02_SPC.p)
+multiplot(CARI_storm8b_08_03_SPC.p)
+multiplot(CARI_storm9_09_07_SPC.p)
+
+CARI_storm1_06_15_SPC.p = hyst_plot(CARI_storm1_06_15_Q, CARI_storm1_06_15_SPC, "CARI", "SPC", "0615")
+CARI_storm2a_06_19_SPC.p = hyst_plot(CARI_storm2a_06_19_Q, CARI_storm2a_06_19_SPC, "CARI", "SPC", "0619a")
+CARI_storm2b_06_20_SPC.p = hyst_plot(CARI_storm2b_06_20_Q, CARI_storm2b_06_20_SPC, "CARI", "SPC", "0620b")
+CARI_storm2c_06_21_SPC.p = hyst_plot(CARI_storm2c_06_21_Q, CARI_storm2c_06_21_SPC, "CARI", "SPC", "0621c")
+CARI_storm3_06_23_SPC.p = hyst_plot(CARI_storm3_06_23_Q, CARI_storm3_06_23_SPC, "CARI", "SPC", "0623")
+CARI_storm4_07_09_SPC.p = hyst_plot(CARI_storm4_07_09_Q, CARI_storm4_07_09_SPC, "CARI", "SPC", "0709")
+CARI_storm5_07_13_SPC.p = hyst_plot(CARI_storm5_07_13_Q, CARI_storm5_07_13_SPC, "CARI", "SPC", "0713")
+CARI_storm6_07_24_SPC.p = hyst_plot(CARI_storm6_07_24_Q, CARI_storm6_07_24_SPC, "CARI", "SPC", "0724")
+CARI_storm7_07_27_SPC.p = hyst_plot(CARI_storm7_07_27_Q, CARI_storm7_07_27_SPC, "CARI", "SPC", "0727")
+CARI_storm8a_08_02_SPC.p = hyst_plot(CARI_storm8a_08_02_Q, CARI_storm8a_08_02_SPC, "CARI", "SPC", "0802a")
+CARI_storm8b_08_03_SPC.p = hyst_plot(CARI_storm8b_08_03_Q, CARI_storm8b_08_03_SPC, "CARI", "SPC", "0803b")
+CARI_storm9_09_07_SPC.p = hyst_plot(CARI_storm9_09_07_Q, CARI_storm9_09_07_SPC, "CARI", "SPC", "0907")
+
+#turb #
+CARI_storm2a_06_19_turb <- CARI_storm2a_06_19_turb[!duplicated(CARI_storm2a_06_19_turb$valuedatetime), ]
+CARI_storm2b_06_20_turb <- CARI_storm2b_06_20_turb[!duplicated(CARI_storm2b_06_20_turb$valuedatetime), ]
+CARI_storm3_06_23_turb <- CARI_storm3_06_23_turb[!duplicated(CARI_storm3_06_23_turb$valuedatetime), ]
+CARI_storm4_07_09_turb <- CARI_storm4_07_09_turb[!duplicated(CARI_storm4_07_09_turb$valuedatetime), ]
+CARI_storm5_07_13_turb <- CARI_storm5_07_13_turb[!duplicated(CARI_storm5_07_13_turb$valuedatetime), ]
+CARI_storm6_07_24_turb <- CARI_storm6_07_24_turb[!duplicated(CARI_storm6_07_24_turb$valuedatetime), ]
+CARI_storm7_07_27_turb <- CARI_storm7_07_27_turb[!duplicated(CARI_storm7_07_27_turb$valuedatetime), ]
+CARI_storm8a_08_02_turb <- CARI_storm8a_08_02_turb[!duplicated(CARI_storm8a_08_02_turb$valuedatetime), ]
+CARI_storm8b_08_03_turb <- CARI_storm8b_08_03_turb[!duplicated(CARI_storm8b_08_03_turb$valuedatetime), ]
+CARI_storm9_09_07_turb <- CARI_storm9_09_07_turb[!duplicated(CARI_storm9_09_07_turb$valuedatetime), ]
+
+multiplot(CARI_storm1_06_15_turb.p)
+multiplot(CARI_storm2a_06_19_turb.p)
+multiplot(CARI_storm2b_06_20_turb.p)
+#multiplot(CARI_storm2c_06_21_turb.p) # didnt work 
+multiplot(CARI_storm3_06_23_turb.p)
+multiplot(CARI_storm4_07_09_turb.p)
+multiplot(CARI_storm5_07_13_turb.p)
+
+multiplot(CARI_storm6_07_24_turb.p)
+which(CARI_storm6_07_24_turb$datavalue > 0.6)
+CARI_storm6_07_24_turb[c(1089,1090,1491,1493), 3] <- NA
+
+multiplot(CARI_storm7_07_27_turb.p)
+multiplot(CARI_storm8a_08_02_turb.p)
+multiplot(CARI_storm8b_08_03_turb.p)
+multiplot(CARI_storm9_09_07_turb.p)
+
+CARI_storm1_06_15_turb.p = hyst_plot(CARI_storm1_06_15_Q, CARI_storm1_06_15_turb, "CARI", "turb", "0615")
+CARI_storm2a_06_19_turb.p = hyst_plot(CARI_storm2a_06_19_Q, CARI_storm2a_06_19_turb, "CARI", "turb", "0619a")
+CARI_storm2b_06_20_turb.p = hyst_plot(CARI_storm2b_06_20_Q, CARI_storm2b_06_20_turb, "CARI", "turb", "0620b")
+CARI_storm2c_06_21_turb.p = hyst_plot(CARI_storm2c_06_21_Q, CARI_storm2c_06_21_turb, "CARI", "turb", "0621c")
+CARI_storm3_06_23_turb.p = hyst_plot(CARI_storm3_06_23_Q, CARI_storm3_06_23_turb, "CARI", "turb", "0623")
+CARI_storm4_07_09_turb.p = hyst_plot(CARI_storm4_07_09_Q, CARI_storm4_07_09_turb, "CARI", "turb", "0709")
+CARI_storm5_07_13_turb.p = hyst_plot(CARI_storm5_07_13_Q, CARI_storm5_07_13_turb, "CARI", "turb", "0713")
+CARI_storm6_07_24_turb.p = hyst_plot(CARI_storm6_07_24_Q, CARI_storm6_07_24_turb, "CARI", "turb", "0724")
+CARI_storm7_07_27_turb.p = hyst_plot(CARI_storm7_07_27_Q, CARI_storm7_07_27_turb, "CARI", "turb", "0727")
+CARI_storm8a_08_02_turb.p = hyst_plot(CARI_storm8a_08_02_Q, CARI_storm8a_08_02_turb, "CARI", "turb", "0802a")
+CARI_storm8b_08_03_turb.p = hyst_plot(CARI_storm8b_08_03_Q, CARI_storm8b_08_03_turb, "CARI", "turb", "0803b")
+CARI_storm9_09_07_turb.p = hyst_plot(CARI_storm9_09_07_Q, CARI_storm9_09_07_turb, "CARI", "turb", "0907")
+
+# Plot Loops #
+multiplot(CARI_storm1_06_15_fDOM.p,CARI_storm1_06_15_turb.p,
+          CARI_storm2a_06_19_NO3.p,CARI_storm2a_06_19_fDOM.p,CARI_storm2a_06_19_SPC.p,CARI_storm2a_06_19_turb.p,
+          CARI_storm2b_06_20_NO3.p,CARI_storm2b_06_20_fDOM.p,CARI_storm2b_06_20_SPC.p,CARI_storm2b_06_20_turb.p,
+          CARI_storm2c_06_21_NO3.p,
+          CARI_storm3_06_23_NO3.p,CARI_storm3_06_23_fDOM.p,CARI_storm3_06_23_SPC.p,CARI_storm3_06_23_turb.p,
+          CARI_storm4_07_09_NO3.p,CARI_storm4_07_09_fDOM.p,CARI_storm4_07_09_SPC.p,CARI_storm4_07_09_turb.p,
+          CARI_storm5_07_13_NO3.p,CARI_storm5_07_13_fDOM.p,CARI_storm5_07_13_SPC.p,CARI_storm5_07_13_turb.p,
+          CARI_storm6_07_24_NO3.p,CARI_storm6_07_24_fDOM.p,CARI_storm6_07_24_SPC.p,CARI_storm6_07_24_turb.p,
+          CARI_storm7_07_27_NO3.p,CARI_storm7_07_27_fDOM.p,CARI_storm7_07_27_SPC.p,CARI_storm7_07_27_turb.p,
+          CARI_storm8a_08_02_NO3.p,CARI_storm8a_08_02_fDOM.p,CARI_storm8a_08_02_SPC.p,CARI_storm8a_08_02_turb.p,
+          CARI_storm8b_08_03_NO3.p,CARI_storm8b_08_03_fDOM.p,CARI_storm8b_08_03_SPC.p,CARI_storm8b_08_03_turb.p,
+          CARI_storm9_09_07_NO3.p,CARI_storm9_09_07_fDOM.p,CARI_storm9_09_07_SPC.p,CARI_storm9_09_07_turb.p,
+          cols = 7)
+          
+##################################### 2021 ####################################################################
+# normalize data #
+
+## POKE ## 
+#POKE_storm1_05_16 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16.csv")
+POKE_storm1_05_16_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16_Q.csv")
+#POKE_storm1_05_16_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16_NO3.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+POKE_storm1_05_16_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16_fDOM.csv")
+POKE_storm1_05_16_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16_SPC.csv")
+POKE_storm1_05_16_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm1_05_16_Turb.csv")
+
+#POKE_storm2_06_01 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01.csv")
+POKE_storm2_06_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01_Q.csv")
+POKE_storm2_06_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01_NO3.csv")
+POKE_storm2_06_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01_fDOM.csv")
+POKE_storm2_06_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01_SPC.csv")
+POKE_storm2_06_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm2_06_01_Turb.csv")
+
+#POKE_storm3_06_19 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19.csv")
+POKE_storm3_06_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19_Q.csv")
+POKE_storm3_06_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19_NO3.csv")
+#POKE_storm3_06_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19_fDOM.csv", 
+#                               col_types = cols(datavalue = col_double()))
+#POKE_storm3_06_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19_SPC.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+#POKE_storm3_06_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm3_06_19_Turb.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+
+#POKE_storm4_07_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23.csv")
+POKE_storm4_07_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23_Q.csv")
+POKE_storm4_07_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23_NO3.csv")
+#POKE_storm4_07_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23_fDOM.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#POKE_storm4_07_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23_SPC.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+#POKE_storm4_07_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm4_07_23_Turb.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+
+#POKE_storm5_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27.csv")
+POKE_storm5_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27_Q.csv")
+POKE_storm5_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27_NO3.csv")
+POKE_storm5_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27_fDOM.csv")
+POKE_storm5_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27_SPC.csv")
+POKE_storm5_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm5_07_27_Turb.csv")
+
+#POKE_storm6_08_08 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08.csv")
+POKE_storm6_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08_Q.csv")
+POKE_storm6_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08_NO3.csv")
+POKE_storm6_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08_fDOM.csv")
+POKE_storm6_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08_SPC.csv")
+POKE_storm6_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm6_08_08_Turb.csv")
+
+#POKE_storm7a_08_14 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14.csv")
+POKE_storm7a_08_14_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14_Q.csv")
+POKE_storm7a_08_14_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14_NO3.csv")
+#POKE_storm7a_08_14_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14_fDOM.csv", 
+#                                    col_types = cols(datavalue = col_double()))
+#POKE_storm7a_08_14_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14_SPC.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#POKE_storm7a_08_14_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7a_08_14_Turb.csv", 
+#                                    col_types = cols(datavalue = col_double()))
+
+#POKE_storm7b_08_19 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19.csv")
+POKE_storm7b_08_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19_Q.csv")
+POKE_storm7b_08_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19_NO3.csv")
+#POKE_storm7b_08_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19_fDOM.csv")
+#POKE_storm7b_08_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19_SPC.csv")
+#POKE_storm7b_08_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7b_08_19_Turb.csv")
+
+#POKE_storm7c_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23.csv")
+POKE_storm7c_08_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23_Q.csv")
+POKE_storm7c_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23_NO3.csv")
+#POKE_storm7c_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23_fDOM.csv")
+#POKE_storm7c_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23_SPC.csv")
+#POKE_storm7c_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7c_08_23_Turb.csv")
+
+#POKE_storm7d_08_26 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26.csv")
+POKE_storm7d_08_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26_Q.csv")
+POKE_storm7d_08_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26_NO3.csv")
+#POKE_storm7d_08_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26_fDOM.csv")
+#POKE_storm7d_08_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26_SPC.csv")
+#POKE_storm7d_08_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/POKE/POKE_storm7d_08_26_Turb.csv")
+
+
+## STRT ## 
+#STRT_storm1a_08_15 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15.csv")
+STRT_storm1a_08_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15_Q.csv")
+STRT_storm1a_08_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15_NO3.csv")
+STRT_storm1a_08_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15_fDOM.csv")
+STRT_storm1a_08_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15_SPC.csv")
+STRT_storm1a_08_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1a_08_15_Turb.csv")
+
+#STRT_storm1b_08_17 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17.csv")
+STRT_storm1b_08_17_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_Q.csv")
+STRT_storm1b_08_17_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_NO3.csv")
+STRT_storm1b_08_17_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_fDOM.csv")
+STRT_storm1b_08_17_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_SPC.csv")
+STRT_storm1b_08_17_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_Turb.csv")
+
+#STRT_storm2a_08_19 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19.csv")
+STRT_storm2a_08_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19_Q.csv")
+STRT_storm2a_08_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19_NO3.csv")
+STRT_storm2a_08_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19_fDOM.csv")
+STRT_storm2a_08_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19_SPC.csv")
+STRT_storm2a_08_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2a_08_19_Turb.csv")
+
+#STRT_storm2b_08_20 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20.csv")
+STRT_storm2b_08_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20_Q.csv")
+STRT_storm2b_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20_NO3.csv")
+STRT_storm2b_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20_fDOM.csv")
+STRT_storm2b_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20_SPC.csv")
+STRT_storm2b_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm2b_08_20_Turb.csv")
+
+#STRT_storm3_08_25 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25.csv")
+STRT_storm3_08_25_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25_Q.csv")
+STRT_storm3_08_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25_NO3.csv")
+STRT_storm3_08_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25_fDOM.csv")
+STRT_storm3_08_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25_SPC.csv")
+STRT_storm3_08_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm3_08_25_Turb.csv")
+
+
+
+## MOOS ## 
+#MOOS_storm1_07_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23.csv")
+MOOS_storm1_07_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23_Q.csv")
+#MOOS_storm1_07_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23_NO3.csv")
+MOOS_storm1_07_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23_fDOM.csv")
+MOOS_storm1_07_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23_SPC.csv")
+MOOS_storm1_07_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm1_07_23_Turb.csv")
+
+#MOOS_storm2_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27.csv")
+MOOS_storm2_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27_Q.csv")
+#MOOS_storm2_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27_NO3.csv")
+MOOS_storm2_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27_fDOM.csv")
+MOOS_storm2_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27_SPC.csv")
+MOOS_storm2_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm2_07_27_Turb.csv")
+
+#MOOS_storm3a_08_06 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06.csv")
+MOOS_storm3a_08_06_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06_Q.csv")
+#MOOS_storm3a_08_06_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06_NO3.csv")
+MOOS_storm3a_08_06_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06_fDOM.csv")
+MOOS_storm3a_08_06_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06_SPC.csv")
+MOOS_storm3a_08_06_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3a_08_06_Turb.csv")
+
+#MOOS_storm3b_08_08 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08.csv")
+MOOS_storm3b_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08_Q.csv")
+#MOOS_storm3b_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08_NO3.csv")
+MOOS_storm3b_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08_fDOM.csv")
+MOOS_storm3b_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08_SPC.csv")
+MOOS_storm3b_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm3b_08_08_Turb.csv")
+
+#MOOS_storm4a_08_15 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15.csv")
+MOOS_storm4a_08_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15_Q.csv")
+#MOOS_storm4a_08_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15_NO3.csv")
+MOOS_storm4a_08_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15_fDOM.csv")
+MOOS_storm4a_08_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15_SPC.csv")
+MOOS_storm4a_08_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4a_08_15_Turb.csv")
+
+#MOOS_storm4b_08_17 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17.csv")
+MOOS_storm4b_08_17_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17_Q.csv")
+#MOOS_storm4b_08_17_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17_NO3.csv")
+MOOS_storm4b_08_17_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17_fDOM.csv")
+MOOS_storm4b_08_17_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17_SPC.csv")
+MOOS_storm4b_08_17_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm4b_08_17_Turb.csv")
+
+#MOOS_storm5a_08_19 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19.csv")
+MOOS_storm5a_08_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19_Q.csv")
+#MOOS_storm5a_08_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19_NO3.csv")
+MOOS_storm5a_08_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19_fDOM.csv")
+MOOS_storm5a_08_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19_SPC.csv")
+MOOS_storm5a_08_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5a_08_19_Turb.csv")
+
+#MOOS_storm5b_08_21 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21.csv")
+MOOS_storm5b_08_21_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21_Q.csv")
+#MOOS_storm5b_08_21_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21_NO3.csv")
+MOOS_storm5b_08_21_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21_fDOM.csv")
+MOOS_storm5b_08_21_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21_SPC.csv")
+MOOS_storm5b_08_21_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm5b_08_21_Turb.csv")
+
+#MOOS_storm6_08_25 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25.csv")
+MOOS_storm6_08_25_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25_Q.csv")
+#MOOS_storm6_08_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25_NO3.csv")
+MOOS_storm6_08_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25_fDOM.csv")
+MOOS_storm6_08_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25_SPC.csv")
+MOOS_storm6_08_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm6_08_25_Turb.csv")
+
+#MOOS_storm7_08_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27.csv")
+MOOS_storm7_08_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27_Q.csv")
+#MOOS_storm7_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27_NO3.csv")
+MOOS_storm7_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27_fDOM.csv")
+MOOS_storm7_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27_SPC.csv")
+MOOS_storm7_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/MOOS/MOOS_storm7_08_27_Turb.csv")
+
+
+## FRCH ##
+#FRCH_storm1_07_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23.csv")
+FRCH_storm1_07_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23_Q.csv")
+FRCH_storm1_07_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23_NO3.csv")
+#FRCH_storm1_07_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23_fDOM.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+#FRCH_storm1_07_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23_SPC.csv", 
+#                                  col_types = cols(datavalue = col_double()))
+#FRCH_storm1_07_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm1_07_23_Turb.csv", 
+#                                   col_types = cols(datavalue = col_double()))
+
+#FRCH_storm2_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27.csv")
+FRCH_storm2_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27_Q.csv")
+FRCH_storm2_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27_NO3.csv")
+FRCH_storm2_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27_fDOM.csv")
+FRCH_storm2_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27_SPC.csv")
+FRCH_storm2_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm2_07_27_Turb.csv")
+
+#FRCH_storm3_08_05 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05.csv")
+FRCH_storm3_08_05_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05_Q.csv")
+FRCH_storm3_08_05_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05_NO3.csv")
+FRCH_storm3_08_05_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05_fDOM.csv")
+FRCH_storm3_08_05_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05_SPC.csv")
+FRCH_storm3_08_05_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm3_08_05_Turb.csv")
+
+#FRCH_storm4_08_08 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08.csv")
+FRCH_storm4_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08_Q.csv")
+FRCH_storm4_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08_NO3.csv")
+FRCH_storm4_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08_fDOM.csv")
+FRCH_storm4_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08_SPC.csv")
+FRCH_storm4_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm4_08_08_Turb.csv")
+
+#FRCH_storm5a_08_15<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15.csv")
+FRCH_storm5a_08_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15_Q.csv")
+FRCH_storm5a_08_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15_NO3.csv")
+FRCH_storm5a_08_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15_fDOM.csv")
+FRCH_storm5a_08_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15_SPC.csv")
+FRCH_storm5a_08_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5a_08_15_Turb.csv")
+
+#FRCH_storm5b_08_17<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17.csv")
+FRCH_storm5b_08_17_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17_Q.csv")
+FRCH_storm5b_08_17_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17_NO3.csv")
+FRCH_storm5b_08_17_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17_fDOM.csv")
+FRCH_storm5b_08_17_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17_SPC.csv")
+FRCH_storm5b_08_17_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm5b_08_17_Turb.csv")
+
+#FRCH_storm6a_08_19<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19.csv")
+FRCH_storm6a_08_19_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19_Q.csv")
+FRCH_storm6a_08_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19_NO3.csv")
+FRCH_storm6a_08_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19_fDOM.csv")
+FRCH_storm6a_08_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19_SPC.csv")
+FRCH_storm6a_08_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6a_08_19_Turb.csv")
+
+#FRCH_storm6b_08_20<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20.csv")
+FRCH_storm6b_08_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20_Q.csv")
+FRCH_storm6b_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20_NO3.csv")
+FRCH_storm6b_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20_fDOM.csv")
+FRCH_storm6b_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20_SPC.csv")
+FRCH_storm6b_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm6b_08_20_Turb.csv")
+
+#FRCH_storm7_08_25<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25.csv")
+FRCH_storm7_08_25_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25_Q.csv")
+FRCH_storm7_08_25_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25_NO3.csv")
+FRCH_storm7_08_25_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25_fDOM.csv")
+FRCH_storm7_08_25_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25_SPC.csv")
+FRCH_storm7_08_25_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm7_08_25_Turb.csv")
+
+#FRCH_storm8_08_27<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27.csv")
+FRCH_storm8_08_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27_Q.csv")
+FRCH_storm8_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27_NO3.csv")
+FRCH_storm8_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27_fDOM.csv")
+FRCH_storm8_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27_SPC.csv")
+FRCH_storm8_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/FRCH/FRCH_storm8_08_27_Turb.csv")
+
+
+## VAUL ## 
+#VAUL_storm1a_07_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23.csv")
+VAUL_storm1a_07_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23_Q.csv")
+VAUL_storm1a_07_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23_NO3.csv")
+VAUL_storm1a_07_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23_fDOM.csv", 
+                                     col_types = cols(datavalue = col_double()))
+VAUL_storm1a_07_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23_SPC.csv", 
+                                   col_types = cols(datavalue = col_double()))
+VAUL_storm1a_07_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1a_07_23_Turb.csv", 
+                                    col_types = cols(datavalue = col_double()))
+
+#VAUL_storm1b_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27.csv")
+VAUL_storm1b_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27_Q.csv")
+VAUL_storm1b_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27_NO3.csv")
+VAUL_storm1b_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27_fDOM.csv")
+VAUL_storm1b_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27_SPC.csv")
+VAUL_storm1b_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm1b_07_27_Turb.csv")
+
+#VAUL_storm2_08_05 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05.csv")
+VAUL_storm2_08_05_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05_Q.csv")
+VAUL_storm2_08_05_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05_NO3.csv")
+VAUL_storm2_08_05_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05_fDOM.csv")
+VAUL_storm2_08_05_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05_SPC.csv")
+VAUL_storm2_08_05_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm2_08_05_Turb.csv")
+
+#VAUL_storm3_08_08 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08.csv")
+VAUL_storm3_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08_Q.csv")
+VAUL_storm3_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08_NO3.csv")
+VAUL_storm3_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08_fDOM.csv")
+VAUL_storm3_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08_SPC.csv")
+VAUL_storm3_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm3_08_08_Turb.csv")
+
+#VAUL_storm4a_08_15 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15.csv")
+VAUL_storm4a_08_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15_Q.csv")
+VAUL_storm4a_08_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15_NO3.csv")
+VAUL_storm4a_08_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15_fDOM.csv")
+VAUL_storm4a_08_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15_SPC.csv")
+VAUL_storm4a_08_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4a_08_15_Turb.csv")
+
+#VAUL_storm4b_08_20 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20.csv")
+VAUL_storm4b_08_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20_Q.csv")
+VAUL_storm4b_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20_NO3.csv")
+VAUL_storm4b_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20_fDOM.csv")
+VAUL_storm4b_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20_SPC.csv")
+VAUL_storm4b_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm4b_08_20_Turb.csv")
+
+#VAUL_storm5a_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23.csv")
+VAUL_storm5a_08_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23_Q.csv")
+VAUL_storm5a_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23_NO3.csv")
+VAUL_storm5a_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23_fDOM.csv")
+VAUL_storm5a_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23_SPC.csv")
+VAUL_storm5a_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5a_08_23_Turb.csv")
+
+#VAUL_storm5b_08_26 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26.csv")
+VAUL_storm5b_08_26_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26_Q.csv")
+VAUL_storm5b_08_26_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26_NO3.csv")
+VAUL_storm5b_08_26_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26_fDOM.csv")
+VAUL_storm5b_08_26_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26_SPC.csv")
+VAUL_storm5b_08_26_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/VAUL/VAUL_storm5b_08_26_Turb.csv")
+
+
+## CARI ## 
+#CARI_storm1_05_16 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16.csv")
+CARI_storm1_05_16_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16_Q.csv")
+CARI_storm1_06_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16_NO3.csv")
+CARI_storm1_05_16_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16_fDOM.csv")
+CARI_storm1_05_16_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16_SPC.csv")
+CARI_storm1_05_16_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm1_05_16_Turb.csv")
+
+#CARI_storm2_06_01 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01.csv")
+CARI_storm2_06_01_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_Q.csv")
+CARI_storm2_06_01_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_NO3.csv")
+CARI_storm2_06_01_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_fDOM.csv")
+CARI_storm2_06_01_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_SPC.csv")
+CARI_storm2_06_01_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_Turb.csv")
+
+#CARI_storm3_06_19 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19.csv")
+CARI_storm3_06_19_Q <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_Q.csv")
+CARI_storm3_06_19_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_NO3.csv")
+CARI_storm3_06_19_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_fDOM.csv")
+CARI_storm3_06_19_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_SPC.csv")
+CARI_storm3_06_19_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_Turb.csv")
+
+#CARI_storm4_07_24 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24.csv")
+CARI_storm4_07_24_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_Q.csv")
+CARI_storm4_07_24_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_NO3.csv")
+CARI_storm4_07_24_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_fDOM.csv")
+CARI_storm4_07_24_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_SPC.csv")
+CARI_storm4_07_24_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_Turb.csv")
+
+#CARI_storm5_07_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27.csv")
+CARI_storm5_07_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27_Q.csv")
+CARI_storm5_07_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27_NO3.csv")
+CARI_storm5_07_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27_fDOM.csv")
+CARI_storm5_07_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27_SPC.csv")
+CARI_storm5_07_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm5_07_27_Turb.csv")
+
+#CARI_storm6_08_08 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08.csv")
+CARI_storm6_08_08_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08_Q.csv")
+CARI_storm6_08_08_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08_NO3.csv")
+CARI_storm6_08_08_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08_fDOM.csv")
+CARI_storm6_08_08_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08_SPC.csv")
+CARI_storm6_08_08_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm6_08_08_Turb.csv")
+
+#CARI_storm7_08_15 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15.csv")
+CARI_storm7_08_15_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15_Q.csv")
+CARI_storm7_08_15_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15_NO3.csv")
+CARI_storm7_08_15_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15_fDOM.csv")
+CARI_storm7_08_15_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15_SPC.csv")
+CARI_storm7_08_15_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm7_08_15_Turb.csv")
+
+#CARI_storm8_08_20 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20.csv")
+CARI_storm8_08_20_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20_Q.csv")
+CARI_storm8_08_20_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20_NO3.csv")
+CARI_storm8_08_20_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20_fDOM.csv")
+CARI_storm8_08_20_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20_SPC.csv")
+CARI_storm8_08_20_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm8_08_20_Turb.csv")
+
+#CARI_storm9_08_23 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23.csv")
+CARI_storm9_08_23_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23_Q.csv")
+CARI_storm9_08_23_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23_NO3.csv")
+CARI_storm9_08_23_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23_fDOM.csv")
+CARI_storm9_08_23_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23_SPC.csv")
+CARI_storm9_08_23_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm9_08_23_Turb.csv")
+
+#CARI_storm10_08_27 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27.csv")
+CARI_storm10_08_27_Q<- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_Q.csv")
+CARI_storm10_08_27_NO3 <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_NO3.csv")
+CARI_storm10_08_27_fDOM <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_fDOM.csv")
+CARI_storm10_08_27_SPC <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_SPC.csv")
+CARI_storm10_08_27_turb <- read_csv("~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_Turb.csv")
+
+# Normalize data #
+dfList <- Filter(function(x) is(x, "data.frame"), mget(ls()))
+
+for(i in 1:length(dfList)) {
+  dfList[[i]][["datavalue"]] = 
+    (dfList[[i]][["datavalue"]] - min(dfList[[i]][["datavalue"]], na.rm=T)) / (max(dfList[[i]][["datavalue"]], na.rm=T) - min(dfList[[i]][["datavalue"]], na.rm=T))
+}
+list2env(dfList ,.GlobalEnv)
+
+# POKE #
+# fxn: plot hysteresis loop #
+hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
+  dat.p = ggplot(data = dat_Q, 
+                 aes(x=(dat_Q$datavalue), 
+                     y=(dat_response$datavalue), 
+                     color = as.numeric(dat_Q$valuedatetime))) +
+    geom_point() +
+    scale_colour_gradientn(colors = rainbow(3)) +
+    theme_bw() +
+    theme(legend.position="none") + 
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14,face="bold")) +
+    ylab(paste(site, response_var))+
+    xlab("Normalized Discharge") +
+    ggtitle(paste("Storm", storm_num))
+  return(dat.p)
+}
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+# POKE #
+# plot POKE loops #
+# NO3
+#multiplot(POKE_storm1_05_16_NO3.p)
+multiplot(POKE_storm2_06_01_NO3.p)
+multiplot(POKE_storm3_06_19_NO3.p)
+multiplot(POKE_storm4_07_23_NO3.p)
+multiplot(POKE_storm5_07_27_NO3.p)
+multiplot(POKE_storm6_08_08_NO3.p)
+multiplot(POKE_storm7a_08_14_NO3.p)
+multiplot(POKE_storm7b_08_19_NO3.p)
+multiplot(POKE_storm7c_08_23_NO3.p)
+multiplot(POKE_storm7d_08_26_NO3.p)
+
+POKE_storm1_05_16_NO3.p = hyst_plot(POKE_storm1_05_16_Q, POKE_storm1_05_16_NO3, "POKE", "NO3", "0516")
+POKE_storm2_06_01_NO3.p = hyst_plot(POKE_storm2_06_01_Q, POKE_storm2_06_01_NO3, "POKE", "NO3", "0601")
+POKE_storm3_06_19_NO3.p = hyst_plot(POKE_storm3_06_19_Q, POKE_storm3_06_19_NO3, "POKE", "NO3", "0619")
+POKE_storm4_07_23_NO3.p = hyst_plot(POKE_storm4_07_23_Q, POKE_storm4_07_23_NO3, "POKE", "NO3", "0723")
+POKE_storm5_07_27_NO3.p = hyst_plot(POKE_storm5_07_27_Q, POKE_storm5_07_27_NO3, "POKE", "NO3", "0727")
+POKE_storm6_08_08_NO3.p = hyst_plot(POKE_storm6_08_08_Q, POKE_storm6_08_08_NO3, "POKE", "NO3", "0808")
+POKE_storm7a_08_14_NO3.p = hyst_plot(POKE_storm7a_08_14_Q, POKE_storm7a_08_14_NO3, "POKE", "NO3", "0814a")
+POKE_storm7b_08_19_NO3.p = hyst_plot(POKE_storm7b_08_19_Q, POKE_storm7b_08_19_NO3, "POKE", "NO3", "0819b")
+POKE_storm7c_08_23_NO3.p = hyst_plot(POKE_storm7c_08_23_Q, POKE_storm7c_08_23_NO3, "POKE", "NO3", "0823c")
+POKE_storm7d_08_26_NO3.p = hyst_plot(POKE_storm7d_08_26_Q, POKE_storm7d_08_26_NO3, "POKE", "NO3", "0826d")
+
+# fDOM
+multiplot(POKE_storm1_05_16_fDOM.p)
+multiplot(POKE_storm2_06_01_fDOM.p)
+#multiplot(POKE_storm3_06_19_fDOM.p)
+#multiplot(POKE_storm4_07_23_fDOM.p)
+multiplot(POKE_storm5_07_27_fDOM.p)
+multiplot(POKE_storm6_08_08_fDOM.p)
+
+POKE_storm1_05_16_fDOM.p = hyst_plot(POKE_storm1_05_16_Q, POKE_storm1_05_16_fDOM, "POKE", "fDOM", "0516")
+POKE_storm2_06_01_fDOM.p = hyst_plot(POKE_storm2_06_01_Q, POKE_storm2_06_01_fDOM, "POKE", "fDOM", "0601")
+POKE_storm3_06_19_fDOM.p = hyst_plot(POKE_storm3_06_19_Q, POKE_storm3_06_19_fDOM, "POKE", "fDOM", "0619")
+POKE_storm4_07_23_fDOM.p = hyst_plot(POKE_storm4_07_23_Q, POKE_storm4_07_23_fDOM, "POKE", "fDOM", "0723")
+POKE_storm5_07_27_fDOM.p = hyst_plot(POKE_storm5_07_27_Q, POKE_storm5_07_27_fDOM, "POKE", "fDOM", "0727")
+POKE_storm6_08_08_fDOM.p = hyst_plot(POKE_storm6_08_08_Q, POKE_storm6_08_08_fDOM, "POKE", "fDOM", "0808")
+
+# SPC
+multiplot(POKE_storm1_05_16_SPC.p)
+multiplot(POKE_storm2_06_01_SPC.p)
+#multiplot(POKE_storm3_06_19_SPC.p)
+#multiplot(POKE_storm4_07_23_SPC.p)
+multiplot(POKE_storm5_07_27_SPC.p)
+multiplot(POKE_storm6_08_08_SPC.p)
+
+POKE_storm1_05_16_SPC.p = hyst_plot(POKE_storm1_05_16_Q, POKE_storm1_05_16_SPC, "POKE", "SPC", "0516")
+POKE_storm2_06_01_SPC.p = hyst_plot(POKE_storm2_06_01_Q, POKE_storm2_06_01_SPC, "POKE", "SPC", "0601")
+POKE_storm3_06_19_SPC.p = hyst_plot(POKE_storm3_06_19_Q, POKE_storm3_06_19_SPC, "POKE", "SPC", "0619")
+POKE_storm4_07_23_SPC.p = hyst_plot(POKE_storm4_07_23_Q, POKE_storm4_07_23_SPC, "POKE", "SPC", "0723")
+POKE_storm5_07_27_SPC.p = hyst_plot(POKE_storm5_07_27_Q, POKE_storm5_07_27_SPC, "POKE", "SPC", "0727")
+POKE_storm6_08_08_SPC.p = hyst_plot(POKE_storm6_08_08_Q, POKE_storm6_08_08_SPC, "POKE", "SPC", "0808")
+
+# turb
+multiplot(POKE_storm1_05_16_turb.p)
+multiplot(POKE_storm2_06_01_turb.p)
+#multiplot(POKE_storm3_06_19_turb.p)
+#multiplot(POKE_storm4_07_23_turb.p)
+multiplot(POKE_storm5_07_27_turb.p)
+multiplot(POKE_storm6_08_08_turb.p)
+
+POKE_storm1_05_16_turb.p = hyst_plot(POKE_storm1_05_16_Q, POKE_storm1_05_16_turb, "POKE", "turb", "0516")
+POKE_storm2_06_01_turb.p = hyst_plot(POKE_storm2_06_01_Q, POKE_storm2_06_01_turb, "POKE", "turb", "0601")
+POKE_storm3_06_19_turb.p = hyst_plot(POKE_storm3_06_19_Q, POKE_storm3_06_19_turb, "POKE", "turb", "0619")
+POKE_storm4_07_23_turb.p = hyst_plot(POKE_storm4_07_23_Q, POKE_storm4_07_23_turb, "POKE", "turb", "0723")
+POKE_storm5_07_27_turb.p = hyst_plot(POKE_storm5_07_27_Q, POKE_storm5_07_27_turb, "POKE", "turb", "0727")
+POKE_storm6_08_08_turb.p = hyst_plot(POKE_storm6_08_08_Q, POKE_storm6_08_08_turb, "POKE", "turb", "0808")
+
+
+multiplot(POKE_storm1_05_16_fDOM.p,POKE_storm1_05_16_SPC.p,POKE_storm1_05_16_turb.p,
+          POKE_storm2_06_01_NO3.p,POKE_storm2_06_01_fDOM.p,POKE_storm2_06_01_SPC.p,POKE_storm2_06_01_turb.p,
+          POKE_storm3_06_19_NO3.p,
+          POKE_storm4_07_23_NO3.p,
+          POKE_storm5_07_27_NO3.p,POKE_storm5_07_27_fDOM.p,POKE_storm5_07_27_SPC.p,POKE_storm5_07_27_turb.p,
+          POKE_storm6_08_08_NO3.p,POKE_storm6_08_08_fDOM.p,POKE_storm6_08_08_SPC.p,POKE_storm6_08_08_turb.p,
+          POKE_storm7a_08_14_NO3.p,
+          POKE_storm7b_08_19_NO3.p,
+          POKE_storm7c_08_23_NO3.p,
+          POKE_storm7d_08_26_NO3.p,
+          cols = 7)
+
+# STRT #
+# plot STRT loops #
+# NO3
+multiplot(STRT_storm1a_08_15_NO3.p)
+multiplot(STRT_storm1b_08_17_NO3.p)
+multiplot(STRT_storm2a_08_19_NO3.p)
+multiplot(STRT_storm2b_08_20_NO3.p)
+multiplot(STRT_storm_08_25_NO3.p)
+
+STRT_storm1a_08_15_NO3.p = hyst_plot(STRT_storm1a_08_15_Q, STRT_storm1a_08_15_NO3, "STRT", "NO3", "0815a")
+STRT_storm1b_08_17_NO3.p = hyst_plot(STRT_storm1b_08_17_Q, STRT_storm1b_08_17_NO3, "STRT", "NO3", "0817a")
+STRT_storm2a_08_19_NO3.p = hyst_plot(STRT_storm2a_08_19_Q, STRT_storm2a_08_19_NO3, "STRT", "NO3", "0819a")
+STRT_storm2b_08_20_NO3.p = hyst_plot(STRT_storm2b_08_20_Q, STRT_storm2b_08_20_NO3, "STRT", "NO3", "0820b")
+STRT_storm3_08_25_NO3.p = hyst_plot(STRT_storm3_08_25_Q, STRT_storm3_08_25_NO3, "STRT", "NO3", "0825")
+
+# fDOM
+multiplot(STRT_storm1a_08_15_fDOM.p)
+multiplot(STRT_storm1b_08_17_fDOM.p)
+multiplot(STRT_storm2a_08_19_fDOM.p)
+multiplot(STRT_storm2b_08_20_fDOM.p)
+multiplot(STRT_storm_08_25_fDOM.p)
+STRT_storm1a_08_15_fDOM.p = hyst_plot(STRT_storm1a_08_15_Q, STRT_storm1a_08_15_fDOM, "STRT", "fDOM", "0815a")
+STRT_storm1b_08_17_fDOM.p = hyst_plot(STRT_storm1b_08_17_Q, STRT_storm1b_08_17_fDOM, "STRT", "fDOM", "0817a")
+STRT_storm2a_08_19_fDOM.p = hyst_plot(STRT_storm2a_08_19_Q, STRT_storm2a_08_19_fDOM, "STRT", "fDOM", "0819a")
+STRT_storm2b_08_20_fDOM.p = hyst_plot(STRT_storm2b_08_20_Q, STRT_storm2b_08_20_fDOM, "STRT", "fDOM", "0820b")
+STRT_storm3_08_25_fDOM.p = hyst_plot(STRT_storm3_08_25_Q, STRT_storm3_08_25_fDOM, "STRT", "fDOM", "0825")
+
+# SPC
+multiplot(STRT_storm1a_08_15_SPC.p)
+multiplot(STRT_storm1b_08_17_SPC.p)
+multiplot(STRT_storm2a_08_19_SPC.p)
+multiplot(STRT_storm2b_08_20_SPC.p)
+multiplot(STRT_storm_08_25_SPC.p)
+STRT_storm1a_08_15_SPC.p = hyst_plot(STRT_storm1a_08_15_Q, STRT_storm1a_08_15_SPC, "STRT", "SPC", "0815a")
+STRT_storm1b_08_17_SPC.p = hyst_plot(STRT_storm1b_08_17_Q, STRT_storm1b_08_17_SPC, "STRT", "SPC", "0817a")
+STRT_storm2a_08_19_SPC.p = hyst_plot(STRT_storm2a_08_19_Q, STRT_storm2a_08_19_SPC, "STRT", "SPC", "0819a")
+STRT_storm2b_08_20_SPC.p = hyst_plot(STRT_storm2b_08_20_Q, STRT_storm2b_08_20_SPC, "STRT", "SPC", "0820b")
+STRT_storm3_08_25_SPC.p = hyst_plot(STRT_storm3_08_25_Q, STRT_storm3_08_25_SPC, "STRT", "SPC", "0825")
+
+# turb
+multiplot(STRT_storm1a_08_15_turb.p)
+multiplot(STRT_storm1b_08_17_turb.p)
+multiplot(STRT_storm2a_08_19_turb.p)
+multiplot(STRT_storm2b_08_20_turb.p)
+multiplot(STRT_storm_08_25_turb.p)
+STRT_storm1a_08_15_turb.p = hyst_plot(STRT_storm1a_08_15_Q, STRT_storm1a_08_15_turb, "STRT", "turb", "0815a")
+STRT_storm1b_08_17_turb.p = hyst_plot(STRT_storm1b_08_17_Q, STRT_storm1b_08_17_turb, "STRT", "turb", "0817a")
+STRT_storm2a_08_19_turb.p = hyst_plot(STRT_storm2a_08_19_Q, STRT_storm2a_08_19_turb, "STRT", "turb", "0819a")
+STRT_storm2b_08_20_turb.p = hyst_plot(STRT_storm2b_08_20_Q, STRT_storm2b_08_20_turb, "STRT", "turb", "0820b")
+STRT_storm3_08_25_turb.p = hyst_plot(STRT_storm3_08_25_Q, STRT_storm3_08_25_turb, "STRT", "turb", "0825")
+
+multiplot(STRT_storm1a_08_15_NO3.p,STRT_storm1a_08_15_fDOM.p,STRT_storm1a_08_15_SPC.p,STRT_storm1a_08_15_turb.p,
+          STRT_storm1b_08_17_NO3.p,STRT_storm1b_08_17_fDOM.p,STRT_storm1b_08_17_SPC.p,STRT_storm1b_08_17_turb.p,
+          STRT_storm2a_08_19_NO3.p,STRT_storm2a_08_19_fDOM.p,STRT_storm2a_08_19_SPC.p,STRT_storm2a_08_19_turb.p,
+          STRT_storm2b_08_20_NO3.p,STRT_storm2b_08_20_fDOM.p,STRT_storm2b_08_20_SPC.p,STRT_storm2b_08_20_turb.p,
+          STRT_storm3_08_25_NO3.p,STRT_storm3_08_25_fDOM.p,STRT_storm3_08_25_SPC.p,STRT_storm3_08_25_turb.p,
+          cols = 7)
 # MOOS #
 # fxn: plot hysteresis loop #
 hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
@@ -3632,16 +5079,16 @@ multiplot(MOOS_storm6_08_25_NO3.p, MOOS_storm6_08_25_fDOM.p, MOOS_storm6_08_25_S
 multiplot(MOOS_storm7_08_27_NO3.p, MOOS_storm7_08_27_fDOM.p, MOOS_storm7_08_27_SPC.p, MOOS_storm7_08_27_turb.p) # works 
 
 
-multiplot(MOOS_storm1_07_23_NO3.p, MOOS_storm1_07_23_fDOM.p, MOOS_storm1_07_23_SPC.p, MOOS_storm1_07_23_turb.p,
-          MOOS_storm2_07_27_NO3.p, MOOS_storm2_07_27_fDOM.p, MOOS_storm2_07_27_SPC.p, MOOS_storm2_07_27_turb.p,
-          MOOS_storm3a_08_06_NO3.p, MOOS_storm3a_08_06_fDOM.p, MOOS_storm3a_08_06_SPC.p, MOOS_storm3a_08_06_turb.p,
-          MOOS_storm3b_08_08_NO3.p, MOOS_storm3b_08_08_fDOM.p, MOOS_storm3b_08_08_SPC.p, MOOS_storm3b_08_08_turb.p,
-          MOOS_storm4a_08_15_NO3.p, MOOS_storm4a_08_15_fDOM.p, MOOS_storm4a_08_15_SPC.p, MOOS_storm4a_08_15_turb.p,
-          MOOS_storm4b_08_17_NO3.p, MOOS_storm4b_08_17_fDOM.p, MOOS_storm4b_08_17_SPC.p, MOOS_storm4b_08_17_turb.p,
-          MOOS_storm5a_08_19_NO3.p, MOOS_storm5a_08_19_fDOM.p, MOOS_storm5a_08_19_SPC.p, MOOS_storm5a_08_19_turb.p,
-          MOOS_storm5b_08_21_NO3.p, MOOS_storm5b_08_21_fDOM.p, MOOS_storm5b_08_21_SPC.p, MOOS_storm5b_08_21_turb.p,
-          MOOS_storm6_08_25_NO3.p, MOOS_storm6_08_25_fDOM.p, MOOS_storm6_08_25_SPC.p, MOOS_storm6_08_25_turb.p,
-          MOOS_storm7_08_27_NO3.p, MOOS_storm7_08_27_fDOM.p, MOOS_storm7_08_27_SPC.p, MOOS_storm7_08_27_turb.p,
+multiplot(MOOS_storm1_07_23_fDOM.p, MOOS_storm1_07_23_SPC.p, MOOS_storm1_07_23_turb.p,
+          MOOS_storm2_07_27_fDOM.p, MOOS_storm2_07_27_SPC.p, MOOS_storm2_07_27_turb.p,
+          MOOS_storm3a_08_06_fDOM.p, MOOS_storm3a_08_06_SPC.p, MOOS_storm3a_08_06_turb.p,
+          MOOS_storm3b_08_08_fDOM.p, MOOS_storm3b_08_08_SPC.p, MOOS_storm3b_08_08_turb.p,
+          MOOS_storm4a_08_15_fDOM.p, MOOS_storm4a_08_15_SPC.p, MOOS_storm4a_08_15_turb.p,
+          MOOS_storm4b_08_17_fDOM.p, MOOS_storm4b_08_17_SPC.p, MOOS_storm4b_08_17_turb.p,
+          MOOS_storm5a_08_19_fDOM.p, MOOS_storm5a_08_19_SPC.p, MOOS_storm5a_08_19_turb.p,
+          MOOS_storm5b_08_21_fDOM.p, MOOS_storm5b_08_21_SPC.p, MOOS_storm5b_08_21_turb.p,
+          MOOS_storm6_08_25_fDOM.p, MOOS_storm6_08_25_SPC.p, MOOS_storm6_08_25_turb.p,
+          MOOS_storm7_08_27_fDOM.p, MOOS_storm7_08_27_SPC.p, MOOS_storm7_08_27_turb.p,
           cols = 7)
 
 # VAUL #
@@ -3665,6 +5112,7 @@ hyst_plot = function(dat_Q, dat_response, site, response_var, storm_num) {
 
 # plot VAUL loops #
 # NO3
+
 VAUL_storm1a_07_23_NO3.p = hyst_plot(VAUL_storm1a_07_23_Q, VAUL_storm1a_07_23_NO3, "VAUL", "NO3", "0723a")
 VAUL_storm1b_07_27_NO3.p = hyst_plot(VAUL_storm1b_07_27_Q, VAUL_storm1b_07_27_NO3, "VAUL", "NO3", "0727b")
 VAUL_storm2_08_05_NO3.p = hyst_plot(VAUL_storm2_08_05_Q, VAUL_storm2_08_05_NO3, "VAUL", "NO3", "0805")
@@ -3743,7 +5191,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 
 multiplot(VAUL_storm1a_07_23_NO3.p, VAUL_storm1a_07_23_fDOM.p, VAUL_storm1a_07_23_SPC.p, VAUL_storm1a_07_23_turb.p) # works 
-multiplot(VAUL_storm1b_07_27_NO3.p, VAUL_storm1b_07_27_fDOM.p, VAUL_storm1b_07_27_SPC.p, VAUL_storm1b_07_27_turb.p) # works/ empty
+multiplot(VAUL_storm1b_07_27_NO3.p, VAUL_storm1b_07_27_fDOM.p, VAUL_storm1b_07_27_SPC.p, VAUL_storm1b_07_27_turb.p) # works
 multiplot(VAUL_storm2_08_05_NO3.p, VAUL_storm2_08_05_fDOM.p, VAUL_storm2_08_05_SPC.p, VAUL_storm2_08_05_turb.p) # works/empty
 multiplot(VAUL_storm3_08_08_NO3.p, VAUL_storm3_08_08_fDOM.p, VAUL_storm3_08_08_SPC.p, VAUL_storm3_08_08_turb.p) # works/empty
 multiplot(VAUL_storm4a_08_15_NO3.p, VAUL_storm4a_08_15_fDOM.p, VAUL_storm4a_08_15_SPC.p, VAUL_storm4a_08_15_turb.p) # works 
@@ -3868,10 +5316,10 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   }
 }
 
-multiplot(FRCH_storm1_07_23_NO3.p, FRCH_storm1_07_23_fDOM.p, FRCH_storm1_07_23_SPC.p, FRCH_storm1_07_23_turb.p) # works 
-multiplot(FRCH_storm2_07_27_NO3.p, FRCH_storm2_07_27_fDOM.p, FRCH_storm2_07_27_SPC.p, FRCH_storm2_07_27_turb.p) # works/ empty
-multiplot(FRCH_storm3_08_05_NO3.p, FRCH_storm3_08_05_fDOM.p, FRCH_storm3_08_05_SPC.p, FRCH_storm3_08_05_turb.p) # works/empty
-multiplot(FRCH_storm4_08_08_NO3.p, FRCH_storm4_08_08_fDOM.p, FRCH_storm4_08_08_SPC.p, FRCH_storm4_08_08_turb.p) # works/empty
+multiplot(FRCH_storm1_07_23_NO3.p) # works 
+multiplot(FRCH_storm2_07_27_NO3.p, FRCH_storm2_07_27_fDOM.p, FRCH_storm2_07_27_SPC.p, FRCH_storm2_07_27_turb.p) # works
+multiplot(FRCH_storm3_08_05_NO3.p, FRCH_storm3_08_05_fDOM.p, FRCH_storm3_08_05_SPC.p, FRCH_storm3_08_05_turb.p) # works
+multiplot(FRCH_storm4_08_08_NO3.p, FRCH_storm4_08_08_fDOM.p, FRCH_storm4_08_08_SPC.p, FRCH_storm4_08_08_turb.p) # works
 multiplot(FRCH_storm5a_08_15_NO3.p, FRCH_storm5a_08_15_fDOM.p, FRCH_storm5a_08_15_SPC.p, FRCH_storm5a_08_15_turb.p) # works 
 multiplot(FRCH_storm5b_08_17_NO3.p, FRCH_storm5b_08_17_fDOM.p, FRCH_storm5b_08_17_SPC.p, FRCH_storm5b_08_17_turb.p) # works 
 multiplot(FRCH_storm6a_08_19_NO3.p, FRCH_storm6a_08_19_fDOM.p, FRCH_storm6a_08_19_SPC.p, FRCH_storm6a_08_19_turb.p) # works 
@@ -3880,7 +5328,7 @@ multiplot(FRCH_storm7_08_25_NO3.p, FRCH_storm7_08_25_fDOM.p, FRCH_storm7_08_25_S
 multiplot(FRCH_storm8_08_27_NO3.p, FRCH_storm8_08_27_fDOM.p, FRCH_storm8_08_27_SPC.p, FRCH_storm8_08_27_turb.p) # works 
 
 
-multiplot(FRCH_storm1_07_23_NO3.p, FRCH_storm1_07_23_fDOM.p, FRCH_storm1_07_23_SPC.p, FRCH_storm1_07_23_turb.p,
+multiplot(FRCH_storm1_07_23_NO3.p,
           FRCH_storm2_07_27_NO3.p, FRCH_storm2_07_27_fDOM.p, FRCH_storm2_07_27_SPC.p, FRCH_storm2_07_27_turb.p,
           FRCH_storm3_08_05_NO3.p, FRCH_storm3_08_05_fDOM.p, FRCH_storm3_08_05_SPC.p, FRCH_storm3_08_05_turb.p,
           FRCH_storm4_08_08_NO3.p, FRCH_storm4_08_08_fDOM.p, FRCH_storm4_08_08_SPC.p, FRCH_storm4_08_08_turb.p,
@@ -3890,6 +5338,130 @@ multiplot(FRCH_storm1_07_23_NO3.p, FRCH_storm1_07_23_fDOM.p, FRCH_storm1_07_23_S
           FRCH_storm6b_08_20_NO3.p, FRCH_storm6b_08_20_fDOM.p, FRCH_storm6b_08_20_SPC.p, FRCH_storm6b_08_20_turb.p,
           FRCH_storm7_08_25_NO3.p, FRCH_storm7_08_25_fDOM.p, FRCH_storm7_08_25_SPC.p, FRCH_storm7_08_25_turb.p,
           FRCH_storm8_08_27_NO3.p, FRCH_storm8_08_27_fDOM.p, FRCH_storm8_08_27_SPC.p, FRCH_storm8_08_27_turb.p,
+          cols = 7)
+
+# plot CARI loops #
+# NO3
+multiplot(CARI_storm1_05_16_NO3.p)
+multiplot(CARI_storm2_06_01_NO3.p)
+#multiplot(CARI_storm3_06_19_NO3.p)
+multiplot(CARI_storm4_07_24_NO3.p)
+multiplot(CARI_storm5_07_27_NO3.p)
+multiplot(CARI_storm6_08_08_NO3.p)
+multiplot(CARI_storm7_08_15_NO3.p)
+multiplot(CARI_storm8_08_20_NO3.p)
+multiplot(CARI_storm9_08_23_NO3.p)
+multiplot(CARI_storm10_08_27_NO3.p)
+
+#CARI_storm1_05_16_NO3.p = hyst_plot(CARI_storm1_05_16_Q, CARI_storm1_05_16_NO3, "CARI", "NO3", "0516")
+CARI_storm2_06_01_NO3.p = hyst_plot(CARI_storm2_06_01_Q, CARI_storm2_06_01_NO3, "CARI", "NO3", "0601")
+CARI_storm3_06_19_NO3.p = hyst_plot(CARI_storm3_06_19_Q, CARI_storm3_06_19_NO3, "CARI", "NO3", "0619")
+CARI_storm4_07_24_NO3.p = hyst_plot(CARI_storm4_07_24_Q, CARI_storm4_07_24_NO3, "CARI", "NO3", "0724")
+CARI_storm5_07_27_NO3.p = hyst_plot(CARI_storm5_07_27_Q, CARI_storm5_07_27_NO3, "CARI", "NO3", "0727")
+CARI_storm6_08_08_NO3.p = hyst_plot(CARI_storm6_08_08_Q, CARI_storm6_08_08_NO3, "CARI", "NO3", "0808")
+CARI_storm7_08_15_NO3.p = hyst_plot(CARI_storm7_08_15_Q, CARI_storm7_08_15_NO3, "CARI", "NO3", "0815")
+CARI_storm8_08_20_NO3.p = hyst_plot(CARI_storm8_08_20_Q, CARI_storm8_08_20_NO3, "CARI", "NO3", "0820")
+CARI_storm9_08_23_NO3.p = hyst_plot(CARI_storm9_08_23_Q, CARI_storm9_08_23_NO3, "CARI", "NO3", "0823")
+CARI_storm10_08_27_NO3.p = hyst_plot(CARI_storm10_08_27_Q, CARI_storm10_08_27_NO3, "CARI", "NO3", "0827")
+
+# fDOM #
+multiplot(CARI_storm1_05_16_fDOM.p)
+which(CARI_storm1_05_16_fDOM$datavalue < 0.25)
+CARI_storm1_05_16_fDOM[815,3] <- NA
+
+multiplot(CARI_storm2_06_01_fDOM.p)
+which(CARI_storm2_06_01_fDOM$datavalue < 0.25)
+CARI_storm2_06_01_fDOM[c(629:630),3] <- NA
+
+#multiplot(CARI_storm3_06_19_fDOM.p)
+
+multiplot(CARI_storm4_07_24_fDOM.p)
+which(CARI_storm4_07_24_fDOM$datavalue > 0.8)
+CARI_storm4_07_24_fDOM[800,3] <- NA
+
+multiplot(CARI_storm5_07_27_fDOM.p)
+multiplot(CARI_storm6_08_08_fDOM.p)
+multiplot(CARI_storm7_08_15_fDOM.p)
+multiplot(CARI_storm8_08_20_fDOM.p)
+
+multiplot(CARI_storm9_08_23_fDOM.p)
+which(CARI_storm9_08_23_fDOM$datavalue < 0.8)
+CARI_storm9_08_23_fDOM[c(532,770:772,914:916,1017,1335,1336,1355,1356:1358),3] <- NA
+
+multiplot(CARI_storm10_08_27_fDOM.p)
+
+CARI_storm1_05_16_fDOM.p = hyst_plot(CARI_storm1_05_16_Q, CARI_storm1_05_16_fDOM, "CARI", "fDOM", "0516")
+CARI_storm2_06_01_fDOM.p = hyst_plot(CARI_storm2_06_01_Q, CARI_storm2_06_01_fDOM, "CARI", "fDOM", "0601")
+#CARI_storm3_06_19_fDOM.p = hyst_plot(CARI_storm3_06_19_Q, CARI_storm3_06_19_fDOM, "CARI", "fDOM", "0619")
+CARI_storm4_07_24_fDOM.p = hyst_plot(CARI_storm4_07_24_Q, CARI_storm4_07_24_fDOM, "CARI", "fDOM", "0724")
+CARI_storm5_07_27_fDOM.p = hyst_plot(CARI_storm5_07_27_Q, CARI_storm5_07_27_fDOM, "CARI", "fDOM", "0727")
+CARI_storm6_08_08_fDOM.p = hyst_plot(CARI_storm6_08_08_Q, CARI_storm6_08_08_fDOM, "CARI", "fDOM", "0808")
+CARI_storm7_08_15_fDOM.p = hyst_plot(CARI_storm7_08_15_Q, CARI_storm7_08_15_fDOM, "CARI", "fDOM", "0815")
+CARI_storm8_08_20_fDOM.p = hyst_plot(CARI_storm8_08_20_Q, CARI_storm8_08_20_fDOM, "CARI", "fDOM", "0820")
+CARI_storm9_08_23_fDOM.p = hyst_plot(CARI_storm9_08_23_Q, CARI_storm9_08_23_fDOM, "CARI", "fDOM", "0823")
+CARI_storm10_08_27_fDOM.p = hyst_plot(CARI_storm10_08_27_Q, CARI_storm10_08_27_fDOM, "CARI", "fDOM", "0827")
+
+# SPC #
+multiplot(CARI_storm1_05_16_SPC.p)
+multiplot(CARI_storm2_06_01_SPC.p)
+#multiplot(CARI_storm3_06_19_SPC.p)
+multiplot(CARI_storm4_07_24_SPC.p)
+multiplot(CARI_storm5_07_27_SPC.p)
+multiplot(CARI_storm6_08_08_SPC.p)
+multiplot(CARI_storm7_08_15_SPC.p)
+multiplot(CARI_storm8_08_20_SPC.p)
+multiplot(CARI_storm9_08_23_SPC.p)
+multiplot(CARI_storm10_08_27_SPC.p)
+
+CARI_storm1_05_16_SPC.p = hyst_plot(CARI_storm1_05_16_Q, CARI_storm1_05_16_SPC, "CARI", "SPC", "0516")
+CARI_storm2_06_01_SPC.p = hyst_plot(CARI_storm2_06_01_Q, CARI_storm2_06_01_SPC, "CARI", "SPC", "0601")
+#CARI_storm3_06_19_SPC.p = hyst_plot(CARI_storm3_06_19_Q, CARI_storm3_06_19_SPC, "CARI", "SPC", "0619")
+CARI_storm4_07_24_SPC.p = hyst_plot(CARI_storm4_07_24_Q, CARI_storm4_07_24_SPC, "CARI", "SPC", "0724")
+CARI_storm5_07_27_SPC.p = hyst_plot(CARI_storm5_07_27_Q, CARI_storm5_07_27_SPC, "CARI", "SPC", "0727")
+CARI_storm6_08_08_SPC.p = hyst_plot(CARI_storm6_08_08_Q, CARI_storm6_08_08_SPC, "CARI", "SPC", "0808")
+CARI_storm7_08_15_SPC.p = hyst_plot(CARI_storm7_08_15_Q, CARI_storm7_08_15_SPC, "CARI", "SPC", "0815")
+CARI_storm8_08_20_SPC.p = hyst_plot(CARI_storm8_08_20_Q, CARI_storm8_08_20_SPC, "CARI", "SPC", "0820")
+CARI_storm9_08_23_SPC.p = hyst_plot(CARI_storm9_08_23_Q, CARI_storm9_08_23_SPC, "CARI", "SPC", "0823")
+CARI_storm10_08_27_SPC.p = hyst_plot(CARI_storm10_08_27_Q, CARI_storm10_08_27_SPC, "CARI", "SPC", "0827")
+
+
+# Turb #
+multiplot(CARI_storm1_05_16_turb.p)
+multiplot(CARI_storm2_06_01_turb.p)
+#multiplot(CARI_storm3_06_19_NO3.p)
+multiplot(CARI_storm4_07_24_turb.p)
+multiplot(CARI_storm5_07_27_turb.p)
+multiplot(CARI_storm6_08_08_turb.p)
+
+multiplot(CARI_storm7_08_15_turb.p)
+which(CARI_storm7_08_15_turb$datavalue > 0.5)
+CARI_storm7_08_15_turb[c(1391,1531),3] <- NA
+
+multiplot(CARI_storm8_08_20_turb.p)
+multiplot(CARI_storm9_08_23_turb.p)
+multiplot(CARI_storm10_08_27_turb.p)
+
+CARI_storm1_05_16_turb.p = hyst_plot(CARI_storm1_05_16_Q, CARI_storm1_05_16_turb, "CARI", "turb", "0516")
+CARI_storm2_06_01_turb.p = hyst_plot(CARI_storm2_06_01_Q, CARI_storm2_06_01_turb, "CARI", "turb", "0601")
+#CARI_storm3_06_19_turb.p = hyst_plot(CARI_storm3_06_19_Q, CARI_storm3_06_19_turb, "CARI", "turb", "0619")
+CARI_storm4_07_24_turb.p = hyst_plot(CARI_storm4_07_24_Q, CARI_storm4_07_24_turb, "CARI", "turb", "0724")
+CARI_storm5_07_27_turb.p = hyst_plot(CARI_storm5_07_27_Q, CARI_storm5_07_27_turb, "CARI", "turb", "0727")
+CARI_storm6_08_08_turb.p = hyst_plot(CARI_storm6_08_08_Q, CARI_storm6_08_08_turb, "CARI", "turb", "0808")
+CARI_storm7_08_15_turb.p = hyst_plot(CARI_storm7_08_15_Q, CARI_storm7_08_15_turb, "CARI", "turb", "0815")
+CARI_storm8_08_20_turb.p = hyst_plot(CARI_storm8_08_20_Q, CARI_storm8_08_20_turb, "CARI", "turb", "0820")
+CARI_storm9_08_23_turb.p = hyst_plot(CARI_storm9_08_23_Q, CARI_storm9_08_23_turb, "CARI", "turb", "0823")
+CARI_storm10_08_27_turb.p = hyst_plot(CARI_storm10_08_27_Q, CARI_storm10_08_27_turb, "CARI", "turb", "0827")
+
+multiplot(CARI_storm1_05_16_fDOM.p, CARI_storm1_05_16_SPC.p, CARI_storm1_05_16_turb.p,
+          CARI_storm2_06_01_NO3.p, CARI_storm2_06_01_fDOM.p, CARI_storm2_06_01_SPC.p, CARI_storm2_06_01_turb.p,
+          CARI_storm3_06_19_NO3.p, CARI_storm3_06_19_fDOM.p, CARI_storm3_06_19_SPC.p, CARI_storm3_06_19_turb.p,
+          CARI_storm4_07_24_NO3.p, CARI_storm4_07_24_fDOM.p, CARI_storm4_07_24_SPC.p, CARI_storm4_07_24_turb.p,
+          CARI_storm5_07_27_NO3.p, CARI_storm5_07_27_fDOM.p, CARI_storm5_07_27_SPC.p, CARI_storm5_07_27_turb.p,
+          CARI_storm6_08_08_NO3.p, CARI_storm6_08_08_fDOM.p, CARI_storm6_08_08_SPC.p, CARI_storm6_08_08_turb.p,
+          CARI_storm7_08_15_NO3.p, CARI_storm7_08_15_fDOM.p, CARI_storm7_08_15_SPC.p, CARI_storm7_08_15_turb.p,
+          CARI_storm8_08_20_NO3.p, CARI_storm8_08_20_fDOM.p, CARI_storm8_08_20_SPC.p, CARI_storm8_08_20_turb.p,
+          CARI_storm9_08_23_NO3.p, CARI_storm9_08_23_fDOM.p, CARI_storm9_08_23_SPC.p, CARI_storm9_08_23_turb.p,
+          CARI_storm10_08_27_NO3.p, CARI_storm10_08_27_fDOM.p, CARI_storm10_08_27_SPC.p, CARI_storm10_08_27_turb.p,
           cols = 7)
 
 

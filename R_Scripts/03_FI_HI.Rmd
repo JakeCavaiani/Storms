@@ -1324,6 +1324,10 @@ write.csv(MOOS.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis
 
 ```
 
+########################################################################################################
+############################################## 2019 ####################################################
+########################################################################################################
+
 
 ### Load data to pandas 2019 
 ```{python}
@@ -1653,6 +1657,7 @@ hysdict_VAUL_storm8c_10_04_turb = hysteresisMetrics(VAUL_storm8c_10_04_Q, VAUL_s
 ```
 VAUL results
 ```{r}
+
 VAUL.hyst.results.list = list(py$hysdict_VAUL_storm1_07_13_NO3,
                               py$hysdict_VAUL_storm1_07_13_fDOM,
                               py$hysdict_VAUL_storm1_07_13_SPC,
@@ -1668,7 +1673,7 @@ VAUL.hyst.results.list = list(py$hysdict_VAUL_storm1_07_13_NO3,
                               py$hysdict_VAUL_storm4b_08_03_NO3,
                               py$hysdict_VAUL_storm4b_08_03_fDOM,
                               py$hysdict_VAUL_storm4b_08_03_SPC,
-                              py$hysdict_VAUL_storm4b_08_03_turb,
+                              
                               py$hysdict_VAUL_storm4c_08_05_NO3,
                               py$hysdict_VAUL_storm4c_08_05_fDOM,
                               py$hysdict_VAUL_storm4c_08_05_SPC,
@@ -1748,7 +1753,7 @@ VAUL.hyst.results.df$storm.ID = c("VAUL_storm1_07_13_NO3",
                                   "VAUL_storm4c_08_05_NO3",
                                   "VAUL_storm4c_08_05_fDOM",
                                   "VAUL_storm4c_08_05_SPC",
-                                  "VAUL_storm4c_08_05_turb",
+                                  
                                   "VAUL_storm5_08_12_NO3",
                                   "VAUL_storm5_08_12_fDOM",
                                   "VAUL_storm5_08_12_SPC",
@@ -1828,7 +1833,6 @@ VAUL.HI.df$storm.ID = c(rep("VAUL_storm1_07_13_NO3", 50),
                         rep("VAUL_storm4c_08_05_NO3", 50),
                         rep("VAUL_storm4c_08_05_fDOM", 50),
                         rep("VAUL_storm4c_08_05_SPC", 50),
-                        rep("VAUL_storm4c_08_05_turb", 50),
                         rep("VAUL_storm5_08_12_NO3", 50),
                         rep("VAUL_storm5_08_12_fDOM", 50),
                         rep("VAUL_storm5_08_12_SPC", 50),
@@ -1875,7 +1879,7 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.median.boot.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(VAUL.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.median.boot.csv")
+write.csv(VAUL.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.df.csv")
 
 VAUL.HI.df$date <- as.Date(with(VAUL.HI.df, paste(month, day, sep = "-")), "%m-%d")
 VAUL.HI.df$doy <- yday(VAUL.HI.df$date) 
@@ -1890,10 +1894,11 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(VAUL.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.doy.df.csv")
+write.csv(VAUL.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.df.doy.csv")
 
 ```
 
+### FRCH ###
 ```{python}
 # FRCH #
 FRCH_storm1_05_31_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm1_05_31_Q.csv")
@@ -2116,6 +2121,11 @@ FRCH_storm12d_08_21_NO3['valuedatetime'] =  pd.to_datetime(FRCH_storm12d_08_21_N
 timespacing = 15 # 15 minutes between records
 hysdict_FRCH_storm12d_08_21_NO3 = hysteresisMetrics(FRCH_storm12d_08_21_Q, FRCH_storm12d_08_21_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+FRCH_storm12e_08_23_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+FRCH_storm12e_08_23_NO3['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_FRCH_storm12e_08_23_NO3 = hysteresisMetrics(FRCH_storm12e_08_23_Q, FRCH_storm12e_08_23_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
 FRCH_storm13_09_20_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 FRCH_storm13_09_20_NO3['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 timespacing = 15 # 15 minutes between records
@@ -2216,6 +2226,12 @@ FRCH_storm12d_08_21_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm12d_08_21_Q['
 FRCH_storm12d_08_21_fDOM['valuedatetime'] =  pd.to_datetime(FRCH_storm12d_08_21_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 timespacing = 15 # 15 minutes between records
 hysdict_FRCH_storm12d_08_21_fDOM = hysteresisMetrics(FRCH_storm12d_08_21_Q, FRCH_storm12d_08_21_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+FRCH_storm12e_08_23_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+FRCH_storm12e_08_23_fDOM['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_FRCH_storm12e_08_23_fDOM = hysteresisMetrics(FRCH_storm12e_08_23_Q, FRCH_storm12e_08_23_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
 
 FRCH_storm13_09_20_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 FRCH_storm13_09_20_fDOM['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
@@ -2318,6 +2334,11 @@ FRCH_storm12d_08_21_SPC['valuedatetime'] =  pd.to_datetime(FRCH_storm12d_08_21_S
 timespacing = 15 # 15 minutes between records
 hysdict_FRCH_storm12d_08_21_SPC = hysteresisMetrics(FRCH_storm12d_08_21_Q, FRCH_storm12d_08_21_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+FRCH_storm12e_08_23_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+FRCH_storm12e_08_23_SPC['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_FRCH_storm12e_08_23_SPC = hysteresisMetrics(FRCH_storm12e_08_23_Q, FRCH_storm12e_08_23_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
 FRCH_storm13_09_20_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 FRCH_storm13_09_20_SPC['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 timespacing = 15 # 15 minutes between records
@@ -2419,6 +2440,12 @@ FRCH_storm12d_08_21_turb['valuedatetime'] =  pd.to_datetime(FRCH_storm12d_08_21_
 timespacing = 15 # 15 minutes between records
 hysdict_FRCH_storm12d_08_21_turb = hysteresisMetrics(FRCH_storm12d_08_21_Q, FRCH_storm12d_08_21_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+FRCH_storm12e_08_23_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+FRCH_storm12e_08_23_turb['valuedatetime'] =  pd.to_datetime(FRCH_storm12e_08_23_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_FRCH_storm12e_08_23_turb = hysteresisMetrics(FRCH_storm12e_08_23_Q, FRCH_storm12e_08_23_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+
 FRCH_storm13_09_20_Q['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 FRCH_storm13_09_20_turb['valuedatetime'] =  pd.to_datetime(FRCH_storm13_09_20_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 timespacing = 15 # 15 minutes between records
@@ -2432,6 +2459,11 @@ hysdict_FRCH_storm14_10_01_turb = hysteresisMetrics(FRCH_storm14_10_01_Q, FRCH_s
 
 
 ```{r}
+FRCH.hyst.results.list = list(
+                              py$hysdict_FRCH_storm12b_08_14_fDOM,
+                              py$hysdict_FRCH_storm12b_08_14_turb
+                       
+                              )
 
 FRCH.hyst.results.list = list(py$hysdict_FRCH_storm1_05_31_NO3,
                               py$hysdict_FRCH_storm1_05_31_fDOM,
@@ -2456,6 +2488,7 @@ FRCH.hyst.results.list = list(py$hysdict_FRCH_storm1_05_31_NO3,
                               py$hysdict_FRCH_storm6_07_12_NO3,
                               py$hysdict_FRCH_storm6_07_12_fDOM,
                               py$hysdict_FRCH_storm6_07_12_SPC,
+                              py$hysdict_FRCH_storm6_07_12_turb,
                               py$hysdict_FRCH_storm7_07_25_NO3,
                               py$hysdict_FRCH_storm7_07_25_fDOM,
                               py$hysdict_FRCH_storm7_07_25_SPC,
@@ -2493,7 +2526,7 @@ FRCH.hyst.results.list = list(py$hysdict_FRCH_storm1_05_31_NO3,
                               py$hysdict_FRCH_storm12a_08_12_turb,
                               
                               py$hysdict_FRCH_storm12b_08_14_fDOM,
-                              py$hysdict_FRCH_storm12b_08_14_SPC,
+                              
                               py$hysdict_FRCH_storm12b_08_14_turb,
                               py$hysdict_FRCH_storm12c_08_15_NO3,
                               py$hysdict_FRCH_storm12c_08_15_fDOM,
@@ -2503,6 +2536,10 @@ FRCH.hyst.results.list = list(py$hysdict_FRCH_storm1_05_31_NO3,
                               py$hysdict_FRCH_storm12d_08_21_fDOM,
                               py$hysdict_FRCH_storm12d_08_21_SPC,
                               py$hysdict_FRCH_storm12d_08_21_turb,
+                              py$hysdict_FRCH_storm12e_08_23_NO3,
+                              py$hysdict_FRCH_storm12e_08_23_fDOM,
+                              py$hysdict_FRCH_storm12e_08_23_SPC,
+                              py$hysdict_FRCH_storm12e_08_23_turb,
                               py$hysdict_FRCH_storm13_09_20_NO3,
                               py$hysdict_FRCH_storm13_09_20_fDOM,
                               py$hysdict_FRCH_storm13_09_20_SPC,
@@ -2572,7 +2609,7 @@ FRCH.hyst.results.df$storm.ID = c("FRCH_storm1_05_31_NO3",
                                   "FRCH_storm6_07_12_NO3",
                                   "FRCH_storm6_07_12_fDOM",
                                   "FRCH_storm6_07_12_SPC",
-                                  
+                                  "FRCH_storm6_07_12_turb",
                                   "FRCH_storm7_07_25_NO3",
                                   "FRCH_storm7_07_25_fDOM",
                                   "FRCH_storm7_07_25_SPC",
@@ -2611,7 +2648,7 @@ FRCH.hyst.results.df$storm.ID = c("FRCH_storm1_05_31_NO3",
                                   "FRCH_storm12a_08_12_turb",
                                  
                                   "FRCH_storm12b_08_14_fDOM",
-                                  "FRCH_storm12b_08_14_SPC",
+                                  
                                   "FRCH_storm12b_08_14_turb",
                                   "FRCH_storm12c_08_15_NO3",
                                   "FRCH_storm12c_08_15_fDOM",
@@ -2621,6 +2658,10 @@ FRCH.hyst.results.df$storm.ID = c("FRCH_storm1_05_31_NO3",
                                   "FRCH_storm12d_08_21_fDOM",
                                   "FRCH_storm12d_08_21_SPC",
                                   "FRCH_storm12d_08_21_turb",
+                                  "FRCH_storm12e_08_23_NO3",
+                                  "FRCH_storm12e_08_23_fDOM",
+                                  "FRCH_storm12e_08_23_SPC",
+                                  "FRCH_storm12e_08_23_turb",
                                   "FRCH_storm13_09_20_NO3",
                                   "FRCH_storm13_09_20_fDOM",
                                   "FRCH_storm13_09_20_SPC",
@@ -2690,6 +2731,7 @@ FRCH.HI.df$storm.ID = c(rep("FRCH_storm1_05_31_NO3", 50),
                         rep("FRCH_storm6_07_12_NO3", 50),
                         rep("FRCH_storm6_07_12_fDOM", 50),
                         rep("FRCH_storm6_07_12_SPC", 50),
+                        rep("FRCH_storm6_07_12_turb", 50),
                         rep("FRCH_storm7_07_25_NO3", 50),
                         rep("FRCH_storm7_07_25_fDOM", 50),
                         rep("FRCH_storm7_07_25_SPC", 50),
@@ -2727,7 +2769,7 @@ FRCH.HI.df$storm.ID = c(rep("FRCH_storm1_05_31_NO3", 50),
                         rep("FRCH_storm12a_08_12_turb", 50),
                         rep("FRCH_storm12b_08_14_NO3", 50),
                         rep("FRCH_storm12b_08_14_fDOM", 50),
-                        rep("FRCH_storm12b_08_14_SPC", 50),
+                       
                         rep("FRCH_storm12b_08_14_turb", 50),
                         rep("FRCH_storm12c_08_15_NO3", 50),
                         rep("FRCH_storm12c_08_15_fDOM", 50),
@@ -2737,6 +2779,10 @@ FRCH.HI.df$storm.ID = c(rep("FRCH_storm1_05_31_NO3", 50),
                         rep("FRCH_storm12d_08_21_fDOM", 50),
                         rep("FRCH_storm12d_08_21_SPC", 50),
                         rep("FRCH_storm12d_08_21_turb", 50),
+                        rep("FRCH_storm12e_08_23_NO3", 50),
+                        rep("FRCH_storm12e_08_23_fDOM", 50),
+                        rep("FRCH_storm12e_08_23_SPC", 50),
+                        rep("FRCH_storm12e_08_23_turb", 50),
                         rep("FRCH_storm13_09_20_NO3", 50),
                         rep("FRCH_storm13_09_20_fDOM", 50),
                         rep("FRCH_storm13_09_20_SPC", 50),
@@ -2771,7 +2817,7 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.median.boot.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(FRCH.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.median.boot.csv")
+write.csv(FRCH.HI.df, "/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.df.csv")
 
 FRCH.HI.df$date <- as.Date(with(FRCH.HI.df, paste(month, day, sep = "-")), "%m-%d")
 FRCH.HI.df$doy <- yday(FRCH.HI.df$date) 
@@ -2786,7 +2832,7 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(FRCH.HI.df,"/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.doy.df.csv")
+write.csv(FRCH.HI.df,"/Users/jakecavaiani/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.df.doy.csv")
 ```
 
 
@@ -2914,6 +2960,18 @@ STRT_storm7b_10_04_fDOM = STRT_storm7b_10_04_fDOM.dropna(subset=['datavalue'])
 STRT_storm7b_10_04_SPC = STRT_storm7b_10_04_SPC.dropna(subset=['datavalue'])
 STRT_storm7b_10_04_turb = STRT_storm7b_10_04_turb.dropna(subset=['datavalue'])
 
+STRT_storm7c_10_09_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_Q.csv")
+STRT_storm7c_10_09_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_NO3.csv")
+STRT_storm7c_10_09_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_fDOM.csv")
+STRT_storm7c_10_09_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_SPC.csv")
+STRT_storm7c_10_09_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_Turb.csv")
+
+STRT_storm7c_10_09_Q = STRT_storm7c_10_09_Q.dropna(subset=['datavalue'])
+STRT_storm7c_10_09_NO3 = STRT_storm7c_10_09_NO3.dropna(subset=['datavalue'])
+STRT_storm7c_10_09_fDOM = STRT_storm7c_10_09_fDOM.dropna(subset=['datavalue'])
+STRT_storm7c_10_09_SPC = STRT_storm7c_10_09_SPC.dropna(subset=['datavalue'])
+STRT_storm7c_10_09_turb = STRT_storm7c_10_09_turb.dropna(subset=['datavalue'])
+
 
 ```
 
@@ -2969,6 +3027,11 @@ STRT_storm7b_10_04_NO3['valuedatetime'] =  pd.to_datetime(STRT_storm7b_10_04_NO3
 timespacing = 15 # 15 minutes between records
 hysdict_STRT_storm7b_10_04_NO3 = hysteresisMetrics(STRT_storm7b_10_04_Q, STRT_storm7b_10_04_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+STRT_storm7c_10_09_Q['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+STRT_storm7c_10_09_NO3['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_STRT_storm7c_10_09_NO3 = hysteresisMetrics(STRT_storm7c_10_09_Q, STRT_storm7c_10_09_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
 ## fDOM ##
 STRT_storm1_05_31_Q['valuedatetime'] =  pd.to_datetime(STRT_storm1_05_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 STRT_storm1_05_31_fDOM['valuedatetime'] =  pd.to_datetime(STRT_storm1_05_31_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
@@ -3019,6 +3082,11 @@ STRT_storm7b_10_04_Q['valuedatetime'] =  pd.to_datetime(STRT_storm7b_10_04_Q['va
 STRT_storm7b_10_04_fDOM['valuedatetime'] =  pd.to_datetime(STRT_storm7b_10_04_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
 timespacing = 15 # 15 minutes between records
 hysdict_STRT_storm7b_10_04_fDOM = hysteresisMetrics(STRT_storm7b_10_04_Q, STRT_storm7b_10_04_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+STRT_storm7c_10_09_Q['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+STRT_storm7c_10_09_fDOM['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_STRT_storm7c_10_09_fDOM = hysteresisMetrics(STRT_storm7c_10_09_Q, STRT_storm7c_10_09_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
 
 ## SPC ##
@@ -3072,6 +3140,11 @@ STRT_storm7b_10_04_SPC['valuedatetime'] =  pd.to_datetime(STRT_storm7b_10_04_SPC
 timespacing = 15 # 15 minutes between records
 hysdict_STRT_storm7b_10_04_SPC = hysteresisMetrics(STRT_storm7b_10_04_Q, STRT_storm7b_10_04_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+STRT_storm7c_10_09_Q['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+STRT_storm7c_10_09_SPC['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_STRT_storm7c_10_09_SPC = hysteresisMetrics(STRT_storm7c_10_09_Q, STRT_storm7c_10_09_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
 
 ## turb ##
 STRT_storm1_05_31_Q['valuedatetime'] =  pd.to_datetime(STRT_storm1_05_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
@@ -3124,6 +3197,12 @@ STRT_storm7b_10_04_turb['valuedatetime'] =  pd.to_datetime(STRT_storm7b_10_04_tu
 timespacing = 15 # 15 minutes between records
 hysdict_STRT_storm7b_10_04_turb = hysteresisMetrics(STRT_storm7b_10_04_Q, STRT_storm7b_10_04_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
 
+STRT_storm7c_10_09_Q['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+STRT_storm7c_10_09_turb['valuedatetime'] =  pd.to_datetime(STRT_storm7c_10_09_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 15 # 15 minutes between records
+hysdict_STRT_storm7c_10_09_turb = hysteresisMetrics(STRT_storm7c_10_09_Q, STRT_storm7c_10_09_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+
 ``` 
 
 ```{r}
@@ -3161,7 +3240,11 @@ STRT.hyst.results.list = list(py$hysdict_STRT_storm1_05_31_NO3,
                               py$hysdict_STRT_storm7b_10_04_NO3,
                               py$hysdict_STRT_storm7b_10_04_fDOM,
                               py$hysdict_STRT_storm7b_10_04_SPC,
-                              py$hysdict_STRT_storm7b_10_04_turb
+                              py$hysdict_STRT_storm7b_10_04_turb,
+                              py$hysdict_STRT_storm7c_10_09_NO3,
+                              py$hysdict_STRT_storm7c_10_09_fDOM,
+                              py$hysdict_STRT_storm7c_10_09_SPC,
+                              py$hysdict_STRT_storm7c_10_09_turb
                               )
 
 
@@ -3231,7 +3314,11 @@ STRT.hyst.results.df$storm.ID = c("STRT_storm1_05_31_NO3",
                                   "STRT_storm7b_10_04_NO3",
                                   "STRT_storm7b_10_04_fDOM",
                                   "STRT_storm7b_10_04_SPC",
-                                  "STRT_storm7b_10_04_turb"
+                                  "STRT_storm7b_10_04_turb",
+                                  "STRT_storm7e_10_09_NO3",
+                                  "STRT_storm7e_10_09_fDOM",
+                                  "STRT_storm7e_10_09_SPC",
+                                  "STRT_storm7e_10_09_turb"
                                   )
 
 
@@ -3305,7 +3392,11 @@ STRT.HI.df$storm.ID = c(rep("STRT_storm1_05_31_NO3", 50),
                         rep("STRT_storm7b_10_04_NO3", 50),
                         rep("STRT_storm7b_10_04_fDOM", 50),
                         rep("STRT_storm7b_10_04_SPC", 50),
-                        rep("STRT_storm7b_10_04_turb", 50))
+                        rep("STRT_storm7b_10_04_turb", 50),
+                        rep("STRT_storm7e_10_09_NO3", 50),
+                        rep("STRT_storm7e_10_09_fDOM", 50),
+                        rep("STRT_storm7e_10_09_SPC", 50),
+                        rep("STRT_storm7e_10_09_turb", 50))
 
 
 STRT.HI.df$storm.ID = as.factor(STRT.HI.df$storm.ID)
@@ -3347,7 +3438,7 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(STRT.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.doy.df.csv")
+write.csv(STRT.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.df.doy.csv")
 
 ```
 
@@ -3721,12 +3812,24 @@ POKE.hyst.results.list = list(py$hysdict_POKE_storm1_06_30_NO3,
                               py$hysdict_POKE_storm4_07_31_fDOM,
                               py$hysdict_POKE_storm4_07_31_SPC,
                               py$hysdict_POKE_storm4_07_31_turb,
+                              py$hysdict_POKE_storm5a_08_02_NO3,
+                              py$hysdict_POKE_storm5a_08_02_fDOM,
+                              py$hysdict_POKE_storm5a_08_02_SPC,
+                              
+                              py$hysdict_POKE_storm5b_08_03_NO3,
+                              py$hysdict_POKE_storm5b_08_03_fDOM,
+                              py$hysdict_POKE_storm5b_08_03_SPC,
+                             
+                              py$hysdict_POKE_storm5c_08_05_NO3,
+                              py$hysdict_POKE_storm5c_08_05_fDOM,
                               py$hysdict_POKE_storm5c_08_05_SPC,
                               py$hysdict_POKE_storm5c_08_05_turb,
                               py$hysdict_POKE_storm5d_08_10_NO3,
                               py$hysdict_POKE_storm5d_08_10_fDOM,
                               py$hysdict_POKE_storm5d_08_10_SPC,
                               py$hysdict_POKE_storm5d_08_10_turb,
+                             
+                              
                               py$hysdict_POKE_storm7_08_15_NO3,
                               py$hysdict_POKE_storm7_08_15_fDOM,
                               py$hysdict_POKE_storm7_08_15_SPC,
@@ -3788,6 +3891,14 @@ POKE.hyst.results.df$storm.ID = c("POKE_storm1_06_30_NO3",
                                   "POKE_storm4_07_31_fDOM",
                                   "POKE_storm4_07_31_SPC",
                                   "POKE_storm4_07_31_turb",
+                                  "POKE_storm5a_08_02_NO3",
+                                  "POKE_storm5a_08_02_fDOM",
+                                  "POKE_storm5a_08_02_SPC",
+                                  "POKE_storm5b_08_03_NO3",
+                                  "POKE_storm5b_08_03_fDOM",
+                                  "POKE_storm5b_08_03_SPC",
+                                  "POKE_storm5c_08_05_NO3",
+                                  "POKE_storm5c_08_05_fDOM",
                                   "POKE_storm5c_08_05_SPC",
                                   "POKE_storm5c_08_05_turb",
                                   "POKE_storm5d_08_10_NO3",
@@ -3826,7 +3937,7 @@ for (i in 1:length(HIs.list)) {
   HIs.df.list[[i]] = as.data.frame(cbind(HIs.list[[i]], HIs.Q.list[[i]]))
   HIs.df.list[[i]]= HIs.df.list[[i]][order(HIs.df.list[[i]][["V2"]]),]
 plot(HIs.df.list[[i]][["V1"]] ~ HIs.df.list[[i]][["V2"]], type="l",
-     ylab="norm.response", xlab="Q intervals", main= MOOS.hyst.results.df$storm.ID[i])
+     ylab="norm.response", xlab="Q intervals", main= POKE.hyst.results.df$storm.ID[i])
 abline(h=0, lty=2)
 }
 dev.off()
@@ -3860,6 +3971,14 @@ POKE.HI.df$storm.ID = c(rep("POKE_storm1_06_30_NO3", 50),
                         rep("POKE_storm4_07_31_fDOM", 50),
                         rep("POKE_storm4_07_31_SPC", 50),
                         rep("POKE_storm4_07_31_turb", 50),
+                        rep("POKE_storm5a_08_02_NO3", 50),
+                        rep("POKE_storm5a_08_02_fDOM", 50),
+                        rep("POKE_storm5a_08_02_SPC", 50),
+                        rep("POKE_storm5b_08_03_NO3", 50),
+                        rep("POKE_storm5b_08_03_fDOM", 50),
+                        rep("POKE_storm5b_08_03_SPC", 50),
+                        rep("POKE_storm5c_08_05_NO3", 50),
+                        rep("POKE_storm5c_08_05_fDOM", 50),
                         rep("POKE_storm5c_08_05_SPC", 50),
                         rep("POKE_storm5c_08_05_turb", 50),
                         rep("POKE_storm5d_08_10_NO3", 50),
@@ -3919,11 +4038,11 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("~/Documents/Storms/Output_from_analysis/HI_plots/2019/POKE/POKE.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(POKE.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/POKE/POKE.HI.doy.df.csv")
+write.csv(POKE.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/POKE/POKE.HI.df.doy.csv")
 
 ```
 
-
+### MOOS ### 
 ```{python}
 # MOOS #
 MOOS_storm1_06_01_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm1_06_01_Q.csv")
@@ -4537,9 +4656,589 @@ g2 <- g1 +
   stat_summary(fun.y = median, geom = "point", 
                colour = "black", size = 3)
 ggsave("~/Documents/Storms/Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
-write.csv(MOOS.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.doy.df.csv")
+write.csv(MOOS.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.df.doy.csv")
 
 ```
+
+### CARI ### 
+```{python}
+# CARI #
+
+CARI_storm1_05_08_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_05_08_Q.csv")
+CARI_storm1_05_08_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_05_08_NO3.csv")
+CARI_storm1_05_08_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_05_08_fDOM.csv")
+CARI_storm1_05_08_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_05_08_SPC.csv")
+CARI_storm1_05_08_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm1_05_08_Turb.csv")
+
+CARI_storm2_06_30_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm2_06_30_Q.csv")
+CARI_storm2_06_30_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm2_06_30_NO3.csv")
+CARI_storm2_06_30_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm2_06_30_fDOM.csv")
+CARI_storm2_06_30_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm2_06_30_SPC.csv")
+CARI_storm2_06_30_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm2_06_30_Turb.csv")
+
+CARI_storm3_07_12_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm3_07_12_Q.csv")
+CARI_storm3_07_12_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm3_07_12_NO3.csv")
+CARI_storm3_07_12_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm3_07_12_fDOM.csv")
+CARI_storm3_07_12_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm3_07_12_SPC.csv")
+CARI_storm3_07_12_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm3_07_12_Turb.csv")
+
+CARI_storm4_07_26_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm4_07_26_Q.csv")
+CARI_storm4_07_26_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm4_07_26_NO3.csv")
+CARI_storm4_07_26_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm4_07_26_fDOM.csv")
+CARI_storm4_07_26_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm4_07_26_SPC.csv")
+CARI_storm4_07_26_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm4_07_26_Turb.csv")
+
+CARI_storm5_07_31_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm5_07_31_Q.csv")
+CARI_storm5_07_31_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm5_07_31_NO3.csv")
+CARI_storm5_07_31_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm5_07_31_fDOM.csv")
+CARI_storm5_07_31_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm5_07_31_SPC.csv")
+CARI_storm5_07_31_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm5_07_31_Turb.csv")
+
+CARI_storm6a_08_02_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6a_08_02_Q.csv")
+CARI_storm6a_08_02_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6a_08_02_NO3.csv")
+CARI_storm6a_08_02_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6a_08_02_fDOM.csv")
+CARI_storm6a_08_02_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6a_08_02_SPC.csv")
+CARI_storm6a_08_02_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6a_08_02_Turb.csv")
+
+CARI_storm6b_08_03_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6b_08_03_Q.csv")
+CARI_storm6b_08_03_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6b_08_03_NO3.csv")
+CARI_storm6b_08_03_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6b_08_03_fDOM.csv")
+CARI_storm6b_08_03_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6b_08_03_SPC.csv")
+CARI_storm6b_08_03_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6b_08_03_Turb.csv")
+
+CARI_storm6c_08_05_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6c_08_05_Q.csv")
+CARI_storm6c_08_05_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6c_08_05_NO3.csv")
+CARI_storm6c_08_05_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6c_08_05_fDOM.csv")
+CARI_storm6c_08_05_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6c_08_05_SPC.csv")
+CARI_storm6c_08_05_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6c_08_05_Turb.csv")
+
+CARI_storm6d_08_10_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6d_08_10_Q.csv")
+CARI_storm6d_08_10_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6d_08_10_NO3.csv")
+CARI_storm6d_08_10_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6d_08_10_fDOM.csv")
+CARI_storm6d_08_10_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6d_08_10_SPC.csv")
+CARI_storm6d_08_10_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm6d_08_10_Turb.csv")
+
+CARI_storm7a_08_13_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7a_08_13_Q.csv")
+CARI_storm7a_08_13_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7a_08_13_NO3.csv")
+CARI_storm7a_08_13_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7a_08_13_fDOM.csv")
+CARI_storm7a_08_13_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7a_08_13_SPC.csv")
+CARI_storm7a_08_13_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7a_08_13_Turb.csv")
+
+CARI_storm7b_08_13_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7b_08_13_Q.csv")
+CARI_storm7b_08_13_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7b_08_13_NO3.csv")
+CARI_storm7b_08_13_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7b_08_13_fDOM.csv")
+CARI_storm7b_08_13_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7b_08_13_SPC.csv")
+CARI_storm7b_08_13_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm7b_08_13_Turb.csv")
+
+CARI_storm8_08_16_Q = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm8_08_16_Q.csv")
+CARI_storm8_08_16_NO3 = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm8_08_16_NO3.csv")
+CARI_storm8_08_16_fDOM = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm8_08_16_fDOM.csv")
+CARI_storm8_08_16_SPC = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm8_08_16_SPC.csv")
+CARI_storm8_08_16_turb = pd.read_csv("~/Documents/Storms/Storm_Events/2019/CARI/CARI_storm8_08_16_Turb.csv")
+
+```
+
+```{python}
+## NO3 ##
+CARI_storm1_05_08_Q['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm1_05_08_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm1_05_08_NO3 = hysteresisMetrics(CARI_storm1_05_08_Q, CARI_storm1_05_08_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm2_06_30_Q['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm2_06_30_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm2_06_30_NO3 = hysteresisMetrics(CARI_storm2_06_30_Q, CARI_storm2_06_30_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm3_07_12_Q['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm3_07_12_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm3_07_12_NO3 = hysteresisMetrics(CARI_storm3_07_12_Q, CARI_storm3_07_12_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm4_07_26_Q['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm4_07_26_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm4_07_26_NO3 = hysteresisMetrics(CARI_storm4_07_26_Q, CARI_storm4_07_26_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm5_07_31_Q['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm5_07_31_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm5_07_31_NO3 = hysteresisMetrics(CARI_storm5_07_31_Q, CARI_storm5_07_31_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6a_08_02_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6a_08_02_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6a_08_02_NO3 = hysteresisMetrics(CARI_storm6a_08_02_Q, CARI_storm6a_08_02_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6b_08_03_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6b_08_03_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6b_08_03_NO3 = hysteresisMetrics(CARI_storm6b_08_03_Q, CARI_storm6b_08_03_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6c_08_05_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6c_08_05_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6c_08_05_NO3 = hysteresisMetrics(CARI_storm6c_08_05_Q, CARI_storm6c_08_05_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6d_08_10_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6d_08_10_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6d_08_10_NO3 = hysteresisMetrics(CARI_storm6d_08_10_Q, CARI_storm6d_08_10_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7a_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7a_08_13_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7a_08_13_NO3 = hysteresisMetrics(CARI_storm7a_08_13_Q, CARI_storm7a_08_13_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7b_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7b_08_13_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7b_08_13_NO3 = hysteresisMetrics(CARI_storm7b_08_13_Q, CARI_storm7b_08_13_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm8_08_16_Q['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm8_08_16_NO3['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_NO3['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm8_08_16_NO3 = hysteresisMetrics(CARI_storm8_08_16_Q, CARI_storm8_08_16_NO3, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+## fDOM ##
+CARI_storm1_05_08_Q['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm1_05_08_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm1_05_08_fDOM = hysteresisMetrics(CARI_storm1_05_08_Q, CARI_storm1_05_08_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm2_06_30_Q['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm2_06_30_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm2_06_30_fDOM = hysteresisMetrics(CARI_storm2_06_30_Q, CARI_storm2_06_30_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm3_07_12_Q['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm3_07_12_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm3_07_12_fDOM = hysteresisMetrics(CARI_storm3_07_12_Q, CARI_storm3_07_12_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm4_07_26_Q['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm4_07_26_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm4_07_26_fDOM = hysteresisMetrics(CARI_storm4_07_26_Q, CARI_storm4_07_26_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm5_07_31_Q['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm5_07_31_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm5_07_31_fDOM = hysteresisMetrics(CARI_storm5_07_31_Q, CARI_storm5_07_31_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6a_08_02_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6a_08_02_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6a_08_02_fDOM = hysteresisMetrics(CARI_storm6a_08_02_Q, CARI_storm6a_08_02_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6b_08_03_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6b_08_03_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6b_08_03_fDOM = hysteresisMetrics(CARI_storm6b_08_03_Q, CARI_storm6b_08_03_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6c_08_05_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6c_08_05_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6c_08_05_fDOM = hysteresisMetrics(CARI_storm6c_08_05_Q, CARI_storm6c_08_05_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6d_08_10_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6d_08_10_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6d_08_10_fDOM = hysteresisMetrics(CARI_storm6d_08_10_Q, CARI_storm6d_08_10_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7a_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7a_08_13_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7a_08_13_fDOM = hysteresisMetrics(CARI_storm7a_08_13_Q, CARI_storm7a_08_13_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7b_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7b_08_13_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7b_08_13_fDOM = hysteresisMetrics(CARI_storm7b_08_13_Q, CARI_storm7b_08_13_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm8_08_16_Q['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm8_08_16_fDOM['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm8_08_16_fDOM = hysteresisMetrics(CARI_storm8_08_16_Q, CARI_storm8_08_16_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+## SPC ##
+CARI_storm1_05_08_Q['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm1_05_08_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm1_05_08_SPC = hysteresisMetrics(CARI_storm1_05_08_Q, CARI_storm1_05_08_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm2_06_30_Q['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm2_06_30_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm2_06_30_SPC = hysteresisMetrics(CARI_storm2_06_30_Q, CARI_storm2_06_30_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm3_07_12_Q['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm3_07_12_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm3_07_12_SPC = hysteresisMetrics(CARI_storm3_07_12_Q, CARI_storm3_07_12_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm4_07_26_Q['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm4_07_26_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm4_07_26_SPC = hysteresisMetrics(CARI_storm4_07_26_Q, CARI_storm4_07_26_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm5_07_31_Q['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm5_07_31_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm5_07_31_SPC = hysteresisMetrics(CARI_storm5_07_31_Q, CARI_storm5_07_31_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6a_08_02_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6a_08_02_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6a_08_02_SPC = hysteresisMetrics(CARI_storm6a_08_02_Q, CARI_storm6a_08_02_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6b_08_03_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6b_08_03_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6b_08_03_SPC = hysteresisMetrics(CARI_storm6b_08_03_Q, CARI_storm6b_08_03_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6c_08_05_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6c_08_05_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6c_08_05_SPC = hysteresisMetrics(CARI_storm6c_08_05_Q, CARI_storm6c_08_05_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6d_08_10_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6d_08_10_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6d_08_10_SPC = hysteresisMetrics(CARI_storm6d_08_10_Q, CARI_storm6d_08_10_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7a_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7a_08_13_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7a_08_13_SPC = hysteresisMetrics(CARI_storm7a_08_13_Q, CARI_storm7a_08_13_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7b_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7b_08_13_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7b_08_13_SPC = hysteresisMetrics(CARI_storm7b_08_13_Q, CARI_storm7b_08_13_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm8_08_16_Q['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm8_08_16_SPC['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_SPC['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm8_08_16_SPC = hysteresisMetrics(CARI_storm8_08_16_Q, CARI_storm8_08_16_SPC, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+## turb ##
+CARI_storm1_05_08_Q['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm1_05_08_turb['valuedatetime'] =  pd.to_datetime(CARI_storm1_05_08_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm1_05_08_turb = hysteresisMetrics(CARI_storm1_05_08_Q, CARI_storm1_05_08_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm2_06_30_Q['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm2_06_30_turb['valuedatetime'] =  pd.to_datetime(CARI_storm2_06_30_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm2_06_30_turb = hysteresisMetrics(CARI_storm2_06_30_Q, CARI_storm2_06_30_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm3_07_12_Q['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm3_07_12_turb['valuedatetime'] =  pd.to_datetime(CARI_storm3_07_12_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm3_07_12_turb = hysteresisMetrics(CARI_storm3_07_12_Q, CARI_storm3_07_12_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm4_07_26_Q['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm4_07_26_turb['valuedatetime'] =  pd.to_datetime(CARI_storm4_07_26_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm4_07_26_turb = hysteresisMetrics(CARI_storm4_07_26_Q, CARI_storm4_07_26_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm5_07_31_Q['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm5_07_31_turb['valuedatetime'] =  pd.to_datetime(CARI_storm5_07_31_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm5_07_31_turb = hysteresisMetrics(CARI_storm5_07_31_Q, CARI_storm5_07_31_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6a_08_02_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6a_08_02_turb['valuedatetime'] =  pd.to_datetime(CARI_storm6a_08_02_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6a_08_02_turb = hysteresisMetrics(CARI_storm6a_08_02_Q, CARI_storm6a_08_02_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6b_08_03_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6b_08_03_turb['valuedatetime'] =  pd.to_datetime(CARI_storm6b_08_03_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6b_08_03_turb = hysteresisMetrics(CARI_storm6b_08_03_Q, CARI_storm6b_08_03_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6c_08_05_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6c_08_05_turb['valuedatetime'] =  pd.to_datetime(CARI_storm6c_08_05_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6c_08_05_turb = hysteresisMetrics(CARI_storm6c_08_05_Q, CARI_storm6c_08_05_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm6d_08_10_Q['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm6d_08_10_turb['valuedatetime'] =  pd.to_datetime(CARI_storm6d_08_10_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm6d_08_10_turb = hysteresisMetrics(CARI_storm6d_08_10_Q, CARI_storm6d_08_10_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7a_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7a_08_13_turb['valuedatetime'] =  pd.to_datetime(CARI_storm7a_08_13_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7a_08_13_turb = hysteresisMetrics(CARI_storm7a_08_13_Q, CARI_storm7a_08_13_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm7b_08_13_Q['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm7b_08_13_turb['valuedatetime'] =  pd.to_datetime(CARI_storm7b_08_13_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm7b_08_13_turb = hysteresisMetrics(CARI_storm7b_08_13_Q, CARI_storm7b_08_13_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+CARI_storm8_08_16_Q['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+CARI_storm8_08_16_turb['valuedatetime'] =  pd.to_datetime(CARI_storm8_08_16_turb['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
+timespacing = 1 # 1 minutes between records
+hysdict_CARI_storm8_08_16_turb = hysteresisMetrics(CARI_storm8_08_16_Q, CARI_storm8_08_16_turb, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
+
+```
+
+
+
+```{r}
+
+CARI.hyst.results.list = list(py$hysdict_CARI_storm1_05_08_NO3,
+                              py$hysdict_CARI_storm1_05_08_fDOM,
+                              py$hysdict_CARI_storm1_05_08_SPC,
+                              py$hysdict_CARI_storm1_05_08_turb,
+                              py$hysdict_CARI_storm3_07_12_NO3,
+                              py$hysdict_CARI_storm3_07_12_fDOM,
+                              py$hysdict_CARI_storm3_07_12_SPC,
+                              
+                              py$hysdict_CARI_storm4_07_26_fDOM,
+                              py$hysdict_CARI_storm4_07_26_SPC,
+                              py$hysdict_CARI_storm4_07_26_turb,
+                              py$hysdict_CARI_storm5_07_31_NO3,
+                              py$hysdict_CARI_storm5_07_31_fDOM,
+                              py$hysdict_CARI_storm5_07_31_SPC,
+                              py$hysdict_CARI_storm5_07_31_turb,
+                              py$hysdict_CARI_storm6a_08_02_NO3,
+                              py$hysdict_CARI_storm6a_08_02_fDOM,
+                              py$hysdict_CARI_storm6a_08_02_SPC,
+                              py$hysdict_CARI_storm6a_08_02_turb,
+                              py$hysdict_CARI_storm6b_08_03_NO3,
+                              py$hysdict_CARI_storm6b_08_03_fDOM,
+                              py$hysdict_CARI_storm6b_08_03_SPC,
+                              py$hysdict_CARI_storm6b_08_03_turb,
+                              py$hysdict_CARI_storm6c_08_05_NO3,
+                              py$hysdict_CARI_storm6c_08_05_fDOM,
+                              py$hysdict_CARI_storm6c_08_05_SPC,
+                              py$hysdict_CARI_storm6c_08_05_turb,
+                              py$hysdict_CARI_storm6d_08_10_NO3,
+                              py$hysdict_CARI_storm6d_08_10_fDOM,
+                              py$hysdict_CARI_storm6d_08_10_SPC,
+                              py$hysdict_CARI_storm6d_08_10_turb,
+                              
+                              py$hysdict_CARI_storm7a_08_13_fDOM,
+                              py$hysdict_CARI_storm7a_08_13_SPC,
+                              py$hysdict_CARI_storm7a_08_13_turb,
+                              py$hysdict_CARI_storm7b_08_13_NO3,
+                              py$hysdict_CARI_storm7b_08_13_fDOM,
+                              py$hysdict_CARI_storm7b_08_13_SPC,
+                              py$hysdict_CARI_storm7b_08_13_turb,
+                              py$hysdict_CARI_storm8_08_16_NO3,
+                              py$hysdict_CARI_storm8_08_16_fDOM,
+                              py$hysdict_CARI_storm8_08_16_SPC,
+                              py$hysdict_CARI_storm8_08_16_turb
+                              
+                             
+                            
+                              
+                              )
+       
+
+
+CARI.hyst.results.list.2 = list()
+for (i in 1:length(CARI.hyst.results.list)){
+CARI.hyst.results.list.2[[i]] = as.data.frame(t(as.numeric(c(
+CARI.hyst.results.list[[i]][["HI_mean_with_Interp"]],
+CARI.hyst.results.list[[i]][["HI_standard_deviation_with_Interp"]],
+CARI.hyst.results.list[[i]][["Normalized slope of response"]],
+CARI.hyst.results.list[[i]][["interpolated Max width of response"]],
+CARI.hyst.results.list[[i]][["Min response"]],
+CARI.hyst.results.list[[i]][["Max response"]],
+CARI.hyst.results.list[[i]][["Peak Q"]]
+))))
+names(CARI.hyst.results.list.2[[i]]) = c("HI_mean_Interp", "HI_sd_with_Interp", "N.S.", "Max_width_Interp", "Min_response", "Max_response", "Peak_Q")
+}
+
+HIs.list = list()
+HIs.tests = list()
+for (i in 1:length(CARI.hyst.results.list)){
+  HIs.list[[i]] = unlist(CARI.hyst.results.list[[i]][["Hysteresis_Index"]],recursive=FALSE)
+  HIs.tests[[i]] = as.data.frame(t(round(as.numeric(c(shapiro.test(HIs.list[[i]])$statistic, shapiro.test(HIs.list[[i]])$p.value,
+                     t.test(HIs.list[[i]], mu=0)$statistic, t.test(HIs.list[[i]], mu=0)$p.value, 
+                     t.test(HIs.list[[i]], mu=0)$conf.int[1],t.test(HIs.list[[i]], mu=0)$conf.int[2],
+                     wilcox.test(HIs.list[[i]], mu=0)$statistic, wilcox.test(HIs.list[[i]], mu=0)$p.value)), 4)))
+  names(HIs.tests[[i]]) = c("ShapiroTest.W", "ShapiroTest.p", "t.test.stat", "t.test.p", "t.test.CIlow", "t.test.CIhigh",
+                            "wilcox.test.stat", "wilcox.test.p")
+}
+
+CARI.hyst.results.list.3 =list()
+for (i in 1:length(CARI.hyst.results.list)){
+  CARI.hyst.results.list.3[[i]] = cbind(CARI.hyst.results.list.2[[i]], HIs.tests[[i]])
+}
+
+CARI.hyst.results.df = bind_rows(CARI.hyst.results.list.3, .id = "column_label")
+
+CARI.hyst.results.df$storm.ID = c("CARI_storm1_05_08_NO3",
+                                  "CARI_storm1_05_08_fDOM",
+                                  "CARI_storm1_05_08_SPC",
+                                  "CARI_storm1_05_08_turb",
+                                  "CARI_storm3_07_12_NO3",
+                                  "CARI_storm3_07_12_fDOM",
+                                  "CARI_storm3_07_12_SPC",
+                                  "CARI_storm4_07_26_fDOM",
+                                  "CARI_storm4_07_26_SPC",
+                                  "CARI_storm4_07_26_turb",
+                                  "CARI_storm5_07_31_NO3",
+                                  "CARI_storm5_07_31_fDOM",
+                                  "CARI_storm5_07_31_SPC",
+                                  "CARI_storm5_07_31_turb",
+                                  "CARI_storm6a_08_02_NO3",
+                                  "CARI_storm6a_08_02_fDOM",
+                                  "CARI_storm6a_08_02_SPC",
+                                  "CARI_storm6a_08_02_turb",
+                                  "CARI_storm6b_08_03_NO3",
+                                  "CARI_storm6b_08_03_fDOM",
+                                  "CARI_storm6b_08_03_SPC",
+                                  "CARI_storm6b_08_03_turb",
+                                  "CARI_storm6c_08_05_NO3",
+                                  "CARI_storm6c_08_05_fDOM",
+                                  "CARI_storm6c_08_05_SPC",
+                                  "CARI_storm6c_08_05_turb",
+                                  "CARI_storm6d_08_10_NO3",
+                                  "CARI_storm6d_08_10_fDOM",
+                                  "CARI_storm6d_08_10_SPC",
+                                  "CARI_storm6d_08_10_turb",
+                                  "CARI_storm7a_08_13_fDOM",
+                                  "CARI_storm7a_08_13_SPC",
+                                  "CARI_storm7a_08_13_turb",
+                                  "CARI_storm7b_08_13_NO3",
+                                  "CARI_storm7b_08_13_fDOM",
+                                  "CARI_storm7b_08_13_SPC",
+                                  "CARI_storm7b_08_13_turb",
+                                  "CARI_storm8_08_16_NO3",
+                                  "CARI_storm8_08_16_fDOM",
+                                  "CARI_storm8_08_16_SPC",
+                                  "CARI_storm8_08_16_turb")
+                                  
+                                  
+
+CARI.hyst.results.df$site.ID = "CARI"
+
+write.csv(CARI.hyst.results.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.hyst.results.csv")
+
+# plot HI by normalized discharge
+HIs.Q.list =list()
+HIs.df.list = list()
+pdf("~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.hyst.HI_Q.plots.pdf", width = 25, height =15, onefile=FALSE)
+par(mfrow=c(4,7))
+for (i in 1:length(HIs.list)) {
+  HIs.Q.list[[i]] = names(HIs.list[[i]])
+  HIs.Q.list[[i]] = (sapply(strsplit(HIs.Q.list[[i]], " "), "[[", 4))
+  HIs.Q.list[[i]] = as.numeric(gsub("%", "", HIs.Q.list[[i]]))
+  HIs.df.list[[i]] = as.data.frame(cbind(HIs.list[[i]], HIs.Q.list[[i]]))
+  HIs.df.list[[i]]= HIs.df.list[[i]][order(HIs.df.list[[i]][["V2"]]),]
+plot(HIs.df.list[[i]][["V1"]] ~ HIs.df.list[[i]][["V2"]], type="l",
+     ylab="norm.response", xlab="Q intervals", main= CARI.hyst.results.df$storm.ID[i])
+abline(h=0, lty=2)
+}
+dev.off()
+
+## plot HI with bootstrapped 95% CIs around the median ##
+HIs.Q.list =list()
+HIs.df.list = list()
+par(mfrow=c(1,1))
+for (i in 1:length(HIs.list)) {
+  HIs.Q.list[[i]] = names(HIs.list[[i]])
+  HIs.Q.list[[i]] = (sapply(strsplit(HIs.Q.list[[i]], " "), "[[", 4))
+  HIs.Q.list[[i]] = as.numeric(gsub("%", "", HIs.Q.list[[i]]))
+  HIs.df.list[[i]] = as.data.frame(cbind(HIs.list[[i]], HIs.Q.list[[i]]))
+  HIs.df.list[[i]]= HIs.df.list[[i]][order(HIs.df.list[[i]][["V2"]]),]
+  names(HIs.df.list[[i]]) = c("HI", "Q_interval")
+}
+
+CARI.HI.df = bind_rows(HIs.df.list, .id = "column_label")
+CARI.HI.df$storm.ID = c(rep("CARI_storm1_05_08_NO3", 50),
+                        rep("CARI_storm1_05_08_fDOM", 50),
+                        rep("CARI_storm1_05_08_SPC", 50),
+                        rep("CARI_storm1_05_08_turb", 50),
+                        rep("CARI_storm3_07_12_NO3", 50),
+                        rep("CARI_storm3_07_12_fDOM", 50),
+                        rep("CARI_storm3_07_12_SPC", 50),
+                        rep("CARI_storm4_07_26_fDOM", 50),
+                        rep("CARI_storm4_07_26_SPC", 50),
+                        rep("CARI_storm4_07_26_turb", 50),
+                        rep("CARI_storm5_07_31_NO3", 50),
+                        rep("CARI_storm5_07_31_fDOM", 50),
+                        rep("CARI_storm5_07_31_SPC", 50),
+                        rep("CARI_storm5_07_31_turb", 50),
+                        rep("CARI_storm6a_08_02_NO3", 50),
+                        rep("CARI_storm6a_08_02_fDOM", 50),
+                        rep("CARI_storm6a_08_02_SPC", 50),
+                        rep("CARI_storm6a_08_02_turb", 50),
+                        rep("CARI_storm6b_08_03_NO3", 50),
+                        rep("CARI_storm6b_08_03_fDOM", 50),
+                        rep("CARI_storm6b_08_03_SPC", 50),
+                        rep("CARI_storm6b_08_03_turb", 50),
+                        rep("CARI_storm6c_08_05_NO3", 50),
+                        rep("CARI_storm6c_08_05_fDOM", 50),
+                        rep("CARI_storm6c_08_05_SPC", 50),
+                        rep("CARI_storm6c_08_05_turb", 50),
+                        rep("CARI_storm6d_08_10_NO3", 50),
+                        rep("CARI_storm6d_08_10_fDOM", 50),
+                        rep("CARI_storm6d_08_10_SPC", 50),
+                        rep("CARI_storm6d_08_10_turb", 50),
+                        rep("CARI_storm7a_08_13_fDOM", 50),
+                        rep("CARI_storm7a_08_13_SPC", 50),
+                        rep("CARI_storm7a_08_13_turb", 50),
+                        rep("CARI_storm7b_08_13_NO3", 50),
+                        rep("CARI_storm7b_08_13_fDOM", 50),
+                        rep("CARI_storm7b_08_13_SPC", 50),
+                        rep("CARI_storm7b_08_13_turb", 50),
+                        rep("CARI_storm8_08_16_NO3", 50),
+                        rep("CARI_storm8_08_16_fDOM", 50),
+                        rep("CARI_storm8_08_16_SPC", 50),
+                        rep("CARI_storm8_08_16_turb", 50))
+                        
+
+CARI.HI.df$storm.ID = as.factor(CARI.HI.df$storm.ID)
+CARI.HI.df = separate(data=CARI.HI.df, col=storm.ID, into=c("site.ID","storm.num", "month", "day", "response"), sep = "_", remove = F)
+
+par(mfrow=c(1,1))
+median_cl_boot <- function(x, conf = 0.95) {
+  lconf <- (1 - conf)/2
+  uconf <- 1 - lconf
+  require(boot)
+  bmedian <- function(x, ind) median(x[ind])
+  bt <- boot(x, bmedian, 10000)
+  bb <- boot.ci(bt, conf = 0.95, type = "perc")
+  data.frame(y = median(x), ymin = quantile(bt$t, lconf), ymax = quantile(bt$t, 
+                                                                          uconf))
+}
+
+g0 <- ggplot(CARI.HI.df, aes(x = storm.num, y = HI, label=storm.num, fill=response))
+g1 = g0 + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.25, size=3) + 
+  theme(axis.text.x = element_text(angle = 0))+  labs(x="") + facet_wrap(~ response, scales = "free_x") +
+  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + theme(legend.position = "none")
+g2 <- g1 + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               colour = "black", width = 0.2, size=1) + 
+  stat_summary(fun.y = median, geom = "point", 
+               colour = "black", size = 3)
+ggsave("~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.HI.median.boot.pdf", plot=g2, width = 8, height = 6, units ="in")
+write.csv(CARI.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.HI.df.csv")
+
+CARI.HI.df$date <- as.Date(with(CARI.HI.df, paste(month, day, sep = "-")), "%m-%d")
+CARI.HI.df$doy <- yday(CARI.HI.df$date) 
+
+g0 <- ggplot(CARI.HI.df, aes(x = doy, y = HI, label=doy, fill=response))
+g1 = g0 + geom_jitter(width = 0.1, fill = "grey", colour = "#0571B0", alpha=0.25, size=3) + 
+  theme(axis.text.x = element_text(angle = 0))+  labs(x="") + facet_wrap(~ response, scales = "free_x") +
+  theme_bw() +geom_hline(yintercept=0) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + theme(legend.position = "none")
+g2 <- g1 + 
+  stat_summary(fun.data = median_cl_boot, geom = "errorbar",
+               colour = "black", width = 0.2, size=1) + 
+  stat_summary(fun.y = median, geom = "point", 
+               colour = "black", size = 3)
+ggsave("~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.HI.median.boot.doy.pdf", plot=g2, width = 8, height = 6, units ="in")
+write.csv(CARI.HI.df, "~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.HI.df.doy.csv")
+
+```
+
 
 
 

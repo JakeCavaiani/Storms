@@ -28,19 +28,16 @@ library(broom)
 library(purrr)
 library(viridis)
 library(readr)
-library(tidyverse)
 library(lubridate)
 library(data.table)
 library(rio)
 library(ggplot2)
 library(scales)
 library(psych)
-library(here)
 library(googledrive)
 library(readxl)
 library(cowplot)
 library(zoo)
-library(readr)
 library(dplyr)
 library(RColorBrewer)
 library(gridExtra)
@@ -73,7 +70,7 @@ HI.dat_2020$year <- "2020"
 HI.dat <- rbind(HI.dat_2019, HI.dat_2020)
 write.csv(HI.dat, "~/Documents/Storms/Output_from_analysis/HI.dat.csv")
 
-HI.dat <- read.csv("~/Documents/Storms/Output_from_analysis/HI.dat.csv")
+HI.dat <- read_csv("~/Documents/Storms/Output_from_analysis/HI.dat.csv")
 
 
 HI.mean<- HI.dat %>% group_by(site.ID, response, year) %>%  
@@ -208,10 +205,16 @@ HI.mean.precip.response <- HI.dat %>% group_by(site.ID, year, storm.num, respons
   summarise_at(vars(HI), list(HI = median)) # take mean by site response and year 
 
 ######################################## 2018 #####################################################################
-FRCHstorm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2018/All_final/", 
+## Step 1) Read in list of all sites storms and filter by site
+## Step 2) Assign storm number to each individual storm
+## Step 3) read in Rain gauge data and summarize storm characteristics (Total precip/Intensity) and 
+# antecedent conditions (week/month/3month/doy/time since peak SWE)
+## Step 4) Separate by constituent 
+
+FRCHstorm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2018/All_Sites/", 
                               recursive=F, 
                               pattern="FRCH", 
-                              full.names=TRUE)
+                              full.names=TRUE) # reading in individual storms by site 
 
 FRCH_storms<-do.call("rbind", lapply(FRCHstorm_file_list, 
                                   read.csv, 
@@ -220,34 +223,39 @@ FRCH_storms<-do.call("rbind", lapply(FRCHstorm_file_list,
                                   header=T, blank.lines.skip = TRUE, fill=TRUE))
 
 FRCH_storms$storm.num = c(rep("storm1", 142),
-                        rep("storm10a", 145),
-                        rep("storm10b", 558),
+                        rep("storm10", 704),
                         rep("storm11a", 91),
                         rep("storm11b", 264),
                         rep("storm2a", 230),
                         rep("storm2b", 190),
-                        rep("storm3", 234),
+                        rep("storm3", 212),
                         rep("storm4a", 72),
                         rep("storm4b", 383),
                         rep("storm5", 331),
                         rep("storm6", 303),
-                        rep("storm7", 133),
+                        rep("storm7", 119),
                         rep("storm8a", 79),
                         rep("storm8b", 95),
-                        rep("storm9", 116))
+                        rep("storm9", 115)) # naming each storm by the number of storm 
 
-POKE_RainGauge_2018 <- read_csv("~/Documents/DoD_2018/RainGauge/POKE.RainGauge.2018.csv")
-POKE_RainGauge_2018$DateTime <- as.POSIXct(POKE_RainGauge_2018$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M")
-FRCH_storms$DateTime <- as.POSIXct(FRCH_storms$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M") 
-FRCH.2018.storms.1<- left_join(FRCH_storms, POKE_RainGauge_2018, by = "DateTime")
+#write_csv(FRCH_storms, "~/Desktop/FRCH_2018_test_beta.csv")
+
+
+POKE_RainGauge_2018 <- read_csv("~/Documents/DoD_2018/RainGauge/POKE.RainGauge.2018.csv") # Reading in rain gauge data in 
+attributes(POKE_RainGauge_2018$DateTime)$tzone <- 'America/Anchorage' # converting to AK time 
+FRCH_storms$DateTime <- as.POSIXct(FRCH_storms$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M") #making datetime column 
+FRCH.2018.storms.1<- left_join(FRCH_storms, POKE_RainGauge_2018, by = "DateTime") # joining 
 
 names(FRCH.2018.storms.1)[names(FRCH.2018.storms.1) == ''] <- 'x'
 
 FRCH.2018.per.storm.1 <- FRCH.2018.storms.1 %>% group_by(storm.num) %>% 
-  summarise_at(vars(inst_rainfall_mm), list(precip = sum), na.rm = TRUE)
+  summarise_at(vars(inst_rainfall_mm), list(precip = sum), na.rm = TRUE) # summing total precipitation within each storm event 
 
-FRCH.2018 <- read.csv("Q_Chem/FRCH/FRCH_chem_2018.csv")
-FRCH.2018$DateTime <- as.POSIXct(FRCH.2018$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M", origin = "2018-01-01")
+FRCH.2018 <- read_csv("Q_Chem/FRCH/FRCH_chem_2018.csv", 
+                           col_types = cols(fDOM.QSU = col_double(), 
+                                            nitrateuM = col_double(), SpCond.uScm = col_double(), 
+                                            Turbidity.FNU = col_double()))
+attributes(FRCH.2018$DateTime)$tzone <- 'America/Anchorage'
 FRCH.2018 <- left_join(FRCH.2018, POKE_RainGauge_2018, by = "DateTime")
 FRCH.2018$week <- rollapplyr(FRCH.2018$inst_rainfall_mm, 336, sum, na.rm = TRUE, fill = NA, partial = TRUE)
 FRCH.2018$month <- rollapplyr(FRCH.2018$inst_rainfall_mm, 1344, sum, na.rm = TRUE, fill = NA, partial = TRUE)
@@ -7460,26 +7468,1814 @@ ggarrange(Q, no3,
           common.legend = TRUE, legend = "bottom")
 
 
-#### FI ? #####
-storms.2019.2020 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/storms.2019.2020.csv")
+##############################################################################################################
+##############################################################################################################
+##############################################################################################################
+
+#########################################################################################################
+########################################### FI ##########################################################
+#########################################################################################################
+
+########################################### 2018 ##########################################################
+
+# load storm data to R #
+
+### Q dat ###
+FRCH_storm1_06_21_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm1_06_21_Q.csv", header = T, row.names = 1)
+FRCH_storm2a_06_29_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2a_06_29_Q.csv", header = T, row.names = 1)
+FRCH_storm2b_07_04_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm2b_07_04_Q.csv", header = T, row.names = 1)
+FRCH_storm3_07_10_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm3_07_10_Q.csv", header = T, row.names = 1)
+FRCH_storm4a_07_15_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4a_07_15_Q.csv", header = T, row.names = 1)
+FRCH_storm4b_07_16_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm4b_07_16_Q.csv", header = T, row.names = 1)
+FRCH_storm5_08_04_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm5_08_04_Q.csv", header = T, row.names = 1)
+FRCH_storm6_08_13_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm6_08_13_Q.csv", header = T, row.names = 1)
+FRCH_storm7_08_23_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm7_08_23_Q.csv", header = T, row.names = 1)
+FRCH_storm8a_08_26_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8a_08_26_Q.csv", header = T, row.names = 1)
+FRCH_storm8b_08_27_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm8b_08_27_Q.csv", header = T, row.names = 1)
+FRCH_storm9_08_29_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm9_08_29_Q.csv", header = T, row.names = 1)
+FRCH_storm10_09_01_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm10_09_01_Q.csv", header = T, row.names = 1)
+FRCH_storm11a_09_22_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11a_09_22_Q.csv", header = T, row.names = 1)
+FRCH_storm11b_09_24_Q <- read.csv("~/Documents/Storms/Storm_Events/2018/FRCH/FRCH_storm11b_09_24_Q.csv", header = T, row.names = 1)
+
+### solute data with bursts ###
+FRCH_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_NO3_storm_list.RData")
+FRCH_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_fDOM_storm_list.RData")
+FRCH_SpCond_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_SpCond_storm_list.RData")
+
+# normalize Q data #
+
+FRCH_storm1_06_21_Q$datavalue.norm = 
+  (FRCH_storm1_06_21_Q$datavalue - min(FRCH_storm1_06_21_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm1_06_21_Q$datavalue, na.rm=T) - min(FRCH_storm1_06_21_Q$datavalue, na.rm=T))
+FRCH_storm2a_06_29_Q$datavalue.norm = 
+  (FRCH_storm2a_06_29_Q$datavalue - min(FRCH_storm2a_06_29_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm2a_06_29_Q$datavalue, na.rm=T) - min(FRCH_storm2a_06_29_Q$datavalue, na.rm=T))
+FRCH_storm2b_07_04_Q$datavalue.norm = 
+  (FRCH_storm2b_07_04_Q$datavalue - min(FRCH_storm2b_07_04_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm2b_07_04_Q$datavalue, na.rm=T) - min(FRCH_storm2b_07_04_Q$datavalue, na.rm=T))
+FRCH_storm3_07_10_Q$datavalue.norm = 
+  (FRCH_storm3_07_10_Q$datavalue - min(FRCH_storm3_07_10_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm3_07_10_Q$datavalue, na.rm=T) - min(FRCH_storm3_07_10_Q$datavalue, na.rm=T))
+FRCH_storm4a_07_15_Q$datavalue.norm = 
+  (FRCH_storm4a_07_15_Q$datavalue - min(FRCH_storm4a_07_15_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm4a_07_15_Q$datavalue, na.rm=T) - min(FRCH_storm4a_07_15_Q$datavalue, na.rm=T))
+FRCH_storm4b_07_16_Q$datavalue.norm = 
+  (FRCH_storm4b_07_16_Q$datavalue - min(FRCH_storm4b_07_16_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm4b_07_16_Q$datavalue, na.rm=T) - min(FRCH_storm4b_07_16_Q$datavalue, na.rm=T))
+FRCH_storm5_08_04_Q$datavalue.norm = 
+  (FRCH_storm5_08_04_Q$datavalue - min(FRCH_storm5_08_04_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm5_08_04_Q$datavalue, na.rm=T) - min(FRCH_storm5_08_04_Q$datavalue, na.rm=T))
+FRCH_storm6_08_13_Q$datavalue.norm = 
+  (FRCH_storm6_08_13_Q$datavalue - min(FRCH_storm6_08_13_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm6_08_13_Q$datavalue, na.rm=T) - min(FRCH_storm6_08_13_Q$datavalue, na.rm=T))
+FRCH_storm7_08_23_Q$datavalue.norm = 
+  (FRCH_storm7_08_23_Q$datavalue - min(FRCH_storm7_08_23_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm7_08_23_Q$datavalue, na.rm=T) - min(FRCH_storm7_08_23_Q$datavalue, na.rm=T))
+FRCH_storm8a_08_26_Q$datavalue.norm = 
+  (FRCH_storm8a_08_26_Q$datavalue - min(FRCH_storm8a_08_26_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm8a_08_26_Q$datavalue, na.rm=T) - min(FRCH_storm8a_08_26_Q$datavalue, na.rm=T))
+FRCH_storm8b_08_27_Q$datavalue.norm = 
+  (FRCH_storm8b_08_27_Q$datavalue - min(FRCH_storm8b_08_27_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm8b_08_27_Q$datavalue, na.rm=T) - min(FRCH_storm8b_08_27_Q$datavalue, na.rm=T))
+FRCH_storm9_08_29_Q$datavalue.norm = 
+  (FRCH_storm9_08_29_Q$datavalue - min(FRCH_storm9_08_29_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm9_08_29_Q$datavalue, na.rm=T) - min(FRCH_storm9_08_29_Q$datavalue, na.rm=T))
+FRCH_storm10_09_01_Q$datavalue.norm = 
+  (FRCH_storm10_09_01_Q$datavalue - min(FRCH_storm10_09_01_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm10_09_01_Q$datavalue, na.rm=T) - min(FRCH_storm10_09_01_Q$datavalue, na.rm=T))
+FRCH_storm11a_09_22_Q$datavalue.norm = 
+  (FRCH_storm11a_09_22_Q$datavalue - min(FRCH_storm11a_09_22_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm11a_09_22_Q$datavalue, na.rm=T) - min(FRCH_storm11a_09_22_Q$datavalue, na.rm=T))
+FRCH_storm11b_09_24_Q$datavalue.norm = 
+  (FRCH_storm11b_09_24_Q$datavalue - min(FRCH_storm11b_09_24_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm11b_09_24_Q$datavalue, na.rm=T) - min(FRCH_storm11b_09_24_Q$datavalue, na.rm=T))
+
+
+# normalize solute data #
+
+### remove burst-complied data ###
+
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]][["datavalue"]] = FRCH_NO3_storm_list[[i]][["nitrateuM"]]
+  FRCH_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]][["datavalue"]] = FRCH_fDOM_storm_list[[i]][["fDOM.QSU.x"]]
+  FRCH_fDOM_storm_list[[i]][["fDOM.QSU.x"]] = NULL
+}
+
+for(i in 1:length(FRCH_SpCond_storm_list)){
+  FRCH_SpCond_storm_list[[i]][["datavalue"]] = FRCH_SpCond_storm_list[[i]][["SpCond.µS.cm"]]
+  FRCH_SpCond_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+
+### normalize burst data ###
+
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_NO3_storm_list[[i]][["datavalue"]]-min(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_fDOM_storm_list[[i]][["datavalue"]]-min(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(FRCH_SpCond_storm_list)){
+  FRCH_SpCond_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_SpCond_storm_list[[i]][["datavalue"]]-min(FRCH_SpCond_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_SpCond_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_SpCond_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+
+
+
+# replace missing values in storms missing the first point with the second point
+head(C4_fDOM_storm_list[["C4_storm1_fDOM"]], 20)
+C4_fDOM_storm_list[["C4_storm1_fDOM"]][1:6,2] = C4_fDOM_storm_list[["C4_storm1_fDOM"]][7:12,2] 
+C4_fDOM_storm_list[["C4_storm1_fDOM"]][1:6,3] = C4_fDOM_storm_list[["C4_storm1_fDOM"]][7:12,3] 
+
+# #compile bursts #
+# 
+# C2_NO3_storm_list.st = list()
+# 
+# for(i in 1:length(C2_NO3_storm_list)){
+# min<-cut(C2_NO3_storm_list[[i]][["valuedatetime"]], breaks="1 min")
+# C2_NO3_storm_list.st[[i]] <- as.data.frame(as.list(aggregate(cbind(datavalue, nitrateuM,
+#                                                                    datavalue.norm, burst.norm)
+#                                                ~ min, data=C2_NO3_storm_list[[i]],
+#                                                na.action=na.pass,
+#                                                FUN=function(x) c(mn=mean(x), SD=sd(x)))))
+# C2_NO3_storm_list.st[[i]][["valuedatetime"]]<-as.POSIXct(C2_NO3_storm_list.st[[i]][["min"]], "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+# }
+
+#fxn: calculate FI by difference and bootstrap CIs #
+
+FI_diff = function(dat_Q, dat_response) {
+  FI_dat = rbind(dat_response[as.POSIXct(dat_response$valuedatetime) == min(as.POSIXct(dat_response$valuedatetime)),], 
+                 dat_response[as.POSIXct(dat_response$valuedatetime) == as.POSIXct(dat_Q$valuedatetime[dat_Q$datavalue.norm == max(dat_Q$datavalue.norm)]),])
+  
+  FI_dat$valuedatetime = as.character(as.POSIXct(FI_dat$valuedatetime))
+  
+  dat_Q$valuedatetime = as.character(as.POSIXct(dat_Q$valuedatetime))
+  
+  FI_dat = left_join(FI_dat, 
+                     subset(dat_Q, select=c("valuedatetime", "datavalue.norm")),
+                     by="valuedatetime")
+  
+  names(FI_dat) = c("valuedatetime", "datavalue", "datavalue.norm", "Q")
+  
+  FI_dat$datavalue.norm = as.numeric(FI_dat$datavalue.norm)
+  FI_dat$Q = as.numeric(FI_dat$Q)
+  
+  FI = mean(FI_dat$datavalue.norm[FI_dat$valuedatetime == max(FI_dat$valuedatetime)]) - mean(FI_dat$datavalue.norm[FI_dat$valuedatetime == min(FI_dat$valuedatetime)])
+  
+  meanDiff = function(data, indices) { 
+    d <- data[indices,] # allows boot to select sample
+    m1 = mean(d$datavalue.norm[d$valuedatetime == max(d$valuedatetime)])
+    m2 = mean(d$datavalue.norm[d$valuedatetime == min(d$valuedatetime)])
+    m = m1 - m2
+    return(m)
+  }
+  
+  FI_boot = boot(FI_dat, meanDiff, R = 10000, strata = as.factor(FI_dat[,1]))
+  FI_bootCI = boot.ci(FI_boot, type="bca")
+  
+  FI_bootCI = data.frame(cbind(FI_boot$t0, FI_bootCI[["bca"]][4], FI_bootCI[["bca"]][5]))
+  names(FI_bootCI) = c("FI", "lower", "upper")
+  
+  FI_results = list(FI_dat, FI_bootCI)
+  
+  return(FI_results)
+}
+
+# calculate FI by difference and bootstrap CIs #
+
+FRCH_storm1_06_21_NO3_FI = FI_diff(FRCH_storm1_06_21_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//FRCH_storm1_06_21_NO3`)
+#FRCH_storm2a_06_29_NO3_FI = FI_diff(FRCH_storm2a_06_29_Q,FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//FRCH_storm2a_06_29_Q`)
+#FRCH_storm2b_07_04_NO3_FI = FI_diff(FRCH_storm2b_07_04_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//FRCH_storm2b_07_04_NO3`)
+FRCH_storm3_07_10_NO3_FI = FI_diff(FRCH_storm3_07_10_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//FRCH_storm3_07_10_NO3`)
+
+# gather results and save #
+
+
+FI_results = rbind(
+  c("FRCH_storm1_06_21_NO3_FI",FRCH_storm1_06_21_NO3_FI[[2]]),
+  c("FRCH_storm3_07_10_NO3_FI",FRCH_storm3_07_10_NO3_FI[[2]]))
+
+FI_results = as.data.frame(FI_results)
+
+names(FI_results) = c("ID", "Flushing_index", "percCI_2.5", "percCI_97.5")
+
+FI_results$ID = unlist(FI_results$ID)
+FI_results$Flushing_index = round(as.numeric(as.character(FI_results$Flushing_index)), 4)
+FI_results$`percCI_2.5` = round(as.numeric(as.character(FI_results$`percCI_2.5`)), 4)
+FI_results$`percCI_97.5` = round(as.numeric(as.character(FI_results$`percCI_97.5`)), 4)
+
+write.csv(FI_results, "/Users/alexwebster/Dropbox/Harms Lab/CPCRW 2017/new tidy files/CPCRW_2017/Output from analyses/24_25_CPCRW_2017/all.FI.diff.results.csv")
+
+# calculate 95% bootstrap around median of Hyst. Indicies for each site and storm #
+
+median_cl_boot <- function(x, conf = 0.95) {
+  lconf <- (1 - conf)/2
+  uconf <- 1 - lconf
+  require(boot)
+  bmedian <- function(x, ind) median(x[ind])
+  bt <- boot(x, bmedian, 10000)
+  bb <- boot.ci(bt, conf = 0.95, type = "perc")
+  data.frame(y = median(x), ymin = quantile(bt$t, lconf), ymax = quantile(bt$t, 
+                                                                          uconf))
+}
+
+FRCH.HI.df <- read.csv("Output_from_analysis/HI_plots/2018/FRCH/FRCH.HI.median.boot.csv")
+
+storm.list = unique(FRCH.HI.df$storm.ID)
+FRCH.HI.boot <- do.call(rbind.data.frame,
+                      lapply(storm.list, function(i){
+                        dat = subset(FRCH.HI.df, storm.ID == i)
+                        median_cl_boot(dat$HI)
+                      }))
+FRCH.HI.boot$storm.ID = storm.list
+
+FRCH.HI.boot$site.ID = "FRCH"
+
+HI <- FRCH.HI.boot
+
+
+FI = subset(FI_results, select=c("Flushing_index", "percCI_2.5", "percCI_97.5", "ID"))
+FI$ID = as.character(FI$ID)
+library(tidyverse)
+FI = separate(FI, ID, into=c("site.ID", "storm.ID", "month", "day", "response_var", NA), sep = "_")
+names(FI) = c("Flush_index", "FI_ymin", "FI_ymax","site.ID", "storm.ID", "month", "day", "response_var")
+
+HI$site.ID=NULL
+HI = separate(HI, storm.ID, into=c("site.ID", "storm.ID", "month", "day", "response_var"), sep = "_")
+names(HI) = c("Hyst_index", "HI_ymin", "HI_ymax","site.ID", "storm.ID", "month", "day", "response_var")
+
+HI_FI = left_join(HI, FI, by=c("site.ID", "storm.ID", "response_var"))
+
+HI_FI_NO3 = subset(HI_FI, response_var == "NO3")
+HI_FI_NO3$site.ID <- factor(HI_FI_NO3$site.ID, levels = c('FRCH'))
+
+HI_FI_NO3.p = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("#0571B0", "#CA0020"), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########################################### 2019 ########################################################
+# load storm data to R #
+
+### Q dat ###
+# FRCH #
+FRCH_storm1_05_31_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm1_05_31_Q.csv", header=T, row.names = 1) 
+FRCH_storm2_06_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm2_06_15_Q.csv", header=T, row.names = 1) 
+FRCH_storm3_06_18_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm3_06_18_Q.csv", header=T, row.names = 1) 
+FRCH_storm4_06_20_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm4_06_20_Q.csv", header=T, row.names = 1) 
+FRCH_storm5_06_22_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm5_06_22_Q.csv", header=T, row.names = 1) 
+FRCH_storm6_07_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm6_07_12_Q.csv", header=T, row.names = 1) 
+FRCH_storm7_07_25_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm7_07_25_Q.csv", header=T, row.names = 1) 
+FRCH_storm8_07_28_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm8_07_28_Q.csv", header=T, row.names = 1) 
+FRCH_storm9a_07_29_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm9a_07_29_Q.csv", header=T, row.names = 1) 
+FRCH_storm9b_07_30_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm9b_07_30_Q.csv", header=T, row.names = 1) 
+FRCH_storm10a_08_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm10a_08_01_Q.csv", header=T, row.names = 1) 
+FRCH_storm10b_08_02_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm10b_08_02_Q.csv", header=T, row.names = 1) 
+FRCH_storm10c_08_03_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm10c_08_03_Q.csv", header=T, row.names = 1) 
+FRCH_storm11_08_05_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm11_08_05_Q.csv", header=T, row.names = 1) 
+FRCH_storm12a_08_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12a_08_12_Q.csv", header=T, row.names = 1) 
+FRCH_storm12b_08_14_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12b_08_14_Q.csv", header=T, row.names = 1) 
+FRCH_storm12c_08_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12c_08_15_Q.csv", header=T, row.names = 1) 
+FRCH_storm12d_08_21_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12d_08_21_Q.csv", header=T, row.names = 1) 
+FRCH_storm12e_08_23_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm12e_08_23_Q.csv", header=T, row.names = 1) 
+FRCH_storm13_09_20_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm13_09_20_Q.csv", header=T, row.names = 1) 
+FRCH_storm14_10_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/FRCH/FRCH_storm14_10_01_Q.csv", header=T, row.names = 1) 
+
+# MOOS #
+MOOS_storm1_06_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm1_06_01_Q.csv", header=T, row.names = 1) 
+MOOS_storm3_07_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm3_07_12_Q.csv", header=T, row.names = 1) 
+MOOS_storm4_07_25_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm4_07_25_Q.csv", header=T, row.names = 1) 
+MOOS_storm5_07_29_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm5_07_29_Q.csv", header=T, row.names = 1) 
+MOOS_storm6a_08_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm6a_08_01_Q.csv", header=T, row.names = 1) 
+MOOS_storm6b_08_02_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm6b_08_02_Q.csv", header=T, row.names = 1) 
+MOOS_storm6c_08_03_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm6c_08_03_Q.csv", header=T, row.names = 1) 
+MOOS_storm6d_08_05_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm6d_08_05_Q.csv", header=T, row.names = 1) 
+MOOS_storm7a_08_13_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm7a_08_13_Q.csv", header=T, row.names = 1) 
+MOOS_storm7b_08_14_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm7b_08_14_Q.csv", header=T, row.names = 1) 
+MOOS_storm7c_08_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm7c_08_15_Q.csv", header=T, row.names = 1) 
+MOOS_storm8_09_21_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm8_09_21_Q.csv", header=T, row.names = 1) 
+MOOS_storm9_10_02_Q = read.csv("~/Documents/Storms/Storm_Events/2019/MOOS/MOOS_storm9_10_02_Q.csv", header=T, row.names = 1) 
+
+# POKE #
+POKE_storm1_06_30_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm1_06_30_Q.csv", header=T, row.names = 1) 
+POKE_storm2_07_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm2_07_12_Q.csv", header=T, row.names = 1) 
+POKE_storm3_07_26_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm3_07_26_Q.csv", header=T, row.names = 1) 
+POKE_storm4_07_31_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm4_07_31_Q.csv", header=T, row.names = 1) 
+POKE_storm5a_08_02_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm5a_08_02_Q.csv", header=T, row.names = 1) 
+POKE_storm5b_08_03_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm5b_08_03_Q.csv", header=T, row.names = 1) 
+POKE_storm5c_08_05_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm5c_08_05_Q.csv", header=T, row.names = 1) 
+POKE_storm5d_08_10_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm5d_08_10_Q.csv", header=T, row.names = 1) 
+POKE_storm6a_08_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm6a_08_12_Q.csv", header=T, row.names = 1) 
+POKE_storm6b_08_13_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm6b_08_13_Q.csv", header=T, row.names = 1) 
+POKE_storm7_08_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm7_08_15_Q.csv", header=T, row.names = 1) 
+POKE_storm8_09_29_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm8_09_29_Q.csv", header=T, row.names = 1) 
+POKE_storm9_10_04_Q = read.csv("~/Documents/Storms/Storm_Events/2019/POKE/POKE_storm9_10_04_Q.csv", header=T, row.names = 1) 
+
+# STRT #
+STRT_storm1_05_31_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm1_05_31_Q.csv", header=T, row.names = 1) 
+STRT_storm2_07_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm2_07_12_Q.csv", header=T, row.names = 1) 
+STRT_storm3a_07_25_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm3a_07_25_Q.csv", header=T, row.names = 1) 
+STRT_storm3b_08_05_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm3b_08_05_Q.csv", header=T, row.names = 1) 
+STRT_storm3c_08_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm3c_08_12_Q.csv", header=T, row.names = 1) 
+STRT_storm4_08_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm4_08_15_Q.csv", header=T, row.names = 1) 
+STRT_storm5_08_20_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm5_08_20_Q.csv", header=T, row.names = 1) 
+STRT_storm6_09_20_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm6_09_20_Q.csv", header=T, row.names = 1) 
+STRT_storm7_10_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7_10_01_Q.csv", header=T, row.names = 1) 
+STRT_storm7b_10_04_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7b_10_04_Q.csv", header=T, row.names = 1) 
+STRT_storm7c_10_09_Q = read.csv("~/Documents/Storms/Storm_Events/2019/STRT/STRT_storm7c_10_09_Q.csv", header=T, row.names = 1) 
+
+# VAUL #
+VAUL_storm1_07_13_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm1_07_13_Q.csv", header=T, row.names = 1) 
+VAUL_storm2_07_26_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm2_07_26_Q.csv", header=T, row.names = 1) 
+VAUL_storm3_07_29_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm3_07_29_Q.csv", header=T, row.names = 1) 
+VAUL_storm4a_08_02_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm4a_08_02_Q.csv", header=T, row.names = 1) 
+VAUL_storm4b_08_03_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm4b_08_03_Q.csv", header=T, row.names = 1) 
+VAUL_storm4c_08_05_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm4c_08_05_Q.csv", header=T, row.names = 1) 
+VAUL_storm5_08_12_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm5_08_12_Q.csv", header=T, row.names = 1) 
+VAUL_storm6_08_15_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm6_08_15_Q.csv", header=T, row.names = 1) 
+VAUL_storm7_09_19_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm7_09_19_Q.csv", header=T, row.names = 1) 
+VAUL_storm8a_09_29_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm8a_09_29_Q.csv", header=T, row.names = 1) 
+VAUL_storm8b_10_01_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm8b_10_01_Q.csv", header=T, row.names = 1) 
+VAUL_storm8c_10_04_Q = read.csv("~/Documents/Storms/Storm_Events/2019/VAUL/VAUL_storm8c_10_04_Q.csv", header=T, row.names = 1) 
+
+### solute data with bursts ###
+#NO3
+FRCH_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/FRCH_NO3_storm_list.RData")
+MOOS_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/MOOS_NO3_storm_list.RData")
+POKE_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/POKE_NO3_storm_list.RData")
+STRT_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/STRT_NO3_storm_list.RData")
+VAUL_NO3_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/VAUL_NO3_storm_list.RData")
+
+#fDOM
+FRCH_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/FRCH_fDOM_storm_list.RData")
+MOOS_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/MOOS_fDOM_storm_list.RData")
+POKE_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/POKE_fDOM_storm_list.RData")
+STRT_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/STRT_fDOM_storm_list.RData")
+VAUL_fDOM_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/VAUL_fDOM_storm_list.RData")
+
+#SPC
+FRCH_SPC_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/FRCH_SPC_storm_list.RData")
+MOOS_SPC_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/MOOS_SPC_storm_list.RData")
+POKE_SPC_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/POKE_SPC_storm_list.RData")
+STRT_SPC_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/STRT_SPC_storm_list.RData")
+VAUL_SPC_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/VAUL_SPC_storm_list.RData")
+
+#turb
+FRCH_turb_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/FRCH_turb_storm_list.RData")
+MOOS_turb_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/MOOS_turb_storm_list.RData")
+POKE_turb_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/POKE_turb_storm_list.RData")
+STRT_turb_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/STRT_turb_storm_list.RData")
+VAUL_turb_storm_list = readRDS("~/Documents/Storms/Storm_Events/WithBurst/2019/VAUL_turb_storm_list.RData")
+
+# normalize Q data #
+# FRCH
+FRCH_storm1_05_31_Q$datavalue.norm = 
+  (FRCH_storm1_05_31_Q$datavalue - min(FRCH_storm1_05_31_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm1_05_31_Q$datavalue, na.rm=T) - min(FRCH_storm1_05_31_Q$datavalue, na.rm=T))
+FRCH_storm2_06_15_Q$datavalue.norm = 
+  (FRCH_storm2_06_15_Q$datavalue - min(FRCH_storm2_06_15_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm2_06_15_Q$datavalue, na.rm=T) - min(FRCH_storm2_06_15_Q$datavalue, na.rm=T))
+FRCH_storm3_06_18_Q$datavalue.norm = 
+  (FRCH_storm3_06_18_Q$datavalue - min(FRCH_storm3_06_18_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm3_06_18_Q$datavalue, na.rm=T) - min(FRCH_storm3_06_18_Q$datavalue, na.rm=T))
+FRCH_storm4_06_20_Q$datavalue.norm = 
+  (FRCH_storm4_06_20_Q$datavalue - min(FRCH_storm4_06_20_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm4_06_20_Q$datavalue, na.rm=T) - min(FRCH_storm4_06_20_Q$datavalue, na.rm=T))
+FRCH_storm5_06_22_Q$datavalue.norm = 
+  (FRCH_storm5_06_22_Q$datavalue - min(FRCH_storm5_06_22_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm5_06_22_Q$datavalue, na.rm=T) - min(FRCH_storm5_06_22_Q$datavalue, na.rm=T))
+FRCH_storm6_07_12_Q$datavalue.norm = 
+  (FRCH_storm6_07_12_Q$datavalue - min(FRCH_storm6_07_12_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm6_07_12_Q$datavalue, na.rm=T) - min(FRCH_storm6_07_12_Q$datavalue, na.rm=T))
+FRCH_storm7_07_25_Q$datavalue.norm = 
+  (FRCH_storm7_07_25_Q$datavalue - min(FRCH_storm7_07_25_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm7_07_25_Q$datavalue, na.rm=T) - min(FRCH_storm7_07_25_Q$datavalue, na.rm=T))
+FRCH_storm8_07_28_Q$datavalue.norm = 
+  (FRCH_storm8_07_28_Q$datavalue - min(FRCH_storm8_07_28_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm8_07_28_Q$datavalue, na.rm=T) - min(FRCH_storm8_07_28_Q$datavalue, na.rm=T))
+FRCH_storm9a_07_29_Q$datavalue.norm = 
+  (FRCH_storm9a_07_29_Q$datavalue - min(FRCH_storm9a_07_29_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm9a_07_29_Q$datavalue, na.rm=T) - min(FRCH_storm9a_07_29_Q$datavalue, na.rm=T))
+FRCH_storm9b_07_30_Q$datavalue.norm = 
+  (FRCH_storm9b_07_30_Q$datavalue - min(FRCH_storm9b_07_30_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm9b_07_30_Q$datavalue, na.rm=T) - min(FRCH_storm9b_07_30_Q$datavalue, na.rm=T))
+FRCH_storm10a_08_01_Q$datavalue.norm = 
+  (FRCH_storm10a_08_01_Q$datavalue - min(FRCH_storm10a_08_01_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm10a_08_01_Q$datavalue, na.rm=T) - min(FRCH_storm10a_08_01_Q$datavalue, na.rm=T))
+FRCH_storm10b_08_02_Q$datavalue.norm = 
+  (FRCH_storm10b_08_02_Q$datavalue - min(FRCH_storm10b_08_02_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm10b_08_02_Q$datavalue, na.rm=T) - min(FRCH_storm10b_08_02_Q$datavalue, na.rm=T))
+FRCH_storm10c_08_03_Q$datavalue.norm = 
+  (FRCH_storm10c_08_03_Q$datavalue - min(FRCH_storm10c_08_03_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm10c_08_03_Q$datavalue, na.rm=T) - min(FRCH_storm10c_08_03_Q$datavalue, na.rm=T))
+FRCH_storm11_08_05_Q$datavalue.norm = 
+  (FRCH_storm11_08_05_Q$datavalue - min(FRCH_storm11_08_05_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm11_08_05_Q$datavalue, na.rm=T) - min(FRCH_storm11_08_05_Q$datavalue, na.rm=T))
+FRCH_storm12a_08_12_Q$datavalue.norm = 
+  (FRCH_storm12a_08_12_Q$datavalue - min(FRCH_storm12a_08_12_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm12a_08_12_Q$datavalue, na.rm=T) - min(FRCH_storm12a_08_12_Q$datavalue, na.rm=T))
+FRCH_storm12b_08_14_Q$datavalue.norm = 
+  (FRCH_storm12b_08_14_Q$datavalue - min(FRCH_storm12b_08_14_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm12b_08_14_Q$datavalue, na.rm=T) - min(FRCH_storm12b_08_14_Q$datavalue, na.rm=T))
+FRCH_storm12c_08_15_Q$datavalue.norm = 
+  (FRCH_storm12c_08_15_Q$datavalue - min(FRCH_storm12c_08_15_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm12c_08_15_Q$datavalue, na.rm=T) - min(FRCH_storm12c_08_15_Q$datavalue, na.rm=T))
+FRCH_storm12d_08_21_Q$datavalue.norm = 
+  (FRCH_storm12d_08_21_Q$datavalue - min(FRCH_storm12d_08_21_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm12d_08_21_Q$datavalue, na.rm=T) - min(FRCH_storm12d_08_21_Q$datavalue, na.rm=T))
+FRCH_storm12e_08_23_Q$datavalue.norm = 
+  (FRCH_storm12e_08_23_Q$datavalue - min(FRCH_storm12e_08_23_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm12e_08_23_Q$datavalue, na.rm=T) - min(FRCH_storm12e_08_23_Q$datavalue, na.rm=T))
+FRCH_storm13_09_20_Q$datavalue.norm = 
+  (FRCH_storm13_09_20_Q$datavalue - min(FRCH_storm13_09_20_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm13_09_20_Q$datavalue, na.rm=T) - min(FRCH_storm13_09_20_Q$datavalue, na.rm=T))
+FRCH_storm14_10_01_Q$datavalue.norm = 
+  (FRCH_storm14_10_01_Q$datavalue - min(FRCH_storm14_10_01_Q$datavalue, na.rm=T)) / 
+  (max(FRCH_storm14_10_01_Q$datavalue, na.rm=T) - min(FRCH_storm14_10_01_Q$datavalue, na.rm=T))
+
+#MOOS
+MOOS_storm1_06_01_Q$datavalue.norm = 
+  (MOOS_storm1_06_01_Q$datavalue - min(MOOS_storm1_06_01_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm1_06_01_Q$datavalue, na.rm=T) - min(MOOS_storm1_06_01_Q$datavalue, na.rm=T))
+MOOS_storm3_07_12_Q$datavalue.norm = 
+  (MOOS_storm3_07_12_Q$datavalue - min(MOOS_storm3_07_12_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm3_07_12_Q$datavalue, na.rm=T) - min(MOOS_storm3_07_12_Q$datavalue, na.rm=T))
+MOOS_storm4_07_25_Q$datavalue.norm = 
+  (MOOS_storm4_07_25_Q$datavalue - min(MOOS_storm4_07_25_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm4_07_25_Q$datavalue, na.rm=T) - min(MOOS_storm4_07_25_Q$datavalue, na.rm=T))
+MOOS_storm5_07_29_Q$datavalue.norm = 
+  (MOOS_storm5_07_29_Q$datavalue - min(MOOS_storm5_07_29_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm5_07_29_Q$datavalue, na.rm=T) - min(MOOS_storm5_07_29_Q$datavalue, na.rm=T))
+MOOS_storm6a_08_01_Q$datavalue.norm = 
+  (MOOS_storm6a_08_01_Q$datavalue - min(MOOS_storm6a_08_01_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm6a_08_01_Q$datavalue, na.rm=T) - min(MOOS_storm6a_08_01_Q$datavalue, na.rm=T))
+MOOS_storm6b_08_02_Q$datavalue.norm = 
+  (MOOS_storm6b_08_02_Q$datavalue - min(MOOS_storm6b_08_02_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm6b_08_02_Q$datavalue, na.rm=T) - min(MOOS_storm6b_08_02_Q$datavalue, na.rm=T))
+MOOS_storm6c_08_03_Q$datavalue.norm = 
+  (MOOS_storm6c_08_03_Q$datavalue - min(MOOS_storm6c_08_03_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm6c_08_03_Q$datavalue, na.rm=T) - min(MOOS_storm6c_08_03_Q$datavalue, na.rm=T))
+MOOS_storm6d_08_05_Q$datavalue.norm = 
+  (MOOS_storm6d_08_05_Q$datavalue - min(MOOS_storm6d_08_05_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm6d_08_05_Q$datavalue, na.rm=T) - min(MOOS_storm6d_08_05_Q$datavalue, na.rm=T))
+MOOS_storm7a_08_13_Q$datavalue.norm = 
+  (MOOS_storm7a_08_13_Q$datavalue - min(MOOS_storm7a_08_13_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm7a_08_13_Q$datavalue, na.rm=T) - min(MOOS_storm7a_08_13_Q$datavalue, na.rm=T))
+MOOS_storm7b_08_14_Q$datavalue.norm = 
+  (MOOS_storm7b_08_14_Q$datavalue - min(MOOS_storm7b_08_14_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm7b_08_14_Q$datavalue, na.rm=T) - min(MOOS_storm7b_08_14_Q$datavalue, na.rm=T))
+MOOS_storm7c_08_15_Q$datavalue.norm = 
+  (MOOS_storm7c_08_15_Q$datavalue - min(MOOS_storm7c_08_15_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm7c_08_15_Q$datavalue, na.rm=T) - min(MOOS_storm7c_08_15_Q$datavalue, na.rm=T))
+MOOS_storm8_09_21_Q$datavalue.norm = 
+  (MOOS_storm8_09_21_Q$datavalue - min(MOOS_storm8_09_21_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm8_09_21_Q$datavalue, na.rm=T) - min(MOOS_storm8_09_21_Q$datavalue, na.rm=T))
+MOOS_storm9_10_02_Q$datavalue.norm = 
+  (MOOS_storm9_10_02_Q$datavalue - min(MOOS_storm9_10_02_Q$datavalue, na.rm=T)) / 
+  (max(MOOS_storm9_10_02_Q$datavalue, na.rm=T) - min(MOOS_storm9_10_02_Q$datavalue, na.rm=T))
+
+#POKE
+POKE_storm1_06_30_Q$datavalue.norm = 
+  (POKE_storm1_06_30_Q$datavalue - min(POKE_storm1_06_30_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm1_06_30_Q$datavalue, na.rm=T) - min(POKE_storm1_06_30_Q$datavalue, na.rm=T))
+POKE_storm2_07_12_Q$datavalue.norm = 
+  (POKE_storm2_07_12_Q$datavalue - min(POKE_storm2_07_12_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm2_07_12_Q$datavalue, na.rm=T) - min(POKE_storm2_07_12_Q$datavalue, na.rm=T))
+POKE_storm3_07_26_Q$datavalue.norm = 
+  (POKE_storm3_07_26_Q$datavalue - min(POKE_storm3_07_26_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm3_07_26_Q$datavalue, na.rm=T) - min(POKE_storm3_07_26_Q$datavalue, na.rm=T))
+POKE_storm4_07_31_Q$datavalue.norm = 
+  (POKE_storm4_07_31_Q$datavalue - min(POKE_storm4_07_31_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm4_07_31_Q$datavalue, na.rm=T) - min(POKE_storm4_07_31_Q$datavalue, na.rm=T))
+POKE_storm5a_08_02_Q$datavalue.norm = 
+  (POKE_storm5a_08_02_Q$datavalue - min(POKE_storm5a_08_02_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm5a_08_02_Q$datavalue, na.rm=T) - min(POKE_storm5a_08_02_Q$datavalue, na.rm=T))
+POKE_storm5b_08_03_Q$datavalue.norm = 
+  (POKE_storm5b_08_03_Q$datavalue - min(POKE_storm5b_08_03_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm5b_08_03_Q$datavalue, na.rm=T) - min(POKE_storm5b_08_03_Q$datavalue, na.rm=T))
+POKE_storm5c_08_05_Q$datavalue.norm = 
+  (POKE_storm5c_08_05_Q$datavalue - min(POKE_storm5c_08_05_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm5c_08_05_Q$datavalue, na.rm=T) - min(POKE_storm5c_08_05_Q$datavalue, na.rm=T))
+POKE_storm5d_08_10_Q$datavalue.norm = 
+  (POKE_storm5d_08_10_Q$datavalue - min(POKE_storm5d_08_10_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm5d_08_10_Q$datavalue, na.rm=T) - min(POKE_storm5d_08_10_Q$datavalue, na.rm=T))
+POKE_storm6a_08_12_Q$datavalue.norm = 
+  (POKE_storm6a_08_12_Q$datavalue - min(POKE_storm6a_08_12_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm6a_08_12_Q$datavalue, na.rm=T) - min(POKE_storm6a_08_12_Q$datavalue, na.rm=T))
+#POKE_storm6b_08_13_Q$datavalue.norm = 
+ ## (POKE_storm6b_08_13_Q$datavalue - min(POKE_storm6b_08_13_Q$datavalue, na.rm=T)) / 
+  #(max(POKE_storm6b_08_13_Q$datavalue, na.rm=T) - min(POKE_storm6b_08_13_Q$datavalue, na.rm=T))
+POKE_storm7_08_15_Q$datavalue.norm = 
+  (POKE_storm7_08_15_Q$datavalue - min(POKE_storm7_08_15_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm7_08_15_Q$datavalue, na.rm=T) - min(POKE_storm7_08_15_Q$datavalue, na.rm=T))
+POKE_storm8_09_29_Q$datavalue.norm = 
+  (POKE_storm8_09_29_Q$datavalue - min(POKE_storm8_09_29_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm8_09_29_Q$datavalue, na.rm=T) - min(POKE_storm8_09_29_Q$datavalue, na.rm=T))
+POKE_storm9_10_04_Q$datavalue.norm = 
+  (POKE_storm9_10_04_Q$datavalue - min(POKE_storm9_10_04_Q$datavalue, na.rm=T)) / 
+  (max(POKE_storm9_10_04_Q$datavalue, na.rm=T) - min(POKE_storm9_10_04_Q$datavalue, na.rm=T))
+
+#STRT
+STRT_storm1_05_31_Q$datavalue.norm = 
+  (STRT_storm1_05_31_Q$datavalue - min(STRT_storm1_05_31_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm1_05_31_Q$datavalue, na.rm=T) - min(STRT_storm1_05_31_Q$datavalue, na.rm=T))
+STRT_storm2_07_12_Q$datavalue.norm = 
+  (STRT_storm2_07_12_Q$datavalue - min(STRT_storm2_07_12_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm2_07_12_Q$datavalue, na.rm=T) - min(STRT_storm2_07_12_Q$datavalue, na.rm=T))
+STRT_storm3a_07_25_Q$datavalue.norm = 
+  (STRT_storm3a_07_25_Q$datavalue - min(STRT_storm3a_07_25_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm3a_07_25_Q$datavalue, na.rm=T) - min(STRT_storm3a_07_25_Q$datavalue, na.rm=T))
+STRT_storm3b_08_05_Q$datavalue.norm = 
+  (STRT_storm3b_08_05_Q$datavalue - min(STRT_storm3b_08_05_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm3b_08_05_Q$datavalue, na.rm=T) - min(STRT_storm3b_08_05_Q$datavalue, na.rm=T))
+STRT_storm3c_08_12_Q$datavalue.norm = 
+  (STRT_storm3c_08_12_Q$datavalue - min(STRT_storm3c_08_12_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm3c_08_12_Q$datavalue, na.rm=T) - min(STRT_storm3c_08_12_Q$datavalue, na.rm=T))
+STRT_storm4_08_15_Q$datavalue.norm = 
+  (STRT_storm4_08_15_Q$datavalue - min(STRT_storm4_08_15_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm4_08_15_Q$datavalue, na.rm=T) - min(STRT_storm4_08_15_Q$datavalue, na.rm=T))
+STRT_storm5_08_20_Q$datavalue.norm = 
+  (STRT_storm5_08_20_Q$datavalue - min(STRT_storm5_08_20_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm5_08_20_Q$datavalue, na.rm=T) - min(STRT_storm5_08_20_Q$datavalue, na.rm=T))
+STRT_storm6_09_20_Q$datavalue.norm = 
+  (STRT_storm6_09_20_Q$datavalue - min(STRT_storm6_09_20_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm6_09_20_Q$datavalue, na.rm=T) - min(STRT_storm6_09_20_Q$datavalue, na.rm=T))
+STRT_storm7_10_01_Q$datavalue.norm = 
+  (STRT_storm7_10_01_Q$datavalue - min(STRT_storm7_10_01_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm7_10_01_Q$datavalue, na.rm=T) - min(STRT_storm7_10_01_Q$datavalue, na.rm=T))
+STRT_storm7b_10_04_Q$datavalue.norm = 
+  (STRT_storm7b_10_04_Q$datavalue - min(STRT_storm7b_10_04_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm7b_10_04_Q$datavalue, na.rm=T) - min(STRT_storm7b_10_04_Q$datavalue, na.rm=T))
+STRT_storm7c_10_09_Q$datavalue.norm = 
+  (STRT_storm7c_10_09_Q$datavalue - min(STRT_storm7c_10_09_Q$datavalue, na.rm=T)) / 
+  (max(STRT_storm7c_10_09_Q$datavalue, na.rm=T) - min(STRT_storm7c_10_09_Q$datavalue, na.rm=T))
+
+#VAUL
+VAUL_storm1_07_13_Q$datavalue.norm = 
+  (VAUL_storm1_07_13_Q$datavalue - min(VAUL_storm1_07_13_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm1_07_13_Q$datavalue, na.rm=T) - min(VAUL_storm1_07_13_Q$datavalue, na.rm=T))
+VAUL_storm2_07_26_Q$datavalue.norm = 
+  (VAUL_storm2_07_26_Q$datavalue - min(VAUL_storm2_07_26_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm2_07_26_Q$datavalue, na.rm=T) - min(VAUL_storm2_07_26_Q$datavalue, na.rm=T))
+VAUL_storm3_07_29_Q$datavalue.norm = 
+  (VAUL_storm3_07_29_Q$datavalue - min(VAUL_storm3_07_29_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm3_07_29_Q$datavalue, na.rm=T) - min(VAUL_storm3_07_29_Q$datavalue, na.rm=T))
+VAUL_storm4a_08_02_Q$datavalue.norm = 
+  (VAUL_storm4a_08_02_Q$datavalue - min(VAUL_storm4a_08_02_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm4a_08_02_Q$datavalue, na.rm=T) - min(VAUL_storm4a_08_02_Q$datavalue, na.rm=T))
+VAUL_storm4b_08_03_Q$datavalue.norm = 
+  (VAUL_storm4b_08_03_Q$datavalue - min(VAUL_storm4b_08_03_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm4b_08_03_Q$datavalue, na.rm=T) - min(VAUL_storm4b_08_03_Q$datavalue, na.rm=T))
+VAUL_storm4c_08_05_Q$datavalue.norm = 
+  (VAUL_storm4c_08_05_Q$datavalue - min(VAUL_storm4c_08_05_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm4c_08_05_Q$datavalue, na.rm=T) - min(VAUL_storm4c_08_05_Q$datavalue, na.rm=T))
+VAUL_storm5_08_12_Q$datavalue.norm = 
+  (VAUL_storm5_08_12_Q$datavalue - min(VAUL_storm5_08_12_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm5_08_12_Q$datavalue, na.rm=T) - min(VAUL_storm5_08_12_Q$datavalue, na.rm=T))
+VAUL_storm6_08_15_Q$datavalue.norm = 
+  (VAUL_storm6_08_15_Q$datavalue - min(VAUL_storm6_08_15_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm6_08_15_Q$datavalue, na.rm=T) - min(VAUL_storm6_08_15_Q$datavalue, na.rm=T))
+VAUL_storm7_09_19_Q$datavalue.norm = 
+  (VAUL_storm7_09_19_Q$datavalue - min(VAUL_storm7_09_19_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm7_09_19_Q$datavalue, na.rm=T) - min(VAUL_storm7_09_19_Q$datavalue, na.rm=T))
+VAUL_storm8a_09_29_Q$datavalue.norm = 
+  (VAUL_storm8a_09_29_Q$datavalue - min(VAUL_storm8a_09_29_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm8a_09_29_Q$datavalue, na.rm=T) - min(VAUL_storm8a_09_29_Q$datavalue, na.rm=T))
+VAUL_storm8b_10_01_Q$datavalue.norm = 
+  (VAUL_storm8b_10_01_Q$datavalue - min(VAUL_storm8b_10_01_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm8b_10_01_Q$datavalue, na.rm=T) - min(VAUL_storm8b_10_01_Q$datavalue, na.rm=T))
+VAUL_storm8c_10_04_Q$datavalue.norm = 
+  (VAUL_storm8c_10_04_Q$datavalue - min(VAUL_storm8c_10_04_Q$datavalue, na.rm=T)) / 
+  (max(VAUL_storm8c_10_04_Q$datavalue, na.rm=T) - min(VAUL_storm8c_10_04_Q$datavalue, na.rm=T))
+
+# normalize solute data #
+
+### remove burst-complied data ###
+
+#NO3
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]][["datavalue"]] = FRCH_NO3_storm_list[[i]][["nitrateuM"]]
+  FRCH_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+for(i in 1:length(MOOS_NO3_storm_list)){
+  MOOS_NO3_storm_list[[i]][["datavalue"]] = MOOS_NO3_storm_list[[i]][["nitrateuM"]]
+  MOOS_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+for(i in 1:length(POKE_NO3_storm_list)){
+  POKE_NO3_storm_list[[i]][["datavalue"]] = POKE_NO3_storm_list[[i]][["nitrateuM"]]
+  POKE_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+for(i in 1:length(STRT_NO3_storm_list)){
+  STRT_NO3_storm_list[[i]][["datavalue"]] = STRT_NO3_storm_list[[i]][["nitrateuM"]]
+  STRT_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+for(i in 1:length(VAUL_NO3_storm_list)){
+  VAUL_NO3_storm_list[[i]][["datavalue"]] = VAUL_NO3_storm_list[[i]][["nitrateuM"]]
+  VAUL_NO3_storm_list[[i]][["nitrateuM"]] = NULL
+}
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]][["datavalue"]] = FRCH_fDOM_storm_list[[i]][["fDOM.QSU.mn"]]
+  FRCH_fDOM_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  FRCH_fDOM_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  FRCH_fDOM_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list)){
+  MOOS_fDOM_storm_list[[i]][["datavalue"]] = MOOS_fDOM_storm_list[[i]][["fDOM.QSU.mn"]]
+  MOOS_fDOM_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  MOOS_fDOM_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  MOOS_fDOM_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(POKE_fDOM_storm_list)){
+  POKE_fDOM_storm_list[[i]][["datavalue"]] = POKE_fDOM_storm_list[[i]][["fDOM.QSU.mn"]]
+  POKE_fDOM_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  POKE_fDOM_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  POKE_fDOM_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(STRT_fDOM_storm_list)){
+  STRT_fDOM_storm_list[[i]][["datavalue"]] = STRT_fDOM_storm_list[[i]][["fDOM.QSU.mn"]]
+  STRT_fDOM_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  STRT_fDOM_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  STRT_fDOM_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list)){
+  VAUL_fDOM_storm_list[[i]][["datavalue"]] = VAUL_fDOM_storm_list[[i]][["fDOM.QSU.mn"]]
+  VAUL_fDOM_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  VAUL_fDOM_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  VAUL_fDOM_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+#SPC
+for(i in 1:length(FRCH_SPC_storm_list)){
+  FRCH_SPC_storm_list[[i]][["datavalue"]] = FRCH_SPC_storm_list[[i]][["SpCond.µS.cm"]]
+  FRCH_SPC_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  FRCH_SPC_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  FRCH_SPC_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(MOOS_SPC_storm_list)){
+  MOOS_SPC_storm_list[[i]][["datavalue"]] = MOOS_SPC_storm_list[[i]][["SpCond.µS.cm"]]
+  MOOS_SPC_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  MOOS_SPC_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  MOOS_SPC_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(POKE_SPC_storm_list)){
+  POKE_SPC_storm_list[[i]][["datavalue"]] = POKE_SPC_storm_list[[i]][["SpCond.µS.cm"]]
+  POKE_SPC_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  POKE_SPC_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  POKE_SPC_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(STRT_SPC_storm_list)){
+  STRT_SPC_storm_list[[i]][["datavalue"]] = STRT_SPC_storm_list[[i]][["SpCond.µS.cm"]]
+  STRT_SPC_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  STRT_SPC_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  STRT_SPC_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+for(i in 1:length(VAUL_SPC_storm_list)){
+  VAUL_SPC_storm_list[[i]][["datavalue"]] = VAUL_SPC_storm_list[[i]][["SpCond.µS.cm"]]
+  VAUL_SPC_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+  VAUL_SPC_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  VAUL_SPC_storm_list[[i]][["Turbidity.FNU"]] = NULL
+}
+
+#turb
+for(i in 1:length(FRCH_turb_storm_list)){
+  FRCH_turb_storm_list[[i]][["datavalue"]] = FRCH_turb_storm_list[[i]][["Turbidity.FNU"]]
+  FRCH_turb_storm_list[[i]][["Turbidity.FNU"]] = NULL
+  FRCH_turb_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  FRCH_turb_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+for(i in 1:length(MOOS_turb_storm_list)){
+  MOOS_turb_storm_list[[i]][["datavalue"]] = MOOS_turb_storm_list[[i]][["Turbidity.FNU"]]
+  MOOS_turb_storm_list[[i]][["Turbidity.FNU"]] = NULL
+  MOOS_turb_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  MOOS_turb_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+for(i in 1:length(POKE_turb_storm_list)){
+  POKE_turb_storm_list[[i]][["datavalue"]] = POKE_turb_storm_list[[i]][["Turbidity.FNU"]]
+  POKE_turb_storm_list[[i]][["Turbidity.FNU"]] = NULL
+  POKE_turb_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  POKE_turb_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+for(i in 1:length(STRT_turb_storm_list)){
+  STRT_turb_storm_list[[i]][["datavalue"]] = STRT_turb_storm_list[[i]][["Turbidity.FNU"]]
+  STRT_turb_storm_list[[i]][["Turbidity.FNU"]] = NULL
+  STRT_turb_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  STRT_turb_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+for(i in 1:length(VAUL_turb_storm_list)){
+  VAUL_turb_storm_list[[i]][["datavalue"]] = VAUL_turb_storm_list[[i]][["Turbidity.FNU"]]
+  VAUL_turb_storm_list[[i]][["Turbidity.FNU"]] = NULL
+  VAUL_turb_storm_list[[i]][["fDOM.QSU.mn"]] = NULL
+  VAUL_turb_storm_list[[i]][["SpCond.µS.cm"]] = NULL
+}
+
+### normalize burst data ###
+
+#NO3
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_NO3_storm_list[[i]][["datavalue"]]-min(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_NO3_storm_list)){
+  MOOS_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (MOOS_NO3_storm_list[[i]][["datavalue"]]-min(MOOS_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(MOOS_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_NO3_storm_list)){
+  POKE_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (POKE_NO3_storm_list[[i]][["datavalue"]]-min(POKE_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(POKE_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_NO3_storm_list)){
+  STRT_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (STRT_NO3_storm_list[[i]][["datavalue"]]-min(STRT_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(STRT_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_NO3_storm_list)){
+  VAUL_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (VAUL_NO3_storm_list[[i]][["datavalue"]]-min(VAUL_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(VAUL_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_fDOM_storm_list[[i]][["datavalue"]]-min(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list)){
+  MOOS_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (MOOS_fDOM_storm_list[[i]][["datavalue"]]-min(MOOS_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(MOOS_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_fDOM_storm_list)){
+  POKE_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (POKE_fDOM_storm_list[[i]][["datavalue"]]-min(POKE_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(POKE_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_fDOM_storm_list)){
+  STRT_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (STRT_fDOM_storm_list[[i]][["datavalue"]]-min(STRT_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(STRT_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list)){
+  VAUL_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (VAUL_fDOM_storm_list[[i]][["datavalue"]]-min(VAUL_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(VAUL_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+#SPC
+for(i in 1:length(FRCH_SPC_storm_list)){
+  FRCH_SPC_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_SPC_storm_list[[i]][["datavalue"]]-min(FRCH_SPC_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_SPC_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_SPC_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_SPC_storm_list)){
+  MOOS_SPC_storm_list[[i]][["datavalue.norm"]] = 
+    (MOOS_SPC_storm_list[[i]][["datavalue"]]-min(MOOS_SPC_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_SPC_storm_list[[i]][["datavalue"]], na.rm=T)-min(MOOS_SPC_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_SPC_storm_list)){
+  POKE_SPC_storm_list[[i]][["datavalue.norm"]] = 
+    (POKE_SPC_storm_list[[i]][["datavalue"]]-min(POKE_SPC_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_SPC_storm_list[[i]][["datavalue"]], na.rm=T)-min(POKE_SPC_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_SPC_storm_list)){
+  STRT_SPC_storm_list[[i]][["datavalue.norm"]] = 
+    (STRT_SPC_storm_list[[i]][["datavalue"]]-min(STRT_SPC_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_SPC_storm_list[[i]][["datavalue"]], na.rm=T)-min(STRT_SPC_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_SPC_storm_list)){
+  VAUL_SPC_storm_list[[i]][["datavalue.norm"]] = 
+    (VAUL_SPC_storm_list[[i]][["datavalue"]]-min(VAUL_SPC_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_SPC_storm_list[[i]][["datavalue"]], na.rm=T)-min(VAUL_SPC_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+#turb
+for(i in 1:length(FRCH_turb_storm_list)){
+  FRCH_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (FRCH_turb_storm_list[[i]][["datavalue"]]-min(FRCH_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(FRCH_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_turb_storm_list)){
+  MOOS_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (MOOS_turb_storm_list[[i]][["datavalue"]]-min(MOOS_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(MOOS_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_turb_storm_list)){
+  POKE_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (POKE_turb_storm_list[[i]][["datavalue"]]-min(POKE_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(POKE_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_turb_storm_list)){
+  STRT_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (STRT_turb_storm_list[[i]][["datavalue"]]-min(STRT_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(STRT_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_turb_storm_list)){
+  VAUL_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (VAUL_turb_storm_list[[i]][["datavalue"]]-min(VAUL_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(VAUL_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
+# fxn: calculate FI by difference and bootstrap CIs #
+
+FI_diff = function(dat_Q, dat_response) {
+  FI_dat = rbind(dat_response[as.POSIXct(dat_response$valuedatetime) == min(as.POSIXct(dat_response$valuedatetime)),], 
+                 dat_response[as.POSIXct(dat_response$valuedatetime) == as.POSIXct(dat_Q$valuedatetime[dat_Q$datavalue.norm == max(dat_Q$datavalue.norm)]),])
+  
+  FI_dat$valuedatetime = as.character(as.POSIXct(FI_dat$valuedatetime))
+  
+  dat_Q$valuedatetime = as.character(as.POSIXct(dat_Q$valuedatetime))
+  
+  FI_dat = left_join(FI_dat, 
+                     subset(dat_Q, select=c("valuedatetime", "datavalue.norm")),
+                     by="valuedatetime")
+  
+  names(FI_dat) = c("valuedatetime", "datavalue", "datavalue.norm", "Q")
+  
+  FI_dat$datavalue.norm = as.numeric(FI_dat$datavalue.norm)
+  FI_dat$Q = as.numeric(FI_dat$Q)
+  
+  FI = mean(FI_dat$datavalue.norm[FI_dat$valuedatetime == max(FI_dat$valuedatetime)]) - mean(FI_dat$datavalue.norm[FI_dat$valuedatetime == min(FI_dat$valuedatetime)])
+  
+  meanDiff = function(data, indices) { 
+    d <- data[indices,] # allows boot to select sample
+    m1 = mean(d$datavalue.norm[d$valuedatetime == max(d$valuedatetime)])
+    m2 = mean(d$datavalue.norm[d$valuedatetime == min(d$valuedatetime)])
+    m = m1 - m2
+    return(m)
+  }
+  
+  FI_boot = boot(FI_dat, meanDiff, R = 10000, strata = as.factor(FI_dat[,1]))
+  FI_bootCI = boot.ci(FI_boot, type="bca")
+  
+  FI_bootCI = data.frame(cbind(FI_boot$t0, FI_bootCI[["bca"]][4], FI_bootCI[["bca"]][5]))
+  names(FI_bootCI) = c("FI", "lower", "upper")
+  
+  FI_results = list(FI_dat, FI_bootCI)
+  
+  return(FI_results)
+}
+FRCH_storm1_05_31_NO3_test = FI_diff(FRCH_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_NO3`)
+
+# calculate FI by difference and bootstrap CIs #
+# FRCH # 
+#NO3 #
+FRCH_storm1_05_31_NO3_FI = FI_diff(FRCH_storm1_05_31_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_NO3`)
+FRCH_storm2_06_15_NO3_FI = FI_diff(FRCH_storm2_06_15_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_06_15_NO3`)
+FRCH_storm3_06_18_NO3_FI = FI_diff(FRCH_storm3_06_18_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_06_18_NO3`)
+FRCH_storm4_06_20_NO3_FI = FI_diff(FRCH_storm4_06_20_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_06_20_NO3`)
+FRCH_storm5_06_22_NO3_FI =  FI_diff(FRCH_storm5_06_22_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5_06_22_NO3`)
+FRCH_storm6_07_12_NO3_FI = FI_diff(FRCH_storm6_07_12_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6_07_12_NO3`)
+FRCH_storm7_07_25_NO3_FI = FI_diff(FRCH_storm7_07_25_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_07_25_NO3`)
+#FRCH_storm8_07_28_NO3_FI = FI_diff(FRCH_storm8_07_28_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_07_28_NO3`)
+FRCH_storm9a_07_29_NO3_FI = FI_diff(FRCH_storm9a_07_29_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9a_07_29_NO3`)
+FRCH_storm9b_07_30_NO3_FI = FI_diff(FRCH_storm9b_07_30_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9b_07_30_NO3`)
+FRCH_storm10a_08_01_NO3_FI =FI_diff(FRCH_storm10a_08_01_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10a_08_01_NO3`)
+FRCH_storm10b_08_02_NO3_FI = FI_diff(FRCH_storm10b_08_02_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10b_08_02_NO3`)
+#FRCH_storm10c_08_03_NO3_FI = FI_diff(FRCH_storm10c_08_03_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10c_08_03_NO3`)
+FRCH_storm11_08_05_NO3_FI = FI_diff(FRCH_storm11_08_05_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm11_08_05_NO3`)
+FRCH_storm12a_08_12_NO3_FI =  FI_diff(FRCH_storm12a_08_12_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12a_08_12_NO3`)
+FRCH_storm12b_08_14_NO3_FI = FI_diff(FRCH_storm12b_08_14_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12b_08_14_NO3`)
+FRCH_storm12c_08_15_NO3_FI =  FI_diff(FRCH_storm12c_08_15_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12c_08_15_NO3`)
+FRCH_storm12d_08_21_NO3_FI = FI_diff(FRCH_storm12d_08_21_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12d_08_21_NO3`)
+FRCH_storm12e_08_23_NO3_FI = FI_diff(FRCH_storm12e_08_23_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12e_08_23_NO3`)
+FRCH_storm13_09_20_NO3_FI = FI_diff(FRCH_storm13_09_20_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm13_09_20_NO3`)
+FRCH_storm14_10_01_NO3_FI =FI_diff(FRCH_storm14_10_01_Q, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm14_10_01_NO3`)
+  
+#fDOM #
+FRCH_storm1_05_31_fDOM_FI = FI_diff(FRCH_storm1_05_31_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_fDOM`)
+FRCH_storm2_06_15_fDOM_FI = FI_diff(FRCH_storm2_06_15_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_06_15_fDOM`)
+FRCH_storm3_06_18_fDOM_FI = FI_diff(FRCH_storm3_06_18_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_06_18_fDOM`)
+FRCH_storm4_06_20_fDOM_FI = FI_diff(FRCH_storm4_06_20_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_06_20_fDOM`)
+FRCH_storm5_06_22_fDOM_FI =  FI_diff(FRCH_storm5_06_22_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5_06_22_fDOM`)
+#FRCH_storm6_07_12_fDOM_FI = FI_diff(FRCH_storm6_07_12_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6_07_12_fDOM`)
+FRCH_storm7_07_25_fDOM_FI = FI_diff(FRCH_storm7_07_25_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_07_25_fDOM`)
+#FRCH_storm8_07_28_fDOM_FI = FI_diff(FRCH_storm8_07_28_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_07_28_fDOM`)
+FRCH_storm9a_07_29_fDOM_FI = FI_diff(FRCH_storm9a_07_29_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9a_07_29_fDOM`)
+FRCH_storm9b_07_30_fDOM_FI = FI_diff(FRCH_storm9b_07_30_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9b_07_30_fDOM`)
+FRCH_storm10a_08_01_fDOM_FI =FI_diff(FRCH_storm10a_08_01_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10a_08_01_fDOM`)
+FRCH_storm10b_08_02_fDOM_FI = FI_diff(FRCH_storm10b_08_02_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10b_08_02_fDOM`)
+FRCH_storm10c_08_03_fDOM_FI = FI_diff(FRCH_storm10c_08_03_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10c_08_03_fDOM`)
+FRCH_storm11_08_05_fDOM_FI = FI_diff(FRCH_storm11_08_05_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm11_08_05_fDOM`)
+FRCH_storm12a_08_12_fDOM_FI =  FI_diff(FRCH_storm12a_08_12_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12a_08_12_fDOM`)
+FRCH_storm12b_08_14_fDOM_FI = FI_diff(FRCH_storm12b_08_14_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12b_08_14_fDOM`)
+FRCH_storm12c_08_15_fDOM_FI =  FI_diff(FRCH_storm12c_08_15_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12c_08_15_fDOM`)
+FRCH_storm12d_08_21_fDOM_FI = FI_diff(FRCH_storm12d_08_21_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12d_08_21_fDOM`)
+FRCH_storm12e_08_23_fDOM_FI = FI_diff(FRCH_storm12e_08_23_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12e_08_23_fDOM`)
+#FRCH_storm13_09_20_fDOM_FI = FI_diff(FRCH_storm13_09_20_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm13_09_20_fDOM`)
+FRCH_storm14_10_01_fDOM_FI =FI_diff(FRCH_storm14_10_01_Q, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm14_10_01_fDOM`)
+
+# SPC #
+FRCH_storm1_05_31_SPC_FI = FI_diff(FRCH_storm1_05_31_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_SPC`)
+FRCH_storm2_06_15_SPC_FI = FI_diff(FRCH_storm2_06_15_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_06_15_SPC`)
+FRCH_storm3_06_18_SPC_FI = FI_diff(FRCH_storm3_06_18_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_06_18_SPC`)
+FRCH_storm4_06_20_SPC_FI = FI_diff(FRCH_storm4_06_20_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_06_20_SPC`)
+FRCH_storm5_06_22_SPC_FI =  FI_diff(FRCH_storm5_06_22_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5_06_22_SPC`)
+#FRCH_storm6_07_12_SPC_FI = FI_diff(FRCH_storm6_07_12_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6_07_12_SPC`)
+FRCH_storm7_07_25_SPC_FI = FI_diff(FRCH_storm7_07_25_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_07_25_SPC`)
+#FRCH_storm8_07_28_SPC_FI = FI_diff(FRCH_storm8_07_28_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_07_28_SPC`)
+FRCH_storm9a_07_29_SPC_FI = FI_diff(FRCH_storm9a_07_29_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9a_07_29_SPC`)
+FRCH_storm9b_07_30_SPC_FI = FI_diff(FRCH_storm9b_07_30_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9b_07_30_SPC`)
+FRCH_storm10a_08_01_SPC_FI =FI_diff(FRCH_storm10a_08_01_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10a_08_01_SPC`)
+FRCH_storm10b_08_02_SPC_FI = FI_diff(FRCH_storm10b_08_02_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10b_08_02_SPC`)
+FRCH_storm10c_08_03_SPC_FI = FI_diff(FRCH_storm10c_08_03_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10c_08_03_SPC`)
+FRCH_storm11_08_05_SPC_FI = FI_diff(FRCH_storm11_08_05_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm11_08_05_SPC`)
+FRCH_storm12a_08_12_SPC_FI =  FI_diff(FRCH_storm12a_08_12_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12a_08_12_SPC`)
+FRCH_storm12b_08_14_SPC_FI = FI_diff(FRCH_storm12b_08_14_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12b_08_14_SPC`)
+FRCH_storm12c_08_15_SPC_FI =  FI_diff(FRCH_storm12c_08_15_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12c_08_15_SPC`)
+FRCH_storm12d_08_21_SPC_FI = FI_diff(FRCH_storm12d_08_21_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12d_08_21_SPC`)
+FRCH_storm12e_08_23_SPC_FI = FI_diff(FRCH_storm12e_08_23_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12e_08_23_SPC`)
+#FRCH_storm13_09_20_SPC_FI = FI_diff(FRCH_storm13_09_20_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm13_09_20_SPC`)
+FRCH_storm14_10_01_SPC_FI =FI_diff(FRCH_storm14_10_01_Q, FRCH_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm14_10_01_SPC`)
+
+# turb #
+FRCH_storm1_05_31_turb_FI = FI_diff(FRCH_storm1_05_31_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_05_31_Turb`)
+FRCH_storm2_06_15_turb_FI = FI_diff(FRCH_storm2_06_15_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_06_15_Turb`)
+FRCH_storm3_06_18_turb_FI = FI_diff(FRCH_storm3_06_18_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_06_18_Turb`)
+FRCH_storm4_06_20_turb_FI = FI_diff(FRCH_storm4_06_20_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_06_20_Turb`)
+FRCH_storm5_06_22_turb_FI =  FI_diff(FRCH_storm5_06_22_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5_06_22_Turb`)
+#FRCH_storm6_07_12_turb_FI = FI_diff(FRCH_storm6_07_12_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6_07_12_Turb`)
+FRCH_storm7_07_25_turb_FI = FI_diff(FRCH_storm7_07_25_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_07_25_Turb`)
+#FRCH_storm8_07_28_turb_FI = FI_diff(FRCH_storm8_07_28_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_07_28_Turb`)
+FRCH_storm9a_07_29_turb_FI = FI_diff(FRCH_storm9a_07_29_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9a_07_29_Turb`)
+FRCH_storm9b_07_30_turb_FI = FI_diff(FRCH_storm9b_07_30_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm9b_07_30_Turb`)
+FRCH_storm10a_08_01_turb_FI =FI_diff(FRCH_storm10a_08_01_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10a_08_01_Turb`)
+FRCH_storm10b_08_02_turb_FI = FI_diff(FRCH_storm10b_08_02_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10b_08_02_Turb`)
+FRCH_storm10c_08_03_turb_FI = FI_diff(FRCH_storm10c_08_03_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm10c_08_03_Turb`)
+FRCH_storm11_08_05_turb_FI = FI_diff(FRCH_storm11_08_05_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm11_08_05_Turb`)
+FRCH_storm12a_08_12_turb_FI =  FI_diff(FRCH_storm12a_08_12_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12a_08_12_Turb`)
+FRCH_storm12b_08_14_turb_FI = FI_diff(FRCH_storm12b_08_14_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12b_08_14_Turb`)
+FRCH_storm12c_08_15_turb_FI =  FI_diff(FRCH_storm12c_08_15_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12c_08_15_Turb`)
+FRCH_storm12d_08_21_turb_FI = FI_diff(FRCH_storm12d_08_21_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12d_08_21_Turb`)
+FRCH_storm12e_08_23_turb_FI = FI_diff(FRCH_storm12e_08_23_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm12e_08_23_Turb`)
+#FRCH_storm13_09_20_turb_FI = FI_diff(FRCH_storm13_09_20_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm13_09_20_Turb`)
+FRCH_storm14_10_01_turb_FI =FI_diff(FRCH_storm14_10_01_Q, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm14_10_01_Turb`)
+
+# MOOS # 
+#NO3 #
+MOOS_storm1_06_01_NO3_FI = FI_diff(MOOS_storm1_06_01_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_06_01_NO3`)
+MOOS_storm3_07_12_NO3_FI = FI_diff(MOOS_storm3_07_12_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3_07_12_NO3`)
+#MOOS_storm4_07_25_NO3_FI= FI_diff(MOOS_storm4_07_25_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4_07_25_NO3`)
+MOOS_storm5_07_29_NO3_FI= FI_diff(MOOS_storm5_07_29_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5_07_29_NO3`)
+MOOS_storm6a_08_01_NO3_FI= FI_diff(MOOS_storm6a_08_01_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6a_08_01_NO3`)
+#MOOS_storm6b_08_02_NO3_FI= FI_diff(MOOS_storm6b_08_02_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6b_08_02_NO3`)
+#MOOS_storm6c_08_03_NO3_FI= FI_diff(MOOS_storm6c_08_03_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6c_08_03_NO3`)
+MOOS_storm7a_08_13_NO3_FI= FI_diff(MOOS_storm7a_08_13_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7a_08_13_NO3`)
+MOOS_storm7b_08_14_NO3_FI= FI_diff(MOOS_storm7b_08_14_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7b_08_14_NO3`)
+MOOS_storm7c_08_15_NO3_FI= FI_diff(MOOS_storm7c_08_15_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7c_08_15_NO3`)
+MOOS_storm8_09_21_NO3_FI= FI_diff(MOOS_storm8_09_21_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm8_09_21_NO3`)
+MOOS_storm9_10_02_NO3_FI= FI_diff(MOOS_storm9_10_02_Q, MOOS_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm9_10_02_NO3`)
+
+#fDOM #
+MOOS_storm1_06_01_fDOM_FI = FI_diff(MOOS_storm1_06_01_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_06_01_fDOM`)
+#MOOS_storm3_07_12_fDOM_FI = FI_diff(MOOS_storm3_07_12_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3_07_12_fDOM`)
+#MOOS_storm4_07_25_fDOM_FI= FI_diff(MOOS_storm4_07_25_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4_07_25_fDOM`)
+#MOOS_storm5_07_29_fDOM_FI= FI_diff(MOOS_storm5_07_29_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5_07_29_fDOM`)
+MOOS_storm6a_08_01_fDOM_FI= FI_diff(MOOS_storm6a_08_01_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6a_08_01_fDOM`)
+#MOOS_storm6b_08_02_fDOM_FI= FI_diff(MOOS_storm6b_08_02_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6b_08_02_fDOM`)
+MOOS_storm6c_08_03_fDOM_FI= FI_diff(MOOS_storm6c_08_03_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6c_08_03_fDOM`)
+MOOS_storm7a_08_13_fDOM_FI= FI_diff(MOOS_storm7a_08_13_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7a_08_13_fDOM`)
+MOOS_storm7b_08_14_fDOM_FI= FI_diff(MOOS_storm7b_08_14_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7b_08_14_fDOM`)
+MOOS_storm7c_08_15_fDOM_FI= FI_diff(MOOS_storm7c_08_15_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7c_08_15_fDOM`)
+#MOOS_storm8_09_21_fDOM_FI= FI_diff(MOOS_storm8_09_21_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm8_09_21_fDOM`)
+#MOOS_storm9_10_02_fDOM_FI= FI_diff(MOOS_storm9_10_02_Q, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm9_10_02_fDOM`)
+
+#SPC #
+MOOS_storm1_06_01_SPC_FI = FI_diff(MOOS_storm1_06_01_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_06_01_SPC`)
+#MOOS_storm3_07_12_SPC_FI = FI_diff(MOOS_storm3_07_12_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3_07_12_SPC`)
+#MOOS_storm4_07_25_SPC_FI= FI_diff(MOOS_storm4_07_25_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4_07_25_SPC`)
+#MOOS_storm5_07_29_SPC_FI= FI_diff(MOOS_storm5_07_29_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5_07_29_SPC`)
+MOOS_storm6a_08_01_SPC_FI= FI_diff(MOOS_storm6a_08_01_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6a_08_01_SPC`)
+#MOOS_storm6b_08_02_SPC_FI= FI_diff(MOOS_storm6b_08_02_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6b_08_02_SPC`)
+MOOS_storm6c_08_03_SPC_FI= FI_diff(MOOS_storm6c_08_03_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6c_08_03_SPC`)
+MOOS_storm7a_08_13_SPC_FI= FI_diff(MOOS_storm7a_08_13_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7a_08_13_SPC`)
+MOOS_storm7b_08_14_SPC_FI= FI_diff(MOOS_storm7b_08_14_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7b_08_14_SPC`)
+MOOS_storm7c_08_15_SPC_FI= FI_diff(MOOS_storm7c_08_15_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7c_08_15_SPC`)
+#MOOS_storm8_09_21_SPC_FI= FI_diff(MOOS_storm8_09_21_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm8_09_21_SPC`)
+#MOOS_storm9_10_02_SPC_FI= FI_diff(MOOS_storm9_10_02_Q, MOOS_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm9_10_02_SPC`)
+
+# turb #
+MOOS_storm1_06_01_turb_FI = FI_diff(MOOS_storm1_06_01_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_06_01_Turb`)
+#MOOS_storm3_07_12_turb_FI = FI_diff(MOOS_storm3_07_12_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3_07_12_Turb`) # empty 
+#MOOS_storm4_07_25_turb_FI= FI_diff(MOOS_storm4_07_25_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4_07_25_Turb`)
+#MOOS_storm5_07_29_turb_FI= FI_diff(MOOS_storm5_07_29_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5_07_29_Turb`)
+MOOS_storm6a_08_01_turb_FI= FI_diff(MOOS_storm6a_08_01_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6a_08_01_Turb`)
+#MOOS_storm6b_08_02_turb_FI= FI_diff(MOOS_storm6b_08_02_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6b_08_02_Turb`)
+MOOS_storm6c_08_03_turb_FI= FI_diff(MOOS_storm6c_08_03_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6c_08_03_Turb`)
+MOOS_storm7a_08_13_turb_FI= FI_diff(MOOS_storm7a_08_13_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7a_08_13_Turb`)
+MOOS_storm7b_08_14_turb_FI= FI_diff(MOOS_storm7b_08_14_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7b_08_14_Turb`)
+MOOS_storm7c_08_15_turb_FI= FI_diff(MOOS_storm7c_08_15_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7c_08_15_Turb`)
+#MOOS_storm8_09_21_turb_FI= FI_diff(MOOS_storm8_09_21_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm8_09_21_Turb`)
+#MOOS_storm9_10_02_turb_FI= FI_diff(MOOS_storm9_10_02_Q, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm9_10_02_Turb`)
+
+# POKE # 
+#NO3 #
+POKE_storm1_06_30_NO3_FI = FI_diff(POKE_storm1_06_30_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_06_30_NO3`)
+POKE_storm2_07_12_NO3_FI = FI_diff(POKE_storm2_07_12_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_07_12_NO3`) 
+POKE_storm3_07_26_NO3_FI = FI_diff(POKE_storm3_07_26_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_07_26_NO3`) # all values are the same 0.5564
+POKE_storm4_07_31_NO3_FI = FI_diff(POKE_storm4_07_31_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_31_NO3`)# all values are the same  0.60909
+POKE_storm5a_08_02_NO3_FI = FI_diff(POKE_storm5a_08_02_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5a_08_02_NO3`)# all values are the same  0.357142
+POKE_storm5b_08_03_NO3_FI = FI_diff(POKE_storm5b_08_03_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5b_08_03_NO3`)# all values are the same  0.1878755
+#POKE_storm5c_08_05_NO3_FI = FI_diff(POKE_storm5c_08_05_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5c_08_05_NO3`) # didnt work 
+POKE_storm5d_08_10_NO3_FI = FI_diff(POKE_storm5d_08_10_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5d_08_10_NO3`)# all values are the same 0.06321839
+#POKE_storm6a_08_12_NO3_FI = FI_diff(POKE_storm6a_08_12_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6a_08_12_NO3`) # didnt work 
+#POKE_storm6b_08_13_NO3_FI = FI_diff(POKE_storm6b_08_13_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6b_08_13_NO3`) # didnt work 
+#POKE_storm7_08_15_NO3_FI = FI_diff(POKE_storm7_08_15_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7_08_15_NO3`) # didnt work 
+POKE_storm8_09_29_NO3_FI = FI_diff(POKE_storm8_09_29_Q, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm8_09_29_NO3`)
+#POKE_storm9_10_04_NO3_FI = FI_diff(POKE_storm9_10_04_Q,POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm9_10_04_NO3`) # didnt work 
+
+#fDOM #
+POKE_storm1_06_30_fDOM_FI = FI_diff(POKE_storm1_06_30_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_06_30_fDOM`)
+POKE_storm2_07_12_fDOM_FI = FI_diff(POKE_storm2_07_12_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_07_12_fDOM`) 
+POKE_storm3_07_26_fDOM_FI = FI_diff(POKE_storm3_07_26_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_07_26_fDOM`) 
+POKE_storm4_07_31_fDOM_FI = FI_diff(POKE_storm4_07_31_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_31_fDOM`)
+POKE_storm5a_08_02_fDOM_FI = FI_diff(POKE_storm5a_08_02_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5a_08_02_fDOM`)
+POKE_storm5b_08_03_fDOM_FI = FI_diff(POKE_storm5b_08_03_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5b_08_03_fDOM`)
+POKE_storm5c_08_05_fDOM_FI = FI_diff(POKE_storm5c_08_05_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5c_08_05_fDOM`) 
+POKE_storm5d_08_10_fDOM_FI = FI_diff(POKE_storm5d_08_10_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5d_08_10_fDOM`)
+POKE_storm6a_08_12_fDOM_FI = FI_diff(POKE_storm6a_08_12_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6a_08_12_fDOM`) 
+#POKE_storm6b_08_13_fDOM_FI = FI_diff(POKE_storm6b_08_13_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6b_08_13_fDOM`) # didnt work 
+POKE_storm7_08_15_fDOM_FI = FI_diff(POKE_storm7_08_15_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7_08_15_fDOM`)
+POKE_storm8_09_29_fDOM_FI = FI_diff(POKE_storm8_09_29_Q, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm8_09_29_fDOM`)
+#POKE_storm9_10_04_fDOM_FI = FI_diff(POKE_storm9_10_04_Q,POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm9_10_04_fDOM`) # didnt work 
+
+#SPC #
+POKE_storm1_06_30_SPC_FI = FI_diff(POKE_storm1_06_30_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_06_30_SPC`)
+POKE_storm2_07_12_SPC_FI = FI_diff(POKE_storm2_07_12_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_07_12_SPC`) 
+POKE_storm3_07_26_SPC_FI = FI_diff(POKE_storm3_07_26_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_07_26_SPC`) 
+POKE_storm4_07_31_SPC_FI = FI_diff(POKE_storm4_07_31_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_31_SPC`)
+POKE_storm5a_08_02_SPC_FI = FI_diff(POKE_storm5a_08_02_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5a_08_02_SPC`)
+POKE_storm5b_08_03_SPC_FI = FI_diff(POKE_storm5b_08_03_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5b_08_03_SPC`)
+POKE_storm5c_08_05_SPC_FI = FI_diff(POKE_storm5c_08_05_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5c_08_05_SPC`) 
+POKE_storm5d_08_10_SPC_FI = FI_diff(POKE_storm5d_08_10_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5d_08_10_SPC`)
+POKE_storm6a_08_12_SPC_FI = FI_diff(POKE_storm6a_08_12_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6a_08_12_SPC`) 
+#POKE_storm6b_08_13_SPC_FI = FI_diff(POKE_storm6b_08_13_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6b_08_13_SPC`) # didnt work 
+POKE_storm7_08_15_SPC_FI = FI_diff(POKE_storm7_08_15_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7_08_15_SPC`)
+POKE_storm8_09_29_SPC_FI = FI_diff(POKE_storm8_09_29_Q, POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm8_09_29_SPC`)
+#POKE_storm9_10_04_SPC_FI = FI_diff(POKE_storm9_10_04_Q,POKE_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm9_10_04_SPC`) # didnt work 
+
+#turb #
+POKE_storm1_06_30_turb_FI = FI_diff(POKE_storm1_06_30_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_06_30_Turb`)
+POKE_storm2_07_12_turb_FI = FI_diff(POKE_storm2_07_12_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_07_12_Turb`) 
+POKE_storm3_07_26_turb_FI = FI_diff(POKE_storm3_07_26_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_07_26_Turb`) 
+POKE_storm4_07_31_turb_FI = FI_diff(POKE_storm4_07_31_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_31_Turb`)
+POKE_storm5a_08_02_turb_FI = FI_diff(POKE_storm5a_08_02_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5a_08_02_Turb`)
+POKE_storm5b_08_03_turb_FI = FI_diff(POKE_storm5b_08_03_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5b_08_03_Turb`)
+POKE_storm5c_08_05_turb_FI = FI_diff(POKE_storm5c_08_05_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5c_08_05_Turb`) 
+POKE_storm5d_08_10_turb_FI = FI_diff(POKE_storm5d_08_10_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5d_08_10_Turb`)
+POKE_storm6a_08_12_turb_FI = FI_diff(POKE_storm6a_08_12_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6a_08_12_Turb`) 
+#POKE_storm6b_08_13_turb_FI = FI_diff(POKE_storm6b_08_13_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6b_08_13_Turb`) # didnt work 
+POKE_storm7_08_15_turb_FI = FI_diff(POKE_storm7_08_15_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7_08_15_Turb`)
+POKE_storm8_09_29_turb_FI = FI_diff(POKE_storm8_09_29_Q, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm8_09_29_Turb`)
+#POKE_storm9_10_04_turb_FI = FI_diff(POKE_storm9_10_04_Q,POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm9_10_04_Turb`) # didnt work 
+
+# STRT # 
+#NO3 #
+STRT_storm1_05_31_NO3_FI = FI_diff(STRT_storm1_05_31_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1_05_31_NO3`)
+STRT_storm2_07_12_NO3_FI = FI_diff(STRT_storm2_07_12_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_12_NO3`)
+#STRT_storm3a_07_25_NO3_FI = FI_diff(STRT_storm3a_07_25_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3a_07_25_NO3`) # didnt work 
+#STRT_storm3b_08_05_NO3_FI = FI_diff(STRT_storm3b_08_05_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3b_08_05_NO3`) # didnt work 
+STRT_storm3c_08_12_NO3_FI = FI_diff(STRT_storm3c_08_12_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3c_08_12_NO3`)
+#STRT_storm4_08_15_NO3_FI = FI_diff(STRT_storm4_08_15_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4_08_15_NO3`) # didnt work 
+#STRT_storm5_08_20_NO3_FI = FI_diff(STRT_storm5_08_20_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_20_NO3`) # didnt work 
+STRT_storm6_09_20_NO3_FI = FI_diff(STRT_storm6_09_20_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_09_20_NO3`)
+STRT_storm7_10_01_NO3_FI = FI_diff(STRT_storm7_10_01_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7_10_01_NO3`)
+STRT_storm7b_10_04_NO3_FI = FI_diff(STRT_storm7b_10_04_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7b_10_04_NO3`)
+STRT_storm7c_10_09_NO3_FI = FI_diff(STRT_storm7c_10_09_Q, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7c_10_09_NO3`)
+
+
+# fDOM #
+#STRT_storm1_05_31_fDOM_FI = FI_diff(STRT_storm1_05_31_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1_05_31_fDOM`) # didnt work 
+STRT_storm2_07_12_fDOM_FI = FI_diff(STRT_storm2_07_12_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_12_fDOM`)
+STRT_storm3a_07_25_fDOM_FI = FI_diff(STRT_storm3a_07_25_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3a_07_25_fDOM`)
+STRT_storm3b_08_05_fDOM_FI = FI_diff(STRT_storm3b_08_05_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3b_08_05_fDOM`)
+STRT_storm3c_08_12_fDOM_FI = FI_diff(STRT_storm3c_08_12_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3c_08_12_fDOM`)
+STRT_storm4_08_15_fDOM_FI = FI_diff(STRT_storm4_08_15_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4_08_15_fDOM`)
+STRT_storm5_08_20_fDOM_FI = FI_diff(STRT_storm5_08_20_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_20_fDOM`)
+#STRT_storm6_09_20_fDOM_FI = FI_diff(STRT_storm6_09_20_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_09_20_fDOM`) # didnt work 
+#STRT_storm7_10_01_fDOM_FI = FI_diff(STRT_storm7_10_01_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7_10_01_fDOM`) # didnt work 
+STRT_storm7b_10_04_fDOM_FI = FI_diff(STRT_storm7b_10_04_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7b_10_04_fDOM`)
+#STRT_storm7c_10_09_fDOM_FI = FI_diff(STRT_storm7c_10_09_Q, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7c_10_09_fDOM`) # didnt work 
+
+# SPC #
+#STRT_storm1_05_31_SPC_FI = FI_diff(STRT_storm1_05_31_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1_05_31_SPC`) # didnt work 
+STRT_storm2_07_12_SPC_FI = FI_diff(STRT_storm2_07_12_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_12_SPC`)
+STRT_storm3a_07_25_SPC_FI = FI_diff(STRT_storm3a_07_25_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3a_07_25_SPC`)
+STRT_storm3b_08_05_SPC_FI = FI_diff(STRT_storm3b_08_05_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3b_08_05_SPC`)
+STRT_storm3c_08_12_SPC_FI = FI_diff(STRT_storm3c_08_12_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3c_08_12_SPC`)
+STRT_storm4_08_15_SPC_FI = FI_diff(STRT_storm4_08_15_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4_08_15_SPC`)
+STRT_storm5_08_20_SPC_FI = FI_diff(STRT_storm5_08_20_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_20_SPC`)
+#STRT_storm6_09_20_SPC_FI = FI_diff(STRT_storm6_09_20_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_09_20_SPC`) # didnt work 
+#STRT_storm7_10_01_SPC_FI = FI_diff(STRT_storm7_10_01_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7_10_01_SPC`) # didnt work 
+STRT_storm7b_10_04_SPC_FI = FI_diff(STRT_storm7b_10_04_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7b_10_04_SPC`)
+#STRT_storm7c_10_09_SPC_FI = FI_diff(STRT_storm7c_10_09_Q, STRT_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7c_10_09_SPC`) # didnt work 
+
+# Turb #
+#STRT_storm1_05_31_turb_FI = FI_diff(STRT_storm1_05_31_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1_05_31_Turb`) # didnt work 
+STRT_storm2_07_12_turb_FI = FI_diff(STRT_storm2_07_12_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_12_Turb`)
+STRT_storm3a_07_25_turb_FI = FI_diff(STRT_storm3a_07_25_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3a_07_25_Turb`)
+STRT_storm3b_08_05_turb_FI = FI_diff(STRT_storm3b_08_05_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3b_08_05_Turb`)
+STRT_storm3c_08_12_turb_FI = FI_diff(STRT_storm3c_08_12_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3c_08_12_Turb`)
+STRT_storm4_08_15_turb_FI = FI_diff(STRT_storm4_08_15_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4_08_15_Turb`)
+STRT_storm5_08_20_turb_FI = FI_diff(STRT_storm5_08_20_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_20_Turb`)
+#STRT_storm6_09_20_turb_FI = FI_diff(STRT_storm6_09_20_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_09_20_Turb`) # didnt work 
+#STRT_storm7_10_01_turb_FI = FI_diff(STRT_storm7_10_01_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7_10_01_Turb`) # didnt work 
+STRT_storm7b_10_04_turb_FI = FI_diff(STRT_storm7b_10_04_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7b_10_04_Turb`)
+#STRT_storm7c_10_09_turb_FI = FI_diff(STRT_storm7c_10_09_Q, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm7c_10_09_Turb`) # didnt work 
+
+# VAUL # 
+#NO3 #
+VAUL_storm1_07_13_NO3_FI = FI_diff(VAUL_storm1_07_13_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1_07_13_NO3`)
+VAUL_storm2_07_26_NO3_FI = FI_diff(VAUL_storm2_07_26_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_07_26_NO3`)
+VAUL_storm3_07_29_NO3_FI = FI_diff(VAUL_storm3_07_29_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_07_29_NO3`)
+VAUL_storm4a_08_02_NO3_FI = FI_diff(VAUL_storm4a_08_02_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_02_NO3`)
+VAUL_storm4b_08_03_NO3_FI = FI_diff(VAUL_storm4b_08_03_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_03_NO3`)
+VAUL_storm4c_08_05_NO3_FI = FI_diff(VAUL_storm4c_08_05_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4c_08_05_NO3`)
+VAUL_storm5_08_12_NO3_FI = FI_diff(VAUL_storm5_08_12_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5_08_12_NO3`)
+VAUL_storm6_08_15_NO3_FI = FI_diff(VAUL_storm6_08_15_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm6_08_15_NO3`)
+VAUL_storm7_09_19_NO3_FI = FI_diff(VAUL_storm7_09_19_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm7_09_19_NO3`)
+VAUL_storm8a_09_29_NO3_FI = FI_diff(VAUL_storm8a_09_29_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8a_09_29_NO3`)
+#VAUL_storm8b_10_01_NO3_FI = FI_diff(VAUL_storm8b_10_01_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8b_10_01_NO3`) # didnt work 
+#VAUL_storm8c_10_04_NO3_FI = FI_diff(VAUL_storm8c_10_04_Q, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8c_10_04_NO3`) # didnt work 
+
+#fDOM #
+VAUL_storm1_07_13_fDOM_FI = FI_diff(VAUL_storm1_07_13_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1_07_13_fDOM`)
+VAUL_storm2_07_26_fDOM_FI = FI_diff(VAUL_storm2_07_26_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_07_26_fDOM`)
+VAUL_storm3_07_29_fDOM_FI = FI_diff(VAUL_storm3_07_29_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_07_29_fDOM`)
+VAUL_storm4a_08_02_fDOM_FI = FI_diff(VAUL_storm4a_08_02_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_02_fDOM`)
+VAUL_storm4b_08_03_fDOM_FI = FI_diff(VAUL_storm4b_08_03_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_03_fDOM`)
+VAUL_storm4c_08_05_fDOM_FI = FI_diff(VAUL_storm4c_08_05_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4c_08_05_fDOM`)
+#VAUL_storm5_08_12_fDOM_FI = FI_diff(VAUL_storm5_08_12_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5_08_12_fDOM`)# didnt work 
+#VAUL_storm6_08_15_fDOM_FI = FI_diff(VAUL_storm6_08_15_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm6_08_15_fDOM`)# didnt work 
+#VAUL_storm7_09_19_fDOM_FI = FI_diff(VAUL_storm7_09_19_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm7_09_19_fDOM`)# didnt work 
+#VAUL_storm8a_09_29_fDOM_FI = FI_diff(VAUL_storm8a_09_29_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8a_09_29_fDOM`)# didnt work 
+#VAUL_storm8b_10_01_fDOM_FI = FI_diff(VAUL_storm8b_10_01_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8b_10_01_fDOM`) # didnt work 
+#VAUL_storm8c_10_04_fDOM_FI = FI_diff(VAUL_storm8c_10_04_Q, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8c_10_04_fDOM`) # didnt work 
+
+#SPC #
+VAUL_storm1_07_13_SPC_FI = FI_diff(VAUL_storm1_07_13_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1_07_13_SPC`)
+VAUL_storm2_07_26_SPC_FI = FI_diff(VAUL_storm2_07_26_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_07_26_SPC`)
+VAUL_storm3_07_29_SPC_FI = FI_diff(VAUL_storm3_07_29_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_07_29_SPC`)
+VAUL_storm4a_08_02_SPC_FI = FI_diff(VAUL_storm4a_08_02_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_02_SPC`)
+VAUL_storm4b_08_03_SPC_FI = FI_diff(VAUL_storm4b_08_03_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_03_SPC`)
+VAUL_storm4c_08_05_SPC_FI = FI_diff(VAUL_storm4c_08_05_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4c_08_05_SPC`)
+#VAUL_storm5_08_12_SPC_FI = FI_diff(VAUL_storm5_08_12_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5_08_12_SPC`)# didnt work 
+#VAUL_storm6_08_15_SPC_FI = FI_diff(VAUL_storm6_08_15_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm6_08_15_SPC`)# didnt work 
+#VAUL_storm7_09_19_SPC_FI = FI_diff(VAUL_storm7_09_19_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm7_09_19_SPC`)# didnt work 
+#VAUL_storm8a_09_29_SPC_FI = FI_diff(VAUL_storm8a_09_29_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8a_09_29_SPC`)# didnt work 
+#VAUL_storm8b_10_01_SPC_FI = FI_diff(VAUL_storm8b_10_01_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8b_10_01_SPC`) # didnt work 
+#VAUL_storm8c_10_04_SPC_FI = FI_diff(VAUL_storm8c_10_04_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8c_10_04_SPC`) # didnt work 
+
+#turb #
+VAUL_storm1_07_13_turb_FI = FI_diff(VAUL_storm1_07_13_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1_07_13_turb`)
+VAUL_storm2_07_26_turb_FI = FI_diff(VAUL_storm2_07_26_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_07_26_turb`)
+VAUL_storm3_07_29_turb_FI = FI_diff(VAUL_storm3_07_29_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_07_29_turb`)
+VAUL_storm4a_08_02_turb_FI = FI_diff(VAUL_storm4a_08_02_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_02_turb`)
+VAUL_storm4b_08_03_turb_FI = FI_diff(VAUL_storm4b_08_03_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_03_turb`)
+VAUL_storm4c_08_05_turb_FI = FI_diff(VAUL_storm4c_08_05_Q, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4c_08_05_turb`)
+#VAUL_storm5_08_12_SPC_FI = FI_diff(VAUL_storm5_08_12_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5_08_12_SPC`)# didnt work 
+#VAUL_storm6_08_15_SPC_FI = FI_diff(VAUL_storm6_08_15_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm6_08_15_SPC`)# didnt work 
+#VAUL_storm7_09_19_SPC_FI = FI_diff(VAUL_storm7_09_19_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm7_09_19_SPC`)# didnt work 
+#VAUL_storm8a_09_29_SPC_FI = FI_diff(VAUL_storm8a_09_29_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8a_09_29_SPC`)# didnt work 
+#VAUL_storm8b_10_01_SPC_FI = FI_diff(VAUL_storm8b_10_01_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8b_10_01_SPC`) # didnt work 
+#VAUL_storm8c_10_04_SPC_FI = FI_diff(VAUL_storm8c_10_04_Q, VAUL_SPC_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm8c_10_04_SPC`) # didnt work 
+
+# gather results and save ##
+FRCH_storm1_05_31_NO3_FI[[2]]
+FRCH_storm1_05_31_NO3_test[[2]]
+STRT_storm2_07_12_turb_FI[[2]]
+
+FI_results = rbind(
+  c("FRCH_storm1_05_31_NO3_FI",FRCH_storm1_05_31_NO3_FI[[2]]),
+  c("FRCH_storm2_06_15_NO3_FI",FRCH_storm2_06_15_NO3_FI[[2]]),
+  c("FRCH_storm3_06_18_NO3_FI",FRCH_storm3_06_18_NO3_FI[[2]]),
+  c("FRCH_storm4_06_20_NO3_FI",FRCH_storm4_06_20_NO3_FI[[2]]),
+  c("FRCH_storm5_06_22_NO3_FI",FRCH_storm5_06_22_NO3_FI[[2]]),
+  c("FRCH_storm6_07_12_NO3_FI",FRCH_storm6_07_12_NO3_FI[[2]]),
+  c("FRCH_storm7_07_25_NO3_FI",FRCH_storm7_07_25_NO3_FI[[2]]),
+  c("FRCH_storm8_07_28_NO3_FI",NA, NA, NA),
+  c("FRCH_storm9a_07_29_NO3_FI",FRCH_storm9a_07_29_NO3_FI[[2]]),
+  c("FRCH_storm9b_07_30_NO3_FI",FRCH_storm9b_07_30_NO3_FI[[2]]),
+  c("FRCH_storm10a_08_01_NO3_FI",FRCH_storm10a_08_01_NO3_FI[[2]]),
+  c("FRCH_storm10b_08_02_NO3_FI",FRCH_storm10b_08_02_NO3_FI[[2]]),
+  c("FRCH_storm11_08_05_NO3_FI",FRCH_storm11_08_05_NO3_FI[[2]]),
+  c("FRCH_storm12a_08_12_NO3_FI",FRCH_storm12a_08_12_NO3_FI[[2]]),
+  c("FRCH_storm12b_08_14_NO3_FI",FRCH_storm12b_08_14_NO3_FI[[2]]),
+  c("FRCH_storm12c_08_15_NO3_FI",FRCH_storm12c_08_15_NO3_FI[[2]]),
+  c("FRCH_storm12d_08_21_NO3_FI",FRCH_storm12d_08_21_NO3_FI[[2]]),
+  c("FRCH_storm12e_08_23_NO3_FI",FRCH_storm12e_08_23_NO3_FI[[2]]),
+  c("FRCH_storm13_09_20_NO3_FI",FRCH_storm13_09_20_NO3_FI[[2]]),
+  c("FRCH_storm14_10_01_NO3_FI",FRCH_storm14_10_01_NO3_FI[[2]]),
+  
+  c("FRCH_storm1_05_31_fDOM_FI",FRCH_storm1_05_31_fDOM_FI[[2]]),
+  c("FRCH_storm2_06_15_fDOM_FI",FRCH_storm2_06_15_fDOM_FI[[2]]),
+  c("FRCH_storm3_06_18_fDOM_FI",FRCH_storm3_06_18_fDOM_FI[[2]]),
+  c("FRCH_storm4_06_20_fDOM_FI",FRCH_storm4_06_20_fDOM_FI[[2]]),
+  c("FRCH_storm5_06_22_fDOM_FI",FRCH_storm5_06_22_fDOM_FI[[2]]),
+  c("FRCH_storm6_07_12_fDOM_FI", NA, NA, NA),
+  c("FRCH_storm7_07_25_fDOM_FI",FRCH_storm7_07_25_fDOM_FI[[2]]),
+  c("FRCH_storm8_07_28_fDOM_FI", NA, NA, NA),
+  c("FRCH_storm9a_07_29_fDOM_FI",FRCH_storm9a_07_29_fDOM_FI[[2]]),
+  c("FRCH_storm9b_07_30_fDOM_FI",FRCH_storm9b_07_30_fDOM_FI[[2]]),
+  c("FRCH_storm10a_08_01_fDOM_FI",FRCH_storm10a_08_01_fDOM_FI[[2]]),
+  c("FRCH_storm10b_08_02_fDOM_FI",FRCH_storm10b_08_02_fDOM_FI[[2]]),
+  c("FRCH_storm11_08_05_fDOM_FI",FRCH_storm11_08_05_fDOM_FI[[2]]),
+  c("FRCH_storm12a_08_12_fDOM_FI",FRCH_storm12a_08_12_fDOM_FI[[2]]),
+  c("FRCH_storm12b_08_14_fDOM_FI",FRCH_storm12b_08_14_fDOM_FI[[2]]),
+  c("FRCH_storm12c_08_15_fDOM_FI",FRCH_storm12c_08_15_fDOM_FI[[2]]),
+  c("FRCH_storm12d_08_21_fDOM_FI",FRCH_storm12d_08_21_fDOM_FI[[2]]),
+  c("FRCH_storm12e_08_23_fDOM_FI",FRCH_storm12e_08_23_fDOM_FI[[2]]),
+  c("FRCH_storm13_09_20_fDOM_FI",NA, NA, NA),
+  c("FRCH_storm14_10_01_NO3_FI",FRCH_storm14_10_01_NO3_FI[[2]]),
+  
+  c("FRCH_storm1_05_31_SPC_FI",FRCH_storm1_05_31_SPC_FI[[2]]),
+  c("FRCH_storm2_06_15_SPC_FI",FRCH_storm2_06_15_SPC_FI[[2]]),
+  c("FRCH_storm3_06_18_SPC_FI",FRCH_storm3_06_18_SPC_FI[[2]]),
+  c("FRCH_storm4_06_20_SPC_FI",FRCH_storm4_06_20_SPC_FI[[2]]),
+  c("FRCH_storm5_06_22_SPC_FI",FRCH_storm5_06_22_SPC_FI[[2]]),
+  c("FRCH_storm6_07_12_SPC_FI", NA, NA, NA),
+  c("FRCH_storm7_07_25_SPC_FI",FRCH_storm7_07_25_SPC_FI[[2]]),
+  c("FRCH_storm8_07_28_SPC_FI", NA, NA, NA),
+  c("FRCH_storm9a_07_29_SPC_FI",FRCH_storm9a_07_29_SPC_FI[[2]]),
+  c("FRCH_storm9b_07_30_SPC_FI",FRCH_storm9b_07_30_SPC_FI[[2]]),
+  c("FRCH_storm10a_08_01_SPC_FI",FRCH_storm10a_08_01_SPC_FI[[2]]),
+  c("FRCH_storm10b_08_02_SPC_FI",FRCH_storm10b_08_02_SPC_FI[[2]]),
+  c("FRCH_storm11_08_05_SPC_FI",FRCH_storm11_08_05_SPC_FI[[2]]),
+  c("FRCH_storm12a_08_12_SPC_FI",FRCH_storm12a_08_12_SPC_FI[[2]]),
+  c("FRCH_storm12b_08_14_SPC_FI",FRCH_storm12b_08_14_SPC_FI[[2]]),
+  c("FRCH_storm12c_08_15_SPC_FI",FRCH_storm12c_08_15_SPC_FI[[2]]),
+  c("FRCH_storm12d_08_21_SPC_FI",FRCH_storm12d_08_21_SPC_FI[[2]]),
+  c("FRCH_storm12e_08_23_SPC_FI",FRCH_storm12e_08_23_SPC_FI[[2]]),
+  c("FRCH_storm13_09_20_SPC_FI",NA, NA, NA),
+  c("FRCH_storm14_10_01_NO3_FI",FRCH_storm14_10_01_NO3_FI[[2]]),
+  
+  c("FRCH_storm1_05_31_turb_FI",FRCH_storm1_05_31_turb_FI[[2]]),
+  c("FRCH_storm2_06_15_turb_FI",FRCH_storm2_06_15_turb_FI[[2]]),
+  c("FRCH_storm3_06_18_turb_FI",FRCH_storm3_06_18_turb_FI[[2]]),
+  c("FRCH_storm4_06_20_turb_FI",FRCH_storm4_06_20_turb_FI[[2]]),
+  c("FRCH_storm5_06_22_turb_FI",FRCH_storm5_06_22_turb_FI[[2]]),
+  c("FRCH_storm6_07_12_turb_FI", NA, NA, NA),
+  c("FRCH_storm7_07_25_turb_FI",FRCH_storm7_07_25_turb_FI[[2]]),
+  c("FRCH_storm8_07_28_turb_FI", NA, NA, NA),
+  c("FRCH_storm9a_07_29_turb_FI",FRCH_storm9a_07_29_turb_FI[[2]]),
+  c("FRCH_storm9b_07_30_turb_FI",FRCH_storm9b_07_30_turb_FI[[2]]),
+  c("FRCH_storm10a_08_01_turb_FI",FRCH_storm10a_08_01_turb_FI[[2]]),
+  c("FRCH_storm10b_08_02_turb_FI",FRCH_storm10b_08_02_turb_FI[[2]]),
+  c("FRCH_storm11_08_05_turb_FI",FRCH_storm11_08_05_turb_FI[[2]]),
+  c("FRCH_storm12a_08_12_turb_FI",FRCH_storm12a_08_12_turb_FI[[2]]),
+  c("FRCH_storm12b_08_14_turb_FI",FRCH_storm12b_08_14_turb_FI[[2]]),
+  c("FRCH_storm12c_08_15_turb_FI",FRCH_storm12c_08_15_turb_FI[[2]]),
+  c("FRCH_storm12d_08_21_turb_FI",FRCH_storm12d_08_21_turb_FI[[2]]),
+  c("FRCH_storm12e_08_23_turb_FI",FRCH_storm12e_08_23_turb_FI[[2]]),
+  c("FRCH_storm13_09_20_turb_FI",NA, NA, NA),
+  c("FRCH_storm14_10_01_NO3_FI",FRCH_storm14_10_01_NO3_FI[[2]]),
+  
+  c("MOOS_storm1_06_01_NO3_FI",MOOS_storm1_06_01_NO3_FI[[2]]),
+  c("MOOS_storm3_07_12_NO3_FI",MOOS_storm3_07_12_NO3_FI[[2]]),
+  c("MOOS_storm4_07_25_NO3_FI",NA, NA, NA),
+  c("MOOS_storm5_07_29_NO3_FI",MOOS_storm5_07_29_NO3_FI[[2]]),
+  c("MOOS_storm6a_08_01_NO3_FI",MOOS_storm6a_08_01_NO3_FI[[2]]),
+  c("MOOS_storm6b_08_02_NO3_FI",NA, NA, NA),
+  c("MOOS_storm6c_08_03_NO3_FI",NA, NA, NA),
+  c("MOOS_storm7a_08_13_NO3_FI",MOOS_storm7a_08_13_NO3_FI[[2]]),
+  c("MOOS_storm7b_08_14_NO3_FI",MOOS_storm7b_08_14_NO3_FI[[2]]),
+  c("MOOS_storm7c_08_15_NO3_FI",MOOS_storm7c_08_15_NO3_FI[[2]]),
+  c("MOOS_storm8_09_21_NO3_FI",MOOS_storm8_09_21_NO3_FI[[2]]),
+  c("MOOS_storm9_10_02_NO3_FI",MOOS_storm9_10_02_NO3_FI[[2]]),
+  
+  c("MOOS_storm1_06_01_fDOM_FI",MOOS_storm1_06_01_fDOM_FI[[2]]),
+  c("MOOS_storm3_07_12_fDOM_FI",NA, NA, NA),
+  c("MOOS_storm4_07_25_fDOM_FI",NA, NA, NA),
+  c("MOOS_storm5_07_29_fDOM_FI",NA, NA, NA),
+  c("MOOS_storm6a_08_01_fDOM_FI",MOOS_storm6a_08_01_fDOM_FI[[2]]),
+  c("MOOS_storm6b_08_02_fDOM_FI",NA, NA, NA),
+  c("MOOS_storm6c_08_03_fDOM_FI",MOOS_storm6c_08_03_fDOM_FI[[2]]),
+  c("MOOS_storm7a_08_13_fDOM_FI",MOOS_storm7a_08_13_fDOM_FI[[2]]),
+  c("MOOS_storm7b_08_14_fDOM_FI",MOOS_storm7b_08_14_fDOM_FI[[2]]),
+  c("MOOS_storm7c_08_15_fDOM_FI",MOOS_storm7c_08_15_fDOM_FI[[2]]),
+  c("MOOS_storm8_09_21_fDOM_FI",NA, NA, NA),
+  c("MOOS_storm9_10_02_fDOM_FI",NA, NA, NA),
+  
+  c("MOOS_storm1_06_01_SPC_FI",MOOS_storm1_06_01_SPC_FI[[2]]),
+  c("MOOS_storm3_07_12_SPC_FI",NA, NA, NA),
+  c("MOOS_storm4_07_25_SPC_FI",NA, NA, NA),
+  c("MOOS_storm5_07_29_SPC_FI",NA, NA, NA),
+  c("MOOS_storm6a_08_01_SPC_FI",MOOS_storm6a_08_01_SPC_FI[[2]]),
+  c("MOOS_storm6b_08_02_SPC_FI",NA, NA, NA),
+  c("MOOS_storm6c_08_03_SPC_FI",MOOS_storm6c_08_03_SPC_FI[[2]]),
+  c("MOOS_storm7a_08_13_SPC_FI",MOOS_storm7a_08_13_SPC_FI[[2]]),
+  c("MOOS_storm7b_08_14_SPC_FI",MOOS_storm7b_08_14_SPC_FI[[2]]),
+  c("MOOS_storm7c_08_15_SPC_FI",MOOS_storm7c_08_15_SPC_FI[[2]]),
+  c("MOOS_storm8_09_21_SPC_FI",NA, NA, NA),
+  c("MOOS_storm9_10_02_SPC_FI",NA, NA, NA),
+  
+  c("MOOS_storm1_06_01_turb_FI",MOOS_storm1_06_01_turb_FI[[2]]),
+  c("MOOS_storm3_07_12_turb_FI",NA, NA, NA),
+  c("MOOS_storm4_07_25_turb_FI",NA, NA, NA),
+  c("MOOS_storm5_07_29_turb_FI",NA, NA, NA),
+  c("MOOS_storm6a_08_01_turb_FI",MOOS_storm6a_08_01_turb_FI[[2]]),
+  c("MOOS_storm6b_08_02_turb_FI",NA, NA, NA),
+  c("MOOS_storm6c_08_03_turb_FI",MOOS_storm6c_08_03_turb_FI[[2]]),
+  c("MOOS_storm7a_08_13_turb_FI",MOOS_storm7a_08_13_turb_FI[[2]]),
+  c("MOOS_storm7b_08_14_turb_FI",MOOS_storm7b_08_14_turb_FI[[2]]),
+  c("MOOS_storm7c_08_15_turb_FI",MOOS_storm7c_08_15_turb_FI[[2]]),
+  c("MOOS_storm8_09_21_turb_FI",NA, NA, NA),
+  c("MOOS_storm9_10_02_turb_FI",NA, NA, NA),
+  
+  c("POKE_storm1_06_30_NO3_FI",POKE_storm1_06_30_NO3_FI[[2]]),
+  c("POKE_storm2_07_12_NO3_FI",POKE_storm2_07_12_NO3_FI[[2]]),
+  c("POKE_storm3_07_26_NO3_FI",0.556451612903223, 0, 0),
+  c("POKE_storm4_07_31_NO3_FI",0.609090909090907, 0, 0),
+  c("POKE_storm5a_08_02_NO3_FI",0.357142857142857, 0, 0),
+  c("POKE_storm5b_08_03_NO3_FI",0.187875574407918, 0 ,0),
+  c("POKE_storm5c_08_05_NO3_FI",NA, NA, NA),
+  c("POKE_storm5d_08_10_NO3_FI",0.0632183908045973, 0, 0),
+  c("POKE_storm6a_08_12_NO3_FI",NA, NA, NA),
+  c("POKE_storm6b_08_13_NO3_FI",NA, NA, NA),
+  c("POKE_storm7_08_15_NO3_FI",NA, NA, NA),
+  c("POKE_storm8_09_29_NO3_FI",POKE_storm8_09_29_NO3_FI[[2]]),
+  c("POKE_storm9_10_04_NO3_FI",NA, NA, NA),
+  
+  c("POKE_storm1_06_30_fDOM_FI",POKE_storm1_06_30_fDOM_FI[[2]]),
+  c("POKE_storm2_07_12_fDOM_FI",POKE_storm2_07_12_fDOM_FI[[2]]),
+  c("POKE_storm3_07_26_fDOM_FI",POKE_storm3_07_26_fDOM_FI[[2]]),
+  c("POKE_storm4_07_31_fDOM_FI",POKE_storm4_07_31_fDOM_FI[[2]]),
+  c("POKE_storm5a_08_02_fDOM_FI",POKE_storm5a_08_02_fDOM_FI[[2]]),
+  c("POKE_storm5b_08_03_fDOM_FI",POKE_storm5b_08_03_fDOM_FI[[2]]),
+  c("POKE_storm5c_08_05_fDOM_FI",POKE_storm5c_08_05_fDOM_FI[[2]]),
+  c("POKE_storm5d_08_10_fDOM_FI",POKE_storm5d_08_10_fDOM_FI[[2]]),
+  c("POKE_storm6a_08_12_fDOM_FI",POKE_storm6a_08_12_fDOM_FI[[2]]),
+  c("POKE_storm6a_08_12_fDOM_FI",NA, NA, NA),
+  c("POKE_storm7_08_15_fDOM_FI",POKE_storm7_08_15_fDOM_FI[[2]]),
+  c("POKE_storm8_09_29_fDOM_FI",POKE_storm8_09_29_fDOM_FI[[2]]),
+  c("POKE_storm9_10_04_fDOM_FI", NA, NA, NA),
+  
+  c("POKE_storm1_06_30_SPC_FI",POKE_storm1_06_30_SPC_FI[[2]]),
+  c("POKE_storm2_07_12_SPC_FI",POKE_storm2_07_12_SPC_FI[[2]]),
+  c("POKE_storm3_07_26_SPC_FI",POKE_storm3_07_26_SPC_FI[[2]]),
+  c("POKE_storm4_07_31_SPC_FI",POKE_storm4_07_31_SPC_FI[[2]]),
+  c("POKE_storm5a_08_02_SPC_FI",POKE_storm5a_08_02_SPC_FI[[2]]),
+  c("POKE_storm5b_08_03_SPC_FI",POKE_storm5b_08_03_SPC_FI[[2]]),
+  c("POKE_storm5c_08_05_SPC_FI",POKE_storm5c_08_05_SPC_FI[[2]]),
+  c("POKE_storm5d_08_10_SPC_FI",POKE_storm5d_08_10_SPC_FI[[2]]),
+  c("POKE_storm6a_08_12_SPC_FI",POKE_storm6a_08_12_SPC_FI[[2]]),
+  c("POKE_storm6a_08_12_SPC_FI",NA, NA, NA),
+  c("POKE_storm7_08_15_SPC_FI",POKE_storm7_08_15_SPC_FI[[2]]),
+  c("POKE_storm8_09_29_SPC_FI",POKE_storm8_09_29_SPC_FI[[2]]),
+  c("POKE_storm9_10_04_SPC_FI", NA, NA, NA),
+  
+  c("POKE_storm1_06_30_turb_FI",POKE_storm1_06_30_turb_FI[[2]]),
+  c("POKE_storm2_07_12_turb_FI",POKE_storm2_07_12_turb_FI[[2]]),
+  c("POKE_storm3_07_26_turb_FI",POKE_storm3_07_26_turb_FI[[2]]),
+  c("POKE_storm4_07_31_turb_FI",POKE_storm4_07_31_turb_FI[[2]]),
+  c("POKE_storm5a_08_02_turb_FI",POKE_storm5a_08_02_turb_FI[[2]]),
+  c("POKE_storm5b_08_03_turb_FI",POKE_storm5b_08_03_turb_FI[[2]]),
+  c("POKE_storm5c_08_05_turb_FI",POKE_storm5c_08_05_turb_FI[[2]]),
+  c("POKE_storm5d_08_10_turb_FI",POKE_storm5d_08_10_turb_FI[[2]]),
+  c("POKE_storm6a_08_12_turb_FI",POKE_storm6a_08_12_turb_FI[[2]]),
+  c("POKE_storm6a_08_12_turb_FI",NA, NA, NA),
+  c("POKE_storm7_08_15_turb_FI",POKE_storm7_08_15_turb_FI[[2]]),
+  c("POKE_storm8_09_29_turb_FI",POKE_storm8_09_29_turb_FI[[2]]),
+  c("POKE_storm9_10_04_turb_FI", NA, NA, NA),
+  
+  c("STRT_storm1_05_31_NO3_FI",STRT_storm1_05_31_NO3_FI[[2]]),
+  c("STRT_storm2_07_12_NO3_FI",STRT_storm2_07_12_NO3_FI[[2]]),
+  c("STRT_storm3a_07_25_NO3_FI",NA,NA,NA),
+  c("STRT_storm3b_08_05_NO3_FI",NA, NA, NA),
+  c("STRT_storm3c_08_12_NO3_FI",STRT_storm3c_08_12_NO3_FI[[2]]),
+  c("STRT_storm4_08_15_NO3_FI",NA, NA, NA),
+  c("STRT_storm5_08_20_NO3_FI",NA, NA, NA),
+  c("STRT_storm6_09_20_NO3_FI",STRT_storm6_09_20_NO3_FI[[2]]),
+  c("STRT_storm7_10_01_NO3_FI",STRT_storm7_10_01_NO3_FI[[2]]),
+  c("STRT_storm7b_10_04_NO3_FI",STRT_storm7b_10_04_NO3_FI[[2]]),
+  c("STRT_storm7c_10_09_NO3_FI",STRT_storm7c_10_09_NO3_FI[[2]]),
+  
+  c("STRT_storm1_05_31_fDOM_FI",NA, NA, NA),
+  c("STRT_storm2_07_12_fDOM_FI",STRT_storm2_07_12_fDOM_FI[[2]]),
+  c("STRT_storm3a_07_25_fDOM_FI",STRT_storm3a_07_25_fDOM_FI[[2]]),
+  c("STRT_storm3b_08_05_fDOM_FI",STRT_storm3b_08_05_fDOM_FI[[2]]),
+  c("STRT_storm3c_08_12_fDOM_FI",STRT_storm3c_08_12_fDOM_FI[[2]]),
+  c("STRT_storm4_08_15_fDOM_FI",STRT_storm4_08_15_fDOM_FI[[2]]),
+  c("STRT_storm5_08_20_fDOM_FI",STRT_storm5_08_20_fDOM_FI[[2]]),
+  c("STRT_storm6_09_20_fDOM_FI",NA, NA, NA),
+  c("STRT_storm7_10_01_fDOM_FI",NA, NA, NA),
+  c("STRT_storm7b_10_04_fDOM_FI",STRT_storm7b_10_04_fDOM_FI[[2]]),
+  c("STRT_storm7c_10_09_fDOM_FI",NA, NA, NA),
+  
+  c("STRT_storm1_05_31_SPC_FI",NA, NA, NA),
+  c("STRT_storm2_07_12_SPC_FI",STRT_storm2_07_12_SPC_FI[[2]]),
+  c("STRT_storm3a_07_25_SPC_FI",STRT_storm3a_07_25_SPC_FI[[2]]),
+  c("STRT_storm3b_08_05_SPC_FI",STRT_storm3b_08_05_SPC_FI[[2]]),
+  c("STRT_storm3c_08_12_SPC_FI",STRT_storm3c_08_12_SPC_FI[[2]]),
+  c("STRT_storm4_08_15_SPC_FI",STRT_storm4_08_15_SPC_FI[[2]]),
+  c("STRT_storm5_08_20_SPC_FI",STRT_storm5_08_20_SPC_FI[[2]]),
+  c("STRT_storm6_09_20_SPC_FI",NA, NA, NA),
+  c("STRT_storm7_10_01_SPC_FI",NA, NA, NA),
+  c("STRT_storm7b_10_04_SPC_FI",STRT_storm7b_10_04_SPC_FI[[2]]),
+  c("STRT_storm7c_10_09_SPC_FI",NA, NA, NA),
+  
+  c("STRT_storm1_05_31_turb_FI",NA, NA, NA),
+  c("STRT_storm2_07_12_turb_FI",STRT_storm2_07_12_turb_FI[[2]]),
+  c("STRT_storm3a_07_25_turb_FI",STRT_storm3a_07_25_turb_FI[[2]]),
+  c("STRT_storm3b_08_05_turb_FI",STRT_storm3b_08_05_turb_FI[[2]]),
+  c("STRT_storm3c_08_12_turb_FI",STRT_storm3c_08_12_turb_FI[[2]]),
+  c("STRT_storm4_08_15_turb_FI",STRT_storm4_08_15_turb_FI[[2]]),
+  c("STRT_storm5_08_20_turb_FI",STRT_storm5_08_20_SPC_FI[[2]]),
+  c("STRT_storm6_09_20_turb_FI",NA, NA, NA),
+  c("STRT_storm7_10_01_turb_FI",NA, NA, NA),
+  c("STRT_storm7b_10_04_turb_FI",STRT_storm7b_10_04_turb_FI[[2]]),
+  c("STRT_storm7c_10_09_turb_FI",NA, NA, NA),
+  
+  c("VAUL_storm1_07_13_NO3_FI",VAUL_storm1_07_13_NO3_FI[[2]]),
+  c("VAUL_storm2_07_26_NO3_FI",VAUL_storm2_07_26_NO3_FI[[2]]),
+  c("VAUL_storm3_07_29_NO3_FI",VAUL_storm3_07_29_NO3_FI[[2]]),
+  c("VAUL_storm4a_08_02_NO3_FI",VAUL_storm4a_08_02_NO3_FI[[2]]),
+  c("VAUL_storm4b_08_03_NO3_FI",VAUL_storm4b_08_03_NO3_FI[[2]]),
+  c("VAUL_storm4c_08_05_NO3_FI",VAUL_storm4c_08_05_NO3_FI[[2]]),
+  c("VAUL_storm5_08_12_NO3_FI",VAUL_storm5_08_12_NO3_FI[[2]]),
+  c("VAUL_storm6_08_15_NO3_FI",VAUL_storm6_08_15_NO3_FI[[2]]),
+  c("VAUL_storm7_09_19_NO3_FI",VAUL_storm7_09_19_NO3_FI[[2]]),
+  c("VAUL_storm8a_09_29_NO3_FI",VAUL_storm8a_09_29_NO3_FI[[2]]),
+  c("VAUL_storm8b_10_01_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8c_10_04_NO3_FI",NA, NA, NA),
+  
+  c("VAUL_storm1_07_13_fDOM_FI",VAUL_storm1_07_13_fDOM_FI[[2]]),
+  c("VAUL_storm2_07_26_fDOM_FI",VAUL_storm2_07_26_fDOM_FI[[2]]),
+  c("VAUL_storm3_07_29_fDOM_FI",VAUL_storm3_07_29_fDOM_FI[[2]]),
+  c("VAUL_storm4a_08_02_fDOM_FI",VAUL_storm4a_08_02_fDOM_FI[[2]]),
+  c("VAUL_storm4b_08_03_fDOM_FI",VAUL_storm4b_08_03_fDOM_FI[[2]]),
+  c("VAUL_storm4c_08_05_fDOM_FI",VAUL_storm4c_08_05_fDOM_FI[[2]]),
+  c("VAUL_storm5_08_12_fDOM_FI",NA, NA, NA),
+  c("VAUL_storm6_08_15_fDOM_FI",NA, NA, NA),
+  c("VAUL_storm7_09_19_fDOM_FI",NA, NA, NA),
+  c("VAUL_storm8a_09_29_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8b_10_01_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8c_10_04_NO3_FI",NA, NA, NA),
+  
+  c("VAUL_storm1_07_13_SPC_FI",VAUL_storm1_07_13_SPC_FI[[2]]),
+  c("VAUL_storm2_07_26_SPC_FI",VAUL_storm2_07_26_SPC_FI[[2]]),
+  c("VAUL_storm3_07_29_SPC_FI",VAUL_storm3_07_29_SPC_FI[[2]]),
+  c("VAUL_storm4a_08_02_SPC_FI",VAUL_storm4a_08_02_SPC_FI[[2]]),
+  c("VAUL_storm4b_08_03_SPC_FI",VAUL_storm4b_08_03_SPC_FI[[2]]),
+  c("VAUL_storm4c_08_05_SPC_FI",VAUL_storm4c_08_05_SPC_FI[[2]]),
+  c("VAUL_storm5_08_12_SPC_FI",NA, NA, NA),
+  c("VAUL_storm6_08_15_SPC_FI",NA, NA, NA),
+  c("VAUL_storm7_09_19_SPC_FI",NA, NA, NA),
+  c("VAUL_storm8a_09_29_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8b_10_01_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8c_10_04_NO3_FI",NA, NA, NA),
+  
+  c("VAUL_storm1_07_13_turb_FI",VAUL_storm1_07_13_turb_FI[[2]]),
+  c("VAUL_storm2_07_26_turb_FI",VAUL_storm2_07_26_turb_FI[[2]]),
+  c("VAUL_storm3_07_29_turb_FI",VAUL_storm3_07_29_turb_FI[[2]]),
+  c("VAUL_storm4a_08_02_turb_FI",VAUL_storm4a_08_02_turb_FI[[2]]),
+  c("VAUL_storm4b_08_03_turb_FI",VAUL_storm4b_08_03_turb_FI[[2]]),
+  c("VAUL_storm4c_08_05_turb_FI",VAUL_storm4c_08_05_turb_FI[[2]]),
+  c("VAUL_storm5_08_12_turb_FI",NA, NA, NA),
+  c("VAUL_storm6_08_15_turb_FI",NA, NA, NA),
+  c("VAUL_storm7_09_19_turb_FI",NA, NA, NA),
+  c("VAUL_storm8a_09_29_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8b_10_01_NO3_FI",NA, NA, NA),
+  c("VAUL_storm8c_10_04_NO3_FI",NA, NA, NA))
+  
+FI_results = as.data.frame(FI_results)
+
+names(FI_results) = c("ID", "Flushing_index", "percCI_2.5", "percCI_97.5")
+
+FI_results$ID = unlist(FI_results$ID)
+FI_results$Flushing_index = round(as.numeric(as.character(FI_results$Flushing_index)), 4)
+FI_results$`percCI_2.5` = round(as.numeric(as.character(FI_results$`percCI_2.5`)), 4)
+FI_results$`percCI_97.5` = round(as.numeric(as.character(FI_results$`percCI_97.5`)), 4)
+
+write.csv(FI_results, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results.csv")
+
+# calculate 95% bootstrap around median of Hyst. Indicies for each site and storm #
+
+median_cl_boot <- function(x, conf = 0.95) {
+  lconf <- (1 - conf)/2
+  uconf <- 1 - lconf
+  require(boot)
+  bmedian <- function(x, ind) median(x[ind])
+  bt <- boot(x, bmedian, 10000)
+  bb <- boot.ci(bt, conf = 0.95, type = "perc")
+  data.frame(y = median(x), ymin = quantile(bt$t, lconf), ymax = quantile(bt$t, 
+                                                                          uconf))
+}
+
+# FRCH #
+FRCH.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.df.csv")
+
+storm.list = unique(FRCH.HI.df$storm.ID)
+FRCH.HI.boot <- do.call(rbind.data.frame,
+                      lapply(storm.list, function(i){
+                        dat = subset(FRCH.HI.df, storm.ID == i)
+                        median_cl_boot(dat$HI)
+                      }))
+FRCH.HI.boot$storm.ID = storm.list
+
+# MOOS #
+MOOS.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.df.csv")
+
+storm.list = unique(MOOS.HI.df$storm.ID)
+MOOS.HI.boot <- do.call(rbind.data.frame,
+                        lapply(storm.list, function(i){
+                          dat = subset(MOOS.HI.df, storm.ID == i)
+                          median_cl_boot(dat$HI)
+                        }))
+MOOS.HI.boot$storm.ID = storm.list
+
+# POKE #
+POKE.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/POKE/POKE.HI.df.csv")
+
+storm.list = unique(POKE.HI.df$storm.ID)
+POKE.HI.boot <- do.call(rbind.data.frame,
+                        lapply(storm.list, function(i){
+                          dat = subset(POKE.HI.df, storm.ID == i)
+                          median_cl_boot(dat$HI)
+                        }))
+POKE.HI.boot$storm.ID = storm.list
+
+# STRT #
+STRT.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/STRT/STRT.HI.df.csv")
+
+storm.list = unique(STRT.HI.df$storm.ID)
+STRT.HI.boot <- do.call(rbind.data.frame,
+                        lapply(storm.list, function(i){
+                          dat = subset(STRT.HI.df, storm.ID == i)
+                          median_cl_boot(dat$HI)
+                        }))
+STRT.HI.boot$storm.ID = storm.list
+
+# VAUL #
+VAUL.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.df.csv")
+
+storm.list = unique(VAUL.HI.df$storm.ID)
+VAUL.HI.boot <- do.call(rbind.data.frame,
+                        lapply(storm.list, function(i){
+                          dat = subset(VAUL.HI.df, storm.ID == i)
+                          median_cl_boot(dat$HI)
+                        }))
+VAUL.HI.boot$storm.ID = storm.list
+
+
+# join data #
+
+FRCH.HI.boot$site.ID = "FRCH"
+MOOS.HI.boot$site.ID = "MOOS"
+POKE.HI.boot$site.ID = "POKE"
+STRT.HI.boot$site.ID = "STRT"
+VAUL.HI.boot$site.ID = "VAUL"
+
+HI = rbind(FRCH.HI.boot, MOOS.HI.boot, POKE.HI.boot, STRT.HI.boot, VAUL.HI.boot)
+
+all.FI.diff.results = read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results.csv", header = T, row.names = 1)
+
+FI = subset(all.FI.diff.results, select=c("Flushing_index", "percCI_2.5", "percCI_97.5", "ID"))
+FI$ID = as.character(FI$ID)
+FI = separate(FI, ID, into=c("site.ID", "storm.ID", "month", "day", "response_var", NA), sep = "_")
+names(FI) = c("Flush_index", "FI_ymin", "FI_ymax","site.ID", "storm.ID", "month", "day", "response_var")
+
+HI$site.ID=NULL
+HI = separate(HI, storm.ID, into=c("site.ID", "storm.ID", "month", "day", "response_var"), sep = "_")
+names(HI) = c("Hyst_index", "HI_ymin", "HI_ymax","site.ID", "storm.ID", "month", "day", "response_var")
+
+HI_FI = left_join(HI, FI, by=c("site.ID", "storm.ID", "response_var"))
+write.csv(HI_FI, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+
+
+# plot #
+
+# NO3 #
+HI_FI_NO3 = subset(HI_FI, response_var == "NO3")
+HI_FI_NO3$site.ID <- factor(HI_FI_NO3$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_NO3.p = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p
+
+# fDOM #
+HI_FI_fDOM = subset(HI_FI, response_var == "fDOM")
+HI_FI_fDOM$site.ID <- factor(HI_FI_fDOM$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_fDOM.p = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_fDOM.p
+
+# SPC #
+HI_FI_SPC = subset(HI_FI, response_var == "SPC")
+HI_FI_SPC$site.ID <- factor(HI_FI_SPC$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_SPC.p = 
+  ggplot(HI_FI_SPC, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_SPC.p
+
+# turb #
+HI_FI_turb = subset(HI_FI, response_var == "turb")
+HI_FI_turb$site.ID <- factor(HI_FI_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_turb.p = 
+  ggplot(HI_FI_turb, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) Turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_turb.p
+
+
+grid.arrange(HI_FI_NO3.p,HI_FI_fDOM.p,HI_FI_SPC.p,HI_FI_turb.p)
+
+
+
+
+##############################################################################################################
+####################### Beta Test 1/13/22 #######################################################################
+##############################################################################################################
+# Step 1) Load in the storm files
+# Step 2) normalize dicharge and concentration for each solute
+# Step 3) calculate Beta for each solute for each site
+# Step 4) plot against HI 
+#################################### 2018 ###############################################################
+FRCHstorm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2018/All_Sites/", 
+                                  recursive=F, 
+                                  pattern="FRCH", 
+                                  full.names=TRUE) # reading in individual storms by site 
+
+FRCH_storms<-do.call("rbind", lapply(FRCHstorm_file_list, 
+                                     read.csv, 
+                                     check.names = FALSE,
+                                     stringsAsFactors=FALSE, 
+                                     header=T, blank.lines.skip = TRUE, fill=TRUE))
+
+FRCH_storms$storm.num = c(rep("storm1", 142),
+                          rep("storm10", 704),
+                          rep("storm11a", 91),
+                          rep("storm11b", 264),
+                          rep("storm2a", 230),
+                          rep("storm2b", 190),
+                          rep("storm3", 212),
+                          rep("storm4a", 72),
+                          rep("storm4b", 383),
+                          rep("storm5", 331),
+                          rep("storm6", 303),
+                          rep("storm7", 119),
+                          rep("storm8a", 79),
+                          rep("storm8b", 95),
+                          rep("storm9", 115)) # naming each storm by the number of storm 
+
+
+FRCH_2018_test_beta <- read_csv("~/Desktop/FRCH_2018_test_beta.csv")
+attributes(FRCH_2018_test_beta$DateTime)$tzone <- 'America/Anchorage'
+
+cols.1 <- c("datavalue.x", "datavalue.y") 
+fdom.storm5[cols.1] <- log(fdom.storm5[cols.1])
+
 cols <- c("fDOM.QSU","nitrateuM", "SpCond.uScm", "Turbidity.FNU", "MeanDischarge")
-storms.2019.2020[cols] <- log(storms.2019.2020[cols]) # making concentrations and Q log transformed
-#storms.2019.2020 <-  storms.2019.2020[!is.na(storms.2019.2020$fDOM.QSU), ]
-#storms.2019.2020 <-  storms.2019.2020[!is.na(storms.2019.2020$nitrateuM), ]
-#storms.2019.2020 <-  storms.2019.2020[!is.na(storms.2019.2020$SpCond.uScm), ]
-#storms.2019.2020 <-  storms.2019.2020[!is.na(storms.2019.2020$Turbidity.FNU), ]
-
-MOOS.2019 <- storms.2019.2020 %>% filter(Site == "MOOS" & year == "2019") # filtering out Site and year
-MOOS.2019.fDOM <- MOOS.2019[,-c(6,7,8)] # making it so it is just fDOM
-
-POKE.2019 <- storms.2019.2020 %>% filter(Site == "POKE" & year == "2019") # filtering out Site and year
-POKE.2019.fDOM <- POKE.2019[,-c(6,7,8)] # making it so it is just fDOM
-
-#STRT.2019 <- storms.2019.2020 %>% filter(Site == "STRT" & year == "2019") # filtering out Site and year
-#STRT.2019.fDOM <- STRT.2019[,-c(6,7,8)] # making it so it is just fDOM
-
-#fDOM_T <- storms.2019.2020 %>% group_by(Site, year, storm.num) %>% 
- # mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
+FRCH_2018_test_beta[cols] <- log(FRCH_2018_test_beta[cols]) # making concentrations and Q log transformed
 
 slope <- function(x, y){
   mean_x <- mean(x)
@@ -7490,168 +9286,67 @@ slope <- function(x, y){
   return(m)
 }
 
-# storm 1 #
-#Moos_test_ascending_storm1 <- filter(Moos_test_ascending, storm.num == "storm1")
-#Moos_test_ascending_storm1 <-  Moos_test_ascending_storm1[!is.na(Moos_test_ascending_storm1$fDOM.QSU), ]
-#slope(Moos_test_ascending_storm1$MeanDischarge, Moos_test_ascending_storm1$fDOM.QSU)
-#summary(lm(Moos_test_ascending_storm1$fDOM.QSU ~ Moos_test_ascending_storm1$MeanDischarge))
-
-# try it by all of moos #
-Moos_test <- MOOS.2019.fDOM %>% group_by(storm.num) %>% 
-  mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
-
-Moos_test_ascending <- filter(Moos_test, limb == "ascending")
-Moos_test_ascending <-  Moos_test_ascending[!is.na(Moos_test_ascending$fDOM.QSU), ]
-
-Poke_test <- POKE.2019.fDOM %>% group_by(storm.num) %>% 
-  mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
-
-Poke_test_ascending <- filter(Poke_test, limb == "ascending")
-Poke_test_ascending <-  Poke_test_ascending[!is.na(Poke_test_ascending$fDOM.QSU), ]
-
-#################### test plot ##################################################
-ggplot(data = Moos_test_ascending, aes(x = MeanDischarge, y = fDOM.QSU, color = storm.num)) +
-  geom_point()
-
-beta.1 <- Moos_test_ascending %>% group_by(storm.num) %>% 
-  summarize(beta = slope(MeanDischarge, fDOM.QSU))
-
-lm(Moos_test_ascending_1$fDOM.QSU ~ Moos_test_ascending$MeanDischarge)
-
-Moos_test_ascending_1 <- filter(Moos_test_ascending, storm.num == "storm1")
-Moos_test_1 <- filter(Moos_test, storm.num == "storm1")
-ggplot(data = Moos_test_1, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Moos_test_ascending_1$fDOM.QSU ~ Moos_test_ascending_1$MeanDischarge)
-
-
-Moos_test_ascending_4 <- filter(Moos_test_ascending, storm.num == "storm4")
-Moos_test_4 <- filter(Moos_test, storm.num == "storm4")
-ggplot(data = Moos_test_4, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Moos_test_ascending_4$fDOM.QSU ~ Moos_test_ascending_4$MeanDischarge)
-
-Moos_test_ascending_5 <- filter(Moos_test_ascending, storm.num == "storm5")
-Moos_test_5 <- filter(Moos_test, storm.num == "storm5")
-ggplot(data = Moos_test_ascending_5, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Moos_test_ascending_5$fDOM.QSU ~ Moos_test_ascending_5$MeanDischarge)
-
-### poke test ###
-ggplot(data = Poke_test_ascending, aes(x = MeanDischarge, y = fDOM.QSU, color = storm.num)) +
-  geom_point()
-
-beta.poke <- Poke_test_ascending %>% group_by(storm.num) %>% 
-  summarize(beta = slope(MeanDischarge, fDOM.QSU))
-
-
-Poke_test_ascending_1 <- filter(Poke_test_ascending, storm.num == "storm1")
-Poke_test_1 <- filter(Poke_test, storm.num == "storm1")
-ggplot(data = Poke_test_1, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Poke_test_ascending_1$fDOM.QSU ~ Poke_test_ascending_1$MeanDischarge)
-
-
-Moos_test_ascending_4 <- filter(Moos_test_ascending, storm.num == "storm4")
-Moos_test_4 <- filter(Moos_test, storm.num == "storm4")
-ggplot(data = Moos_test_4, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Moos_test_ascending_4$fDOM.QSU ~ Moos_test_ascending_4$MeanDischarge)
-
-Moos_test_ascending_5 <- filter(Moos_test_ascending, storm.num == "storm5")
-Moos_test_5 <- filter(Moos_test, storm.num == "storm5")
-ggplot(data = Moos_test_ascending_5, aes(MeanDischarge, fDOM.QSU)) + 
-  geom_point()
-lm(Moos_test_ascending_5$fDOM.QSU ~ Moos_test_ascending_5$MeanDischarge)
-
-MOOS_chem_2019 <- read_csv("Q_Chem/MOOS/MOOS_chem_2019.csv")
-ggplot() +
-  geom_point(data = MOOS_chem_2019, aes(DateTime, MeanDischarge), color = "red") +
-  geom_point(data = MOOS_chem_2019, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
-
-EXO_aord <- read_csv("~/Documents/DoD_2019/EXO_processed/EXO.aord.csv")
-MOOS_2019_EXO <- filter(EXO_aord, site.ID == "MOOS")
-MOOS_2019_EXO$datetimeAK <- as.POSIXct(MOOS_2019_EXO$datetimeAK, tz="America/Anchorage")
-MOOS_2019_EXO$DateTime <- MOOS_2019_EXO$datetimeAK
-MOOS_2019_Q <- read_csv("~/Documents/DoD_2019/Q/Final_Q/MOOS/MOOS.csv")
-MOOS_2019_Q$DateTime <- as.POSIXct(MOOS_2019_Q$DateTime, tz = "America/Anchorage")
-
-moos.q.chem <- full_join(MOOS_2019_Q, MOOS_2019_EXO) # this wo
-moos.q.chem <- moos.q.chem[,-c(4,5,6,8,9,10,11,12,14,16,17,18,19,20,21,22,23)]
-
-ggplot() +
-  geom_point(data = moos.q.chem, aes(DateTime, MeanDischarge), color = "red") +
-  geom_point(data = moos.q.chem, aes(DateTime, Turbidity.FNU.mn * 10), color = "green") +
-  geom_point(data = moos.q.chem, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
-
-ggplot() +
-  geom_point(data = moos.q.chem, aes(DateTime, MeanDischarge), color = "red") +
-  geom_point(data = moos.q.chem, aes(DateTime, Turbidity.FNU.mn), color = "blue") 
-
-POKE_chem_2019 <- read_csv("Q_Chem/POKE/POKE_chem_2019.csv")
-ggplot() +
-  geom_point(data = POKE_chem_2019, aes(DateTime, MeanDischarge), color = "red") +
-  geom_point(data = POKE_chem_2019, aes(DateTime, Turbidity.FNU.mn * 10), color = "green") +
-  geom_point(data = POKE_chem_2019, aes(DateTime, fDOM.QSU.mn * 10), color = "blue") 
-
-
-# merge HI and beta
-#HI_moos_2019 <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2019.csv")
-#HI.moos.2019.fdom <- HI_moos_2019 %>% filter(response == "fDOM")
-
-#moos.2019 <- left_join(fDOM_Test_6, HI.moos.2019.fdom)  # joining beta and HI
 
 # Try it by all sites per response
-storms.2019.2020.NO3 <- storms.2019.2020[,-c(5,7,8)] # only have NO3 as the response
-storms.2019.2020.fDOM <- storms.2019.2020[,-c(6:8)] # only have fdom as the response
-storms.2019.2020.SPC <- storms.2019.2020[,-c(5,6,8)] # only have fdom as the response
-storms.2019.2020.turb <- storms.2019.2020[,-c(5:7)] # only have fdom as the response
+FRCH_2018_test_beta.NO3 <- FRCH_2018_test_beta[,-c(5,7,8)] # only have NO3 as the response
+FRCH_2018_test_beta.fDOM <- FRCH_2018_test_beta[,-c(6:8)] # only have fdom as the response
+FRCH_2018_test_beta.SPC <- FRCH_2018_test_beta[,-c(5,6,8)] # only have fdom as the response
+FRCH_2018_test_beta.turb <- FRCH_2018_test_beta[,-c(5:7)] # only have fdom as the response
 
 # NO3
-all_NO3_test <- storms.2019.2020.NO3 %>% group_by(storm.num, year) %>% 
+all_NO3_test <- FRCH_2018_test_beta.NO3 %>% group_by(storm.num) %>% 
   mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
 
 all_NO3_ascending <- filter(all_NO3_test, limb == "ascending")
 all_NO3_ascending <-  all_NO3_ascending[!is.na(all_NO3_ascending$nitrateuM), ]
-beta.all.no3 <- all_NO3_ascending %>% group_by(storm.num, Site, year) %>% 
+
+beta.all.no3 <- all_NO3_ascending %>% group_by(storm.num) %>% 
   summarize(beta = slope(MeanDischarge, nitrateuM)) # this works just like the beta one that is for an individual site
 
 # fDOM
-all_fdom_test <- storms.2019.2020.fDOM %>% group_by(storm.num, year) %>% 
+all_fDOM_test <- FRCH_2018_test_beta.fDOM %>% group_by(storm.num) %>% 
   mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
 
-all_fDOM_ascending <- filter(all_fdom_test, limb == "ascending")
+all_fDOM_ascending <- filter(all_fDOM_test, limb == "ascending")
 all_fDOM_ascending <-  all_fDOM_ascending[!is.na(all_fDOM_ascending$fDOM.QSU), ]
-beta.all.fdom <- all_fDOM_ascending %>% group_by(storm.num, Site, year) %>% 
+
+beta.all.fDOM <- all_fDOM_ascending %>% group_by(storm.num) %>% 
   summarize(beta = slope(MeanDischarge, fDOM.QSU)) # this works just like the beta one that is for an individual site
 
 # SPC
-all_SPC_test <- storms.2019.2020.SPC %>% group_by(storm.num, year) %>% 
+all_SPC_test <- FRCH_2018_test_beta.SPC %>% group_by(storm.num) %>% 
   mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
 
 all_SPC_ascending <- filter(all_SPC_test, limb == "ascending")
 all_SPC_ascending <-  all_SPC_ascending[!is.na(all_SPC_ascending$SpCond.uScm), ]
-beta.all.spc <- all_SPC_ascending %>% group_by(storm.num, Site, year) %>% 
+
+beta.all.SPC <- all_SPC_ascending %>% group_by(storm.num) %>% 
   summarize(beta = slope(MeanDischarge, SpCond.uScm)) # this works just like the beta one that is for an individual site
 
-# turb
-all_turb_test <- storms.2019.2020.turb %>% group_by(storm.num, year) %>% 
+# Turb
+all_turb_test <- FRCH_2018_test_beta.turb %>% group_by(storm.num) %>% 
   mutate(limb = ifelse(DateTime < DateTime[which.max(MeanDischarge)], "ascending", "descending"))
 
 all_turb_ascending <- filter(all_turb_test, limb == "ascending")
 all_turb_ascending <-  all_turb_ascending[!is.na(all_turb_ascending$Turbidity.FNU), ]
-beta.all.turb <- all_turb_ascending %>% group_by(storm.num, Site, year) %>% 
+
+beta.all.turb <- all_turb_ascending %>% group_by(storm.num) %>% 
   summarize(beta = slope(MeanDischarge, Turbidity.FNU)) # this works just like the beta one that is for an individual site
+
+
+
+# Everything south of this has not been done yet as of 1/13/22....
+### I need to go through the 03_HI_FI script again with my new discharge data
 
 # merge HI and beta 
 HI.all <- read.csv("Output_from_analysis/06_HI_fire_permafrost_script/HI.2019.2020.csv")
 names(HI.all)[names(HI.all) == 'site.ID'] <- 'Site'
+
 # filter by response
 HI.all.NO3 <- filter(HI.all, response == "NO3")
 HI.all.fDOM <- filter(HI.all, response == "fDOM")
 HI.all.SPC <- filter(HI.all, response == "SPC")
 HI.all.turb <- filter(HI.all, response == "turb")
-
 # joining HI and beta 
 beta.HI.NO3 <- left_join(HI.all.NO3, beta.all.no3)  # joining beta and HI for NO3
 beta.HI.fDOM <- left_join(HI.all.fDOM, beta.all.fdom)  # joining beta and HI for fDOM
@@ -7669,7 +9364,7 @@ HI_FI_NO3.p =
   ylab("HI") +
   theme(legend.position = "none") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20),
-                                                                                                                                                                               legend.text = element_text(size = 8)) 
+        legend.text = element_text(size = 8)) 
 HI_FI_NO3.p
 
 HI_FI_fDOM.p = 
@@ -7766,6 +9461,1331 @@ HI_FI_turb.p =
     colour = "Permafrost Extent")
 HI_FI_turb.p
 
+########################################## 2019 ##########################################################
+storm_file_list_beta <- list.files(path="~/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI/", 
+                              recursive=F, 
+                              pattern=".csv", 
+                              full.names=TRUE)
+
+storm_list_beta<-do.call("list", lapply(storm_file_list_beta, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   header=T, row.names=1))
+
+storm_file_list_beta = sub("~/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//", storm_file_list_beta, replacement = "")
+storm_file_list_beta = sub(".csv", storm_file_list_beta, replacement = "")
+names(storm_list_beta) = storm_file_list_beta
+
+for(i in 1:length(storm_list_beta)){
+  storm_list_beta[[i]][["valuedatetime"]] = as.POSIXct(storm_list_beta[[i]][["valuedatetime"]],
+                                                  "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} # changing character format into datetime 
+
+
+#  organize storm data by site and solute # 5 for each storm 
+CARI_storm_list_beta = storm_list_beta[c(1:60)] #60
+FRCH_storm_list_beta = storm_list_beta[c(61:165)] #105
+MOOS_storm_list_beta = storm_list_beta[c(166:230)] #60
+POKE_storm_list_beta = storm_list_beta[c(231:295)]# 65
+STRT_storm_list_beta = storm_list_beta[c(296:350)] #55
+VAUL_storm_list_beta = storm_list_beta[c(351:410)] #65
+
+CARI_NO3_storm_list_beta = CARI_storm_list_beta[c(grep("NO3", names(CARI_storm_list_beta)))]
+CARI_fDOM_storm_list_beta = CARI_storm_list_beta[c(grep("fDOM", names(CARI_storm_list_beta)))]
+CARI_SpCond_storm_list_beta = CARI_storm_list_beta[c(grep("SPC", names(CARI_storm_list_beta)))]
+CARI_turb_storm_list_beta = CARI_storm_list_beta[c(grep("Turb", names(CARI_storm_list_beta)))]
+CARI_Q_storm_list_beta = CARI_storm_list_beta[c(grep("Q", names(CARI_storm_list_beta)))]
+
+FRCH_NO3_storm_list_beta = FRCH_storm_list_beta[c(grep("NO3", names(FRCH_storm_list_beta)))]
+FRCH_fDOM_storm_list_beta = FRCH_storm_list_beta[c(grep("fDOM", names(FRCH_storm_list_beta)))]
+FRCH_SpCond_storm_list_beta = FRCH_storm_list_beta[c(grep("SPC", names(FRCH_storm_list_beta)))]
+FRCH_turb_storm_list_beta = FRCH_storm_list_beta[c(grep("Turb", names(FRCH_storm_list_beta)))]
+FRCH_Q_storm_list_beta = FRCH_storm_list_beta[c(grep("Q", names(FRCH_storm_list_beta)))]
+
+MOOS_NO3_storm_list_beta = MOOS_storm_list_beta[c(grep("NO3", names(MOOS_storm_list_beta)))]
+MOOS_fDOM_storm_list_beta = MOOS_storm_list_beta[c(grep("fDOM", names(MOOS_storm_list_beta)))]
+MOOS_SpCond_storm_list_beta = MOOS_storm_list_beta[c(grep("SPC", names(MOOS_storm_list_beta)))]
+MOOS_turb_storm_list_beta = MOOS_storm_list_beta[c(grep("Turb", names(MOOS_storm_list_beta)))]
+MOOS_Q_storm_list_beta = MOOS_storm_list_beta[c(grep("Q", names(MOOS_storm_list_beta)))]
+
+POKE_NO3_storm_list_beta = POKE_storm_list_beta[c(grep("NO3", names(POKE_storm_list_beta)))]
+POKE_fDOM_storm_list_beta = POKE_storm_list_beta[c(grep("fDOM", names(POKE_storm_list_beta)))]
+POKE_SpCond_storm_list_beta = POKE_storm_list_beta[c(grep("SPC", names(POKE_storm_list_beta)))]
+POKE_turb_storm_list_beta = POKE_storm_list_beta[c(grep("Turb", names(POKE_storm_list_beta)))]
+POKE_Q_storm_list_beta = POKE_storm_list_beta[c(grep("Q", names(POKE_storm_list_beta)))]
+
+STRT_NO3_storm_list_beta = STRT_storm_list_beta[c(grep("NO3", names(STRT_storm_list_beta)))]
+STRT_fDOM_storm_list_beta = STRT_storm_list_beta[c(grep("fDOM", names(STRT_storm_list_beta)))]
+STRT_SpCond_storm_list_beta = STRT_storm_list_beta[c(grep("SPC", names(STRT_storm_list_beta)))]
+STRT_turb_storm_list_beta = STRT_storm_list_beta[c(grep("Turb", names(STRT_storm_list_beta)))]
+STRT_Q_storm_list_beta = STRT_storm_list_beta[c(grep("Q", names(STRT_storm_list_beta)))]
+
+VAUL_NO3_storm_list_beta = VAUL_storm_list_beta[c(grep("NO3", names(VAUL_storm_list_beta)))]
+VAUL_fDOM_storm_list_beta = VAUL_storm_list_beta[c(grep("fDOM", names(VAUL_storm_list_beta)))]
+VAUL_SpCond_storm_list_beta = VAUL_storm_list_beta[c(grep("SPC", names(VAUL_storm_list_beta)))]
+VAUL_turb_storm_list_beta = VAUL_storm_list_beta[c(grep("turb", names(VAUL_storm_list_beta)))]
+VAUL_Q_storm_list_beta = VAUL_storm_list_beta[c(grep("Q", names(VAUL_storm_list_beta)))]
+
+# normalize Q data 
+# FRCH
+for(i in 1:length(FRCH_Q_storm_list_beta)){
+  FRCH_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_Q_storm_list_beta[[i]][["datavalue"]]-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# MOOS
+for(i in 1:length(MOOS_Q_storm_list_beta)){
+  MOOS_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_Q_storm_list_beta[[i]][["datavalue"]]-min(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# POKE
+for(i in 1:length(POKE_Q_storm_list_beta)){
+  POKE_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_Q_storm_list_beta[[i]][["datavalue"]]-min(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# STRT
+for(i in 1:length(STRT_Q_storm_list_beta)){
+  STRT_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_Q_storm_list_beta[[i]][["datavalue"]]-min(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# VAUL
+for(i in 1:length(VAUL_Q_storm_list_beta)){
+  VAUL_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_Q_storm_list_beta[[i]][["datavalue"]]-min(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# CARI
+for(i in 1:length(CARI_Q_storm_list_beta)){
+  CARI_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_Q_storm_list_beta[[i]][["datavalue"]]-min(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# normalize solute data 
+# 
+#NO3
+for(i in 1:length(FRCH_NO3_storm_list_beta)){
+  FRCH_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_NO3_storm_list_beta[[i]][["datavalue"]]-min(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_NO3_storm_list_beta)){
+  MOOS_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_NO3_storm_list_beta[[i]][["datavalue"]]-min(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_NO3_storm_list_beta)){
+  POKE_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_NO3_storm_list_beta[[i]][["datavalue"]]-min(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_NO3_storm_list_beta)){
+  STRT_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_NO3_storm_list_beta[[i]][["datavalue"]]-min(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_NO3_storm_list_beta)){
+  VAUL_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_NO3_storm_list_beta[[i]][["datavalue"]]-min(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_NO3_storm_list_beta)){
+  CARI_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_NO3_storm_list_beta[[i]][["datavalue"]]-min(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list_beta)){
+  FRCH_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_fDOM_storm_list_beta[[i]][["datavalue"]]-min(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list_beta)){
+  MOOS_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_fDOM_storm_list_beta[[i]][["datavalue"]]-min(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_fDOM_storm_list_beta)){
+  POKE_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_fDOM_storm_list_beta[[i]][["datavalue"]]-min(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_fDOM_storm_list_beta)){
+  STRT_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_fDOM_storm_list_beta[[i]][["datavalue"]]-min(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list_beta)){
+  VAUL_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_fDOM_storm_list_beta[[i]][["datavalue"]]-min(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_fDOM_storm_list_beta)){
+  CARI_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_fDOM_storm_list_beta[[i]][["datavalue"]]-min(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#SPC
+for(i in 1:length(FRCH_SpCond_storm_list_beta)){
+  FRCH_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_SpCond_storm_list_beta[[i]][["datavalue"]]-min(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_SpCond_storm_list_beta)){
+  MOOS_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_SpCond_storm_list_beta[[i]][["datavalue"]]-min(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_SpCond_storm_list_beta)){
+  POKE_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_SpCond_storm_list_beta[[i]][["datavalue"]]-min(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_SpCond_storm_list_beta)){
+  STRT_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_SpCond_storm_list_beta[[i]][["datavalue"]]-min(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_SpCond_storm_list_beta)){
+  VAUL_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_SpCond_storm_list_beta[[i]][["datavalue"]]-min(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_SpCond_storm_list_beta)){
+  CARI_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_SpCond_storm_list_beta[[i]][["datavalue"]]-min(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#Turb
+for(i in 1:length(FRCH_turb_storm_list_beta)){
+  FRCH_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_turb_storm_list_beta[[i]][["datavalue"]]-min(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_turb_storm_list_beta)){
+  MOOS_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_turb_storm_list_beta[[i]][["datavalue"]]-min(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_turb_storm_list_beta)){
+  POKE_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_turb_storm_list_beta[[i]][["datavalue"]]-min(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_turb_storm_list_beta)){
+  STRT_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_turb_storm_list_beta[[i]][["datavalue"]]-min(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_turb_storm_list_beta)){
+  VAUL_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_turb_storm_list_beta[[i]][["datavalue"]]-min(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_turb_storm_list_beta)){
+  CARI_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_turb_storm_list_beta[[i]][["datavalue"]]-min(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+###### NO3  #######
+FRCH_NO3_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_NO3_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_NO3_storm <- map2_df(POKE_Q_storm_list_beta, POKE_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_NO3_storm <- map2_df(STRT_Q_storm_list_beta, STRT_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_NO3_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+CARI_NO3_storm <- map2_df(CARI_Q_storm_list_beta, CARI_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_NO3_storm$storm.ID = c(rep("storm1", 993),
+                   rep("storm10a", 121),
+                   rep("storm10b", 95),
+                   rep("storm10c", 207),
+                   rep("storm11", 479),
+                   rep("storm12a", 183),
+                   rep("storm12b", 67),
+                   rep("storm12c", 511),
+                   rep("storm12d", 99),
+                   rep("storm12e", 127),
+                   rep("storm13", 391),
+                   rep("storm14", 631),
+                   rep("storm2", 165),
+                   rep("storm3", 201),
+                   rep("storm4", 193),
+                   rep("storm5", 229),
+                   rep("storm6", 257),
+                   rep("storm7", 133),
+                   rep("storm8", 105),
+                   rep("storm9a", 61),
+                   rep("storm9b", 149))
+
+names(FRCH_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+FRCH_NO3_storm$site.ID <- "FRCH"
+
+cols <- c("NO3.norm","Q.norm")
+FRCH_NO3_storm[cols] <- log(FRCH_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_NO3_storm <- FRCH_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_NO3_storm_ascending <- filter(FRCH_NO3_storm, limb == "ascending")
+
+FRCH_NO3_storm_ascending <- FRCH_NO3_storm_ascending[is.finite(FRCH_NO3_storm_ascending$Q.norm) & is.finite(FRCH_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3 <- FRCH_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_NO3_storm$storm.ID = c(rep("storm1", 702),
+                             rep("storm3", 250),
+                             rep("storm4", 256),
+                             rep("storm5", 266),
+                             rep("storm6a", 114),
+                             rep("storm6b", 95),
+                             rep("storm6c", 223),
+                             rep("storm6d", 479),
+                             rep("storm7a", 166),
+                             rep("storm7b", 84),
+                             rep("storm7c", 430),
+                             rep("storm8", 174),
+                             rep("storm9", 530))
+names(MOOS_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+MOOS_NO3_storm$site.ID <- "MOOS"
+
+MOOS_NO3_storm[cols] <- log(MOOS_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_NO3_storm <- MOOS_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_NO3_storm_ascending <- filter(MOOS_NO3_storm, limb == "ascending")
+
+MOOS_NO3_storm_ascending <- MOOS_NO3_storm_ascending[is.finite(MOOS_NO3_storm_ascending$Q.norm) & is.finite(MOOS_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_NO3_storm$storm.num = c(rep("storm1", 103),
+                             rep("storm2", 91),
+                             rep("storm3", 147),
+                             rep("storm4", 115),
+                             rep("storm5a", 87),
+                             rep("storm5b", 239),
+                             rep("storm5c", 111),
+                             rep("storm5d", 99),
+                             rep("storm6a", 51),
+                             rep("storm6b", 227),
+                             rep("storm7", 267),
+                             rep("storm8", 95),
+                             rep("storm9", 211))
+names(MOOS_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.num")
+MOOS_NO3_storm$Site <- "MOOS"
+
+MOOS_NO3_storm[cols] <- log(MOOS_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_NO3_storm <- MOOS_NO3_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_NO3_storm_ascending <- filter(MOOS_NO3_storm, limb == "ascending")
+
+MOOS_NO3_storm_ascending <- MOOS_NO3_storm_ascending[is.finite(MOOS_NO3_storm_ascending$Q.norm) & is.finite(MOOS_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_NO3_storm$storm.ID = c(rep("storm1", 638),
+                             rep("storm2", 274),
+                             rep("storm3a", 1035),
+                             rep("storm3b", 286),
+                             rep("storm3c", 174),
+                             rep("storm4", 466),
+                             rep("storm5", 98),
+                             rep("storm6", 246),
+                             rep("storm7", 218),
+                             rep("storm7b", 266),
+                             rep("storm7c", 258))
+
+names(STRT_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+STRT_NO3_storm$site.ID <- "STRT"
+
+STRT_NO3_storm[cols] <- log(STRT_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_NO3_storm <- STRT_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_NO3_storm_ascending <- filter(STRT_NO3_storm, limb == "ascending")
+
+STRT_NO3_storm_ascending <- STRT_NO3_storm_ascending[is.finite(STRT_NO3_storm_ascending$Q.norm) & is.finite(STRT_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.strt <- STRT_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_NO3_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 207),
+                             rep("storm3", 191),
+                             rep("storm4a", 83),
+                             rep("storm4b", 219),
+                             rep("storm4c", 707),
+                             rep("storm5", 275),
+                             rep("storm6", 263),
+                             rep("storm7", 107),
+                             rep("storm8a", 167),
+                             rep("storm8b", 223),
+                             rep("storm8c", 479))
+
+names(VAUL_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+VAUL_NO3_storm$site.ID <- "VAUL"
+
+VAUL_NO3_storm[cols] <- log(VAUL_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_NO3_storm <- VAUL_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_NO3_storm_ascending <- filter(VAUL_NO3_storm, limb == "ascending")
+
+VAUL_NO3_storm_ascending <- VAUL_NO3_storm_ascending[is.finite(VAUL_NO3_storm_ascending$Q.norm) & is.finite(VAUL_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# CARI # 
+CARI_NO3_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+VAUL_NO3_storm$site.ID <- "VAUL"
+
+VAUL_NO3_storm[cols] <- log(VAUL_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_NO3_storm <- VAUL_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_NO3_storm_ascending <- filter(VAUL_NO3_storm, limb == "ascending")
+
+VAUL_NO3_storm_ascending <- VAUL_NO3_storm_ascending[is.finite(VAUL_NO3_storm_ascending$Q.norm) & is.finite(VAUL_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_NO3_storm_ascending$DateTime <- as.POSIXct(STRT_NO3_storm_ascending$DateTime, 
+                                                  "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_NO3_storm_ascending$DateTime <- as.POSIXct(VAUL_NO3_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_NO3_storm <- rbind(FRCH_NO3_storm_ascending, MOOS_NO3_storm_ascending, 
+                       STRT_NO3_storm_ascending, VAUL_NO3_storm_ascending )
+
+beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+
+beta.all.no3$response_var <- "NO3"
+
+##### fDOM #####
+FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_fDOM_storm <- map2_df(POKE_Q_storm_list_beta, POKE_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_fDOM_storm <- map2_df(STRT_Q_storm_list_beta, STRT_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_fDOM_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_fDOM_storm$storm.ID = c(rep("storm1", 993),
+                            rep("storm10a", 121),
+                            rep("storm10b", 95),
+                            rep("storm10c", 207),
+                            rep("storm11", 479),
+                            rep("storm12a", 183),
+                            rep("storm12b", 67),
+                            rep("storm12c", 511),
+                            rep("storm12d", 99),
+                            rep("storm12e", 127),
+                            rep("storm13", 391),
+                            rep("storm14", 631),
+                            rep("storm2", 165),
+                            rep("storm3", 201),
+                            rep("storm4", 193),
+                            rep("storm5", 229),
+                            rep("storm6", 257),
+                            rep("storm7", 133),
+                            rep("storm8", 105),
+                            rep("storm9a", 61),
+                            rep("storm9b", 149))
+
+names(FRCH_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+FRCH_fDOM_storm$site.ID <- "FRCH"
+
+cols <- c("fDOM.norm","Q.norm")
+FRCH_fDOM_storm[cols] <- log(FRCH_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_fDOM_storm <- FRCH_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_fDOM_storm_ascending <- filter(FRCH_fDOM_storm, limb == "ascending")
+
+FRCH_fDOM_storm_ascending <- FRCH_fDOM_storm_ascending[is.finite(FRCH_fDOM_storm_ascending$Q.norm) & is.finite(FRCH_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM <- FRCH_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_fDOM_storm$storm.ID = c(rep("storm1", 702),
+                            rep("storm3", 250),
+                            rep("storm4", 256),
+                            rep("storm5", 266),
+                            rep("storm6a", 114),
+                            rep("storm6b", 95),
+                            rep("storm6c", 223),
+                            rep("storm6d", 479),
+                            rep("storm7a", 166),
+                            rep("storm7b", 84),
+                            rep("storm7c", 430),
+                            rep("storm8", 174),
+                            rep("storm9", 530))
+names(MOOS_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+MOOS_fDOM_storm$site.ID <- "MOOS"
+
+MOOS_fDOM_storm[cols] <- log(MOOS_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_fDOM_storm <- MOOS_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_fDOM_storm_ascending <- filter(MOOS_fDOM_storm, limb == "ascending")
+
+MOOS_fDOM_storm_ascending <- MOOS_fDOM_storm_ascending[is.finite(MOOS_fDOM_storm_ascending$Q.norm) & is.finite(MOOS_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.moos.with.all <- MOOS_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_fDOM_storm$storm.num = c(rep("storm1", 103),
+                             rep("storm2", 91),
+                             rep("storm3", 147),
+                             rep("storm4", 115),
+                             rep("storm5a", 87),
+                             rep("storm5b", 239),
+                             rep("storm5c", 111),
+                             rep("storm5d", 99),
+                             rep("storm6a", 51),
+                             rep("storm6b", 227),
+                             rep("storm7", 267),
+                             rep("storm8", 95),
+                             rep("storm9", 211))
+names(POKE_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", ".norm", "storm.num")
+POKE_fDOM_storm$Site <- "POKE"
+
+POKE_fDOM_storm[cols] <- log(POKE_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_fDOM_storm <- POKE_fDOM_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_fDOM_storm_ascending <- filter(POKE_fDOM_storm, limb == "ascending")
+
+POKE_fDOM_storm_ascending <- POKE_fDOM_storm_ascending[is.finite(POKE_fDOM_storm_ascending$Q.norm) & is.finite(POKE_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.pok <- POKE_fDOM_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_fDOM_storm$storm.ID = c(rep("storm1", 638),
+                            rep("storm2", 274),
+                            rep("storm3a", 1035),
+                            rep("storm3b", 286),
+                            rep("storm3c", 174),
+                            rep("storm4", 466),
+                            rep("storm5", 98),
+                            rep("storm6", 246),
+                            rep("storm7", 218),
+                            rep("storm7b", 266),
+                            rep("storm7c", 258))
+
+names(STRT_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+STRT_fDOM_storm$site.ID <- "STRT"
+
+STRT_fDOM_storm[cols] <- log(STRT_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_fDOM_storm <- STRT_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_fDOM_storm_ascending <- filter(STRT_fDOM_storm, limb == "ascending")
+
+STRT_fDOM_storm_ascending <- STRT_fDOM_storm_ascending[is.finite(STRT_fDOM_storm_ascending$Q.norm) & is.finite(STRT_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.strt <- STRT_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_fDOM_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+VAUL_fDOM_storm$site.ID <- "VAUL"
+
+VAUL_fDOM_storm[cols] <- log(VAUL_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_fDOM_storm <- VAUL_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_fDOM_storm_ascending <- filter(VAUL_fDOM_storm, limb == "ascending")
+
+VAUL_fDOM_storm_ascending <- VAUL_fDOM_storm_ascending[is.finite(VAUL_fDOM_storm_ascending$Q.norm) & is.finite(VAUL_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.vaul <- VAUL_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_fDOM_storm_ascending$DateTime <- as.POSIXct(STRT_fDOM_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_fDOM_storm_ascending$DateTime <- as.POSIXct(VAUL_fDOM_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_fDOM_storm <- rbind(FRCH_fDOM_storm_ascending, MOOS_fDOM_storm_ascending, 
+                       STRT_fDOM_storm_ascending, VAUL_fDOM_storm_ascending )
+
+beta.all.fdom <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+
+beta.all.fdom$response_var <- "fDOM"
+
+##### SPC #####
+FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_SPC_storm <- map2_df(POKE_Q_storm_list_beta, POKE_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_SPC_storm <- map2_df(STRT_Q_storm_list_beta, STRT_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_SPC_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_SPC_storm$storm.ID = c(rep("storm1", 993),
+                             rep("storm10a", 121),
+                             rep("storm10b", 95),
+                             rep("storm10c", 207),
+                             rep("storm11", 479),
+                             rep("storm12a", 183),
+                             rep("storm12b", 67),
+                             rep("storm12c", 511),
+                             rep("storm12d", 99),
+                             rep("storm12e", 127),
+                             rep("storm13", 391),
+                             rep("storm14", 631),
+                             rep("storm2", 165),
+                             rep("storm3", 201),
+                             rep("storm4", 193),
+                             rep("storm5", 229),
+                             rep("storm6", 257),
+                             rep("storm7", 133),
+                             rep("storm8", 105),
+                             rep("storm9a", 61),
+                             rep("storm9b", 149))
+
+names(FRCH_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+FRCH_SPC_storm$site.ID <- "FRCH"
+
+cols <- c("SPC.norm","Q.norm")
+FRCH_SPC_storm[cols] <- log(FRCH_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_SPC_storm <- FRCH_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_SPC_storm_ascending <- filter(FRCH_SPC_storm, limb == "ascending")
+
+FRCH_SPC_storm_ascending <- FRCH_SPC_storm_ascending[is.finite(FRCH_SPC_storm_ascending$Q.norm) & is.finite(FRCH_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC <- FRCH_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_SPC_storm$storm.ID = c(rep("storm1", 702),
+                             rep("storm3", 250),
+                             rep("storm4", 256),
+                             rep("storm5", 266),
+                             rep("storm6a", 114),
+                             rep("storm6b", 95),
+                             rep("storm6c", 223),
+                             rep("storm6d", 479),
+                             rep("storm7a", 166),
+                             rep("storm7b", 84),
+                             rep("storm7c", 430),
+                             rep("storm8", 174),
+                             rep("storm9", 530))
+names(MOOS_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+MOOS_SPC_storm$site.ID <- "MOOS"
+
+MOOS_SPC_storm[cols] <- log(MOOS_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_SPC_storm <- MOOS_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_SPC_storm_ascending <- filter(MOOS_SPC_storm, limb == "ascending")
+
+MOOS_SPC_storm_ascending <- MOOS_SPC_storm_ascending[is.finite(MOOS_SPC_storm_ascending$Q.norm) & is.finite(MOOS_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.moos.with.all <- MOOS_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_SPC_storm$storm.num = c(rep("storm1", 103),
+                              rep("storm2", 91),
+                              rep("storm3", 147),
+                              rep("storm4", 115),
+                              rep("storm5a", 87),
+                              rep("storm5b", 239),
+                              rep("storm5c", 111),
+                              rep("storm5d", 99),
+                              rep("storm6a", 51),
+                              rep("storm6b", 227),
+                              rep("storm7", 267),
+                              rep("storm8", 95),
+                              rep("storm9", 211))
+names(POKE_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.num")
+POKE_SPC_storm$Site <- "POKE"
+
+POKE_SPC_storm[cols] <- log(POKE_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_SPC_storm <- POKE_SPC_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_SPC_storm_ascending <- filter(POKE_SPC_storm, limb == "ascending")
+
+POKE_SPC_storm_ascending <- POKE_SPC_storm_ascending[is.finite(POKE_SPC_storm_ascending$Q.norm) & is.finite(POKE_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.pok <- POKE_SPC_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_SPC_storm$storm.ID = c(rep("storm1", 638),
+                             rep("storm2", 274),
+                             rep("storm3a", 1035),
+                             rep("storm3b", 286),
+                             rep("storm3c", 174),
+                             rep("storm4", 466),
+                             rep("storm5", 98),
+                             rep("storm6", 246),
+                             rep("storm7", 218),
+                             rep("storm7b", 266),
+                             rep("storm7c", 258))
+
+names(STRT_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+STRT_SPC_storm$site.ID <- "STRT"
+
+STRT_SPC_storm[cols] <- log(STRT_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_SPC_storm <- STRT_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_SPC_storm_ascending <- filter(STRT_SPC_storm, limb == "ascending")
+
+STRT_SPC_storm_ascending <- STRT_SPC_storm_ascending[is.finite(STRT_SPC_storm_ascending$Q.norm) & is.finite(STRT_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.strt <- STRT_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_SPC_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 207),
+                             rep("storm3", 191),
+                             rep("storm4a", 83),
+                             rep("storm4b", 219),
+                             rep("storm4c", 707),
+                             rep("storm5", 275),
+                             rep("storm6", 263),
+                             rep("storm7", 107),
+                             rep("storm8a", 167),
+                             rep("storm8b", 223),
+                             rep("storm8c", 479))
+
+names(VAUL_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+VAUL_SPC_storm$site.ID <- "VAUL"
+
+VAUL_SPC_storm[cols] <- log(VAUL_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_SPC_storm <- VAUL_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_SPC_storm_ascending <- filter(VAUL_SPC_storm, limb == "ascending")
+
+VAUL_SPC_storm_ascending <- VAUL_SPC_storm_ascending[is.finite(VAUL_SPC_storm_ascending$Q.norm) & is.finite(VAUL_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.vaul <- VAUL_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_SPC_storm_ascending$DateTime <- as.POSIXct(STRT_SPC_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_SPC_storm_ascending$DateTime <- as.POSIXct(VAUL_SPC_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_SPC_storm <- rbind(FRCH_SPC_storm_ascending, MOOS_SPC_storm_ascending, 
+                        STRT_SPC_storm_ascending, VAUL_SPC_storm_ascending )
+
+beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+
+beta.all.SPC$response_var <- "SPC"
+
+##### Turb #####
+FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_turb_storm <- map2_df(POKE_Q_storm_list_beta, POKE_turb_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_turb_storm <- map2_df(STRT_Q_storm_list_beta, STRT_turb_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_turb_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_turb_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_turb_storm$storm.ID = c(rep("storm1", 993),
+                            rep("storm10a", 121),
+                            rep("storm10b", 95),
+                            rep("storm10c", 207),
+                            rep("storm11", 479),
+                            rep("storm12a", 183),
+                            rep("storm12b", 67),
+                            rep("storm12c", 511),
+                            rep("storm12d", 99),
+                            rep("storm12e", 127),
+                            rep("storm13", 391),
+                            rep("storm14", 631),
+                            rep("storm2", 165),
+                            rep("storm3", 201),
+                            rep("storm4", 193),
+                            rep("storm5", 229),
+                            rep("storm6", 257),
+                            rep("storm7", 133),
+                            rep("storm8", 105),
+                            rep("storm9a", 61),
+                            rep("storm9b", 149))
+
+names(FRCH_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+FRCH_turb_storm$site.ID <- "FRCH"
+
+cols <- c("turb.norm","Q.norm")
+FRCH_turb_storm[cols] <- log(FRCH_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_turb_storm <- FRCH_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_turb_storm_ascending <- filter(FRCH_turb_storm, limb == "ascending")
+
+FRCH_turb_storm_ascending <- FRCH_turb_storm_ascending[is.finite(FRCH_turb_storm_ascending$Q.norm) & is.finite(FRCH_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb <- FRCH_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_turb_storm$storm.ID = c(rep("storm1", 702),
+                            rep("storm3", 250),
+                            rep("storm4", 256),
+                            rep("storm5", 266),
+                            rep("storm6a", 114),
+                            rep("storm6b", 95),
+                            rep("storm6c", 223),
+                            rep("storm6d", 479),
+                            rep("storm7a", 166),
+                            rep("storm7b", 84),
+                            rep("storm7c", 430),
+                            rep("storm8", 174),
+                            rep("storm9", 530))
+names(MOOS_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+MOOS_turb_storm$site.ID <- "MOOS"
+
+MOOS_turb_storm[cols] <- log(MOOS_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_turb_storm <- MOOS_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_turb_storm_ascending <- filter(MOOS_turb_storm, limb == "ascending")
+
+MOOS_turb_storm_ascending <- MOOS_turb_storm_ascending[is.finite(MOOS_turb_storm_ascending$Q.norm) & is.finite(MOOS_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.moos.with.all <- MOOS_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_turb_storm$storm.num = c(rep("storm1", 103),
+                             rep("storm2", 91),
+                             rep("storm3", 147),
+                             rep("storm4", 115),
+                             rep("storm5a", 87),
+                             rep("storm5b", 239),
+                             rep("storm5c", 111),
+                             rep("storm5d", 99),
+                             rep("storm6a", 51),
+                             rep("storm6b", 227),
+                             rep("storm7", 267),
+                             rep("storm8", 95),
+                             rep("storm9", 211))
+names(POKE_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.num")
+POKE_turb_storm$Site <- "POKE"
+
+POKE_turb_storm[cols] <- log(POKE_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_turb_storm <- POKE_turb_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_turb_storm_ascending <- filter(POKE_turb_storm, limb == "ascending")
+
+POKE_turb_storm_ascending <- POKE_turb_storm_ascending[is.finite(POKE_turb_storm_ascending$Q.norm) & is.finite(POKE_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.poke <- POKE_turb_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_turb_storm$storm.ID = c(rep("storm1", 638),
+                            rep("storm2", 274),
+                            rep("storm3a", 1035),
+                            rep("storm3b", 286),
+                            rep("storm3c", 174),
+                            rep("storm4", 466),
+                            rep("storm5", 98),
+                            rep("storm6", 246),
+                            rep("storm7", 218),
+                            rep("storm7b", 266),
+                            rep("storm7c", 258))
+
+names(STRT_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+STRT_turb_storm$site.ID <- "STRT"
+
+STRT_turb_storm[cols] <- log(STRT_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_turb_storm <- STRT_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_turb_storm_ascending <- filter(STRT_turb_storm, limb == "ascending")
+
+STRT_turb_storm_ascending <- STRT_turb_storm_ascending[is.finite(STRT_turb_storm_ascending$Q.norm) & is.finite(STRT_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.strt <- STRT_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_turb_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+VAUL_turb_storm$site.ID <- "VAUL"
+
+VAUL_turb_storm[cols] <- log(VAUL_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_turb_storm <- VAUL_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_turb_storm_ascending <- filter(VAUL_turb_storm, limb == "ascending")
+
+VAUL_turb_storm_ascending <- VAUL_turb_storm_ascending[is.finite(VAUL_turb_storm_ascending$Q.norm) & is.finite(VAUL_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.vaul <- VAUL_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_turb_storm_ascending$DateTime <- as.POSIXct(STRT_turb_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_turb_storm_ascending$DateTime <- as.POSIXct(VAUL_turb_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_turb_storm <- rbind(FRCH_turb_storm_ascending, MOOS_turb_storm_ascending, 
+                       STRT_turb_storm_ascending, VAUL_turb_storm_ascending )
+
+beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+
+beta.all.turb$response_var <- "turb"
+
+beta.all.2019 <- rbind(beta.all.no3, beta.all.fdom,
+                       beta.all.SPC, beta.all.turb)
+
+#### plot ####
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+
+HI_FI_beta = left_join(HI_FI, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
+
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results.csv")
+
+# NO3 #
+HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
+HI_FI_NO3$site.ID <- factor(HI_FI_NO3$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_NO3.p = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p
+
+# NO3 #
+HI_beta_NO3 = subset(HI_FI_beta, response_var == "NO3")
+HI_beta_NO3$site.ID <- factor(HI_beta_NO3$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_NO3.p = 
+  ggplot(HI_beta_NO3, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_NO3.p
+
+# fDOM #
+HI_FI_fDOM = subset(HI_FI_beta, response_var == "fDOM")
+HI_FI_fDOM$site.ID <- factor(HI_FI_fDOM$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_fDOM.p = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_fDOM.p
+
+HI_beta_fDOM = subset(HI_FI_beta, response_var == "fDOM")
+HI_beta_fDOM$site.ID <- factor(HI_beta_fDOM$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_fDOM.p = 
+  ggplot(HI_beta_fDOM, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_fDOM.p
+
+# SPC#
+HI_FI_SPC = subset(HI_FI_beta, response_var == "SPC")
+HI_FI_SPC$site.ID <- factor(HI_FI_SPC$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_SPC.p = 
+  ggplot(HI_FI_SPC, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_SPC.p
+
+
+HI_beta_SPC = subset(HI_FI_beta, response_var == "SPC")
+HI_beta_SPC$site.ID <- factor(HI_beta_SPC$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_SPC.p = 
+  ggplot(HI_beta_SPC, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_SPC.p
+
+# turb #
+HI_FI_turb = subset(HI_FI_beta, response_var == "turb")
+HI_FI_turb$site.ID <- factor(HI_FI_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_turb.p = 
+  ggplot(HI_FI_turb, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) Turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_turb.p
+
+
+HI_beta_turb = subset(HI_FI_beta, response_var == "turb")
+HI_beta_turb$site.ID <- factor(HI_beta_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_turb.p = 
+  ggplot(HI_beta_turb, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_turb.p
+
+grid.arrange(HI_beta_NO3.p, HI_beta_fDOM.p, HI_beta_SPC.p, HI_beta_turb.p)
+
+#### Regression between beta and FI #######
+FI_beta_comp = 
+ggplot(HI_FI_NO3, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+   ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp
+
+FI_beta_comp_fDOM = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_fDOM
+
+FI_beta_comp_SPC = 
+  ggplot(HI_FI_SPC, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_SPC
+
+FI_beta_comp_turb = 
+  ggplot(HI_FI_turb, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_turb
+
+
+grid.arrange(FI_beta_comp_NO3, FI_beta_comp_fDOM, FI_beta_comp_SPC, FI_beta_comp_turb)
 
 
 
@@ -7781,54 +10801,1333 @@ HI_FI_turb.p
 
 
 
+# Haven't done this yet as of 1/19/22...I need to go through all of the HI script again to update those
+# HI values with updated Q plots
+########################################## 2020 ##########################################################
+storm_file_list_beta <- list.files(path="~/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI/", 
+                                   recursive=F, 
+                                   pattern=".csv", 
+                                   full.names=TRUE)
+
+storm_list_beta<-do.call("list", lapply(storm_file_list_beta, 
+                                        read.csv, 
+                                        stringsAsFactors=FALSE, 
+                                        header=T, row.names=1))
+
+storm_file_list_beta = sub("~/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//", storm_file_list_beta, replacement = "")
+storm_file_list_beta = sub(".csv", storm_file_list_beta, replacement = "")
+names(storm_list_beta) = storm_file_list_beta
+
+for(i in 1:length(storm_list_beta)){
+  storm_list_beta[[i]][["valuedatetime"]] = as.POSIXct(storm_list_beta[[i]][["valuedatetime"]],
+                                                       "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} # changing character format into datetime 
 
 
+#  organize storm data by site and solute # 5 for each storm 
+CARI_storm_list_beta = storm_list_beta[c(1:60)] #60
+FRCH_storm_list_beta = storm_list_beta[c(61:165)] #105
+MOOS_storm_list_beta = storm_list_beta[c(166:230)] #60
+POKE_storm_list_beta = storm_list_beta[c(231:295)]# 65
+STRT_storm_list_beta = storm_list_beta[c(296:350)] #55
+VAUL_storm_list_beta = storm_list_beta[c(351:410)] #65
+
+CARI_NO3_storm_list_beta = CARI_storm_list_beta[c(grep("NO3", names(CARI_storm_list_beta)))]
+CARI_fDOM_storm_list_beta = CARI_storm_list_beta[c(grep("fDOM", names(CARI_storm_list_beta)))]
+CARI_SpCond_storm_list_beta = CARI_storm_list_beta[c(grep("SPC", names(CARI_storm_list_beta)))]
+CARI_turb_storm_list_beta = CARI_storm_list_beta[c(grep("Turb", names(CARI_storm_list_beta)))]
+CARI_Q_storm_list_beta = CARI_storm_list_beta[c(grep("Q", names(CARI_storm_list_beta)))]
+
+FRCH_NO3_storm_list_beta = FRCH_storm_list_beta[c(grep("NO3", names(FRCH_storm_list_beta)))]
+FRCH_fDOM_storm_list_beta = FRCH_storm_list_beta[c(grep("fDOM", names(FRCH_storm_list_beta)))]
+FRCH_SpCond_storm_list_beta = FRCH_storm_list_beta[c(grep("SPC", names(FRCH_storm_list_beta)))]
+FRCH_turb_storm_list_beta = FRCH_storm_list_beta[c(grep("Turb", names(FRCH_storm_list_beta)))]
+FRCH_Q_storm_list_beta = FRCH_storm_list_beta[c(grep("Q", names(FRCH_storm_list_beta)))]
+
+MOOS_NO3_storm_list_beta = MOOS_storm_list_beta[c(grep("NO3", names(MOOS_storm_list_beta)))]
+MOOS_fDOM_storm_list_beta = MOOS_storm_list_beta[c(grep("fDOM", names(MOOS_storm_list_beta)))]
+MOOS_SpCond_storm_list_beta = MOOS_storm_list_beta[c(grep("SPC", names(MOOS_storm_list_beta)))]
+MOOS_turb_storm_list_beta = MOOS_storm_list_beta[c(grep("Turb", names(MOOS_storm_list_beta)))]
+MOOS_Q_storm_list_beta = MOOS_storm_list_beta[c(grep("Q", names(MOOS_storm_list_beta)))]
+
+POKE_NO3_storm_list_beta = POKE_storm_list_beta[c(grep("NO3", names(POKE_storm_list_beta)))]
+POKE_fDOM_storm_list_beta = POKE_storm_list_beta[c(grep("fDOM", names(POKE_storm_list_beta)))]
+POKE_SpCond_storm_list_beta = POKE_storm_list_beta[c(grep("SPC", names(POKE_storm_list_beta)))]
+POKE_turb_storm_list_beta = POKE_storm_list_beta[c(grep("Turb", names(POKE_storm_list_beta)))]
+POKE_Q_storm_list_beta = POKE_storm_list_beta[c(grep("Q", names(POKE_storm_list_beta)))]
+
+STRT_NO3_storm_list_beta = STRT_storm_list_beta[c(grep("NO3", names(STRT_storm_list_beta)))]
+STRT_fDOM_storm_list_beta = STRT_storm_list_beta[c(grep("fDOM", names(STRT_storm_list_beta)))]
+STRT_SpCond_storm_list_beta = STRT_storm_list_beta[c(grep("SPC", names(STRT_storm_list_beta)))]
+STRT_turb_storm_list_beta = STRT_storm_list_beta[c(grep("Turb", names(STRT_storm_list_beta)))]
+STRT_Q_storm_list_beta = STRT_storm_list_beta[c(grep("Q", names(STRT_storm_list_beta)))]
+
+VAUL_NO3_storm_list_beta = VAUL_storm_list_beta[c(grep("NO3", names(VAUL_storm_list_beta)))]
+VAUL_fDOM_storm_list_beta = VAUL_storm_list_beta[c(grep("fDOM", names(VAUL_storm_list_beta)))]
+VAUL_SpCond_storm_list_beta = VAUL_storm_list_beta[c(grep("SPC", names(VAUL_storm_list_beta)))]
+VAUL_turb_storm_list_beta = VAUL_storm_list_beta[c(grep("turb", names(VAUL_storm_list_beta)))]
+VAUL_Q_storm_list_beta = VAUL_storm_list_beta[c(grep("Q", names(VAUL_storm_list_beta)))]
+
+# normalize Q data 
+# FRCH
+for(i in 1:length(FRCH_Q_storm_list_beta)){
+  FRCH_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_Q_storm_list_beta[[i]][["datavalue"]]-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# MOOS
+for(i in 1:length(MOOS_Q_storm_list_beta)){
+  MOOS_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_Q_storm_list_beta[[i]][["datavalue"]]-min(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# POKE
+for(i in 1:length(POKE_Q_storm_list_beta)){
+  POKE_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_Q_storm_list_beta[[i]][["datavalue"]]-min(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# STRT
+for(i in 1:length(STRT_Q_storm_list_beta)){
+  STRT_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_Q_storm_list_beta[[i]][["datavalue"]]-min(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# VAUL
+for(i in 1:length(VAUL_Q_storm_list_beta)){
+  VAUL_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_Q_storm_list_beta[[i]][["datavalue"]]-min(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# CARI
+for(i in 1:length(CARI_Q_storm_list_beta)){
+  CARI_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_Q_storm_list_beta[[i]][["datavalue"]]-min(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+# normalize solute data 
+# 
+#NO3
+for(i in 1:length(FRCH_NO3_storm_list_beta)){
+  FRCH_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_NO3_storm_list_beta[[i]][["datavalue"]]-min(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_NO3_storm_list_beta)){
+  MOOS_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_NO3_storm_list_beta[[i]][["datavalue"]]-min(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_NO3_storm_list_beta)){
+  POKE_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_NO3_storm_list_beta[[i]][["datavalue"]]-min(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_NO3_storm_list_beta)){
+  STRT_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_NO3_storm_list_beta[[i]][["datavalue"]]-min(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_NO3_storm_list_beta)){
+  VAUL_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_NO3_storm_list_beta[[i]][["datavalue"]]-min(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_NO3_storm_list_beta)){
+  CARI_NO3_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_NO3_storm_list_beta[[i]][["datavalue"]]-min(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_NO3_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list_beta)){
+  FRCH_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_fDOM_storm_list_beta[[i]][["datavalue"]]-min(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list_beta)){
+  MOOS_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_fDOM_storm_list_beta[[i]][["datavalue"]]-min(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_fDOM_storm_list_beta)){
+  POKE_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_fDOM_storm_list_beta[[i]][["datavalue"]]-min(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_fDOM_storm_list_beta)){
+  STRT_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_fDOM_storm_list_beta[[i]][["datavalue"]]-min(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list_beta)){
+  VAUL_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_fDOM_storm_list_beta[[i]][["datavalue"]]-min(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_fDOM_storm_list_beta)){
+  CARI_fDOM_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_fDOM_storm_list_beta[[i]][["datavalue"]]-min(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_fDOM_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#SPC
+for(i in 1:length(FRCH_SpCond_storm_list_beta)){
+  FRCH_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_SpCond_storm_list_beta[[i]][["datavalue"]]-min(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_SpCond_storm_list_beta)){
+  MOOS_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_SpCond_storm_list_beta[[i]][["datavalue"]]-min(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_SpCond_storm_list_beta)){
+  POKE_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_SpCond_storm_list_beta[[i]][["datavalue"]]-min(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_SpCond_storm_list_beta)){
+  STRT_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_SpCond_storm_list_beta[[i]][["datavalue"]]-min(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_SpCond_storm_list_beta)){
+  VAUL_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_SpCond_storm_list_beta[[i]][["datavalue"]]-min(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_SpCond_storm_list_beta)){
+  CARI_SpCond_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_SpCond_storm_list_beta[[i]][["datavalue"]]-min(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_SpCond_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+#Turb
+for(i in 1:length(FRCH_turb_storm_list_beta)){
+  FRCH_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (FRCH_turb_storm_list_beta[[i]][["datavalue"]]-min(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(MOOS_turb_storm_list_beta)){
+  MOOS_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (MOOS_turb_storm_list_beta[[i]][["datavalue"]]-min(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(MOOS_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(POKE_turb_storm_list_beta)){
+  POKE_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (POKE_turb_storm_list_beta[[i]][["datavalue"]]-min(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(POKE_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(STRT_turb_storm_list_beta)){
+  STRT_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (STRT_turb_storm_list_beta[[i]][["datavalue"]]-min(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(STRT_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(VAUL_turb_storm_list_beta)){
+  VAUL_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (VAUL_turb_storm_list_beta[[i]][["datavalue"]]-min(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(VAUL_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+
+for(i in 1:length(CARI_turb_storm_list_beta)){
+  CARI_turb_storm_list_beta[[i]][["datavalue.norm"]] = 
+    (CARI_turb_storm_list_beta[[i]][["datavalue"]]-min(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
+}
+###### NO3  #######
+FRCH_NO3_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_NO3_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_NO3_storm <- map2_df(POKE_Q_storm_list_beta, POKE_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_NO3_storm <- map2_df(STRT_Q_storm_list_beta, STRT_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_NO3_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+CARI_NO3_storm <- map2_df(CARI_Q_storm_list_beta, CARI_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_NO3_storm$storm.ID = c(rep("storm1", 993),
+                            rep("storm10a", 121),
+                            rep("storm10b", 95),
+                            rep("storm10c", 207),
+                            rep("storm11", 479),
+                            rep("storm12a", 183),
+                            rep("storm12b", 67),
+                            rep("storm12c", 511),
+                            rep("storm12d", 99),
+                            rep("storm12e", 127),
+                            rep("storm13", 391),
+                            rep("storm14", 631),
+                            rep("storm2", 165),
+                            rep("storm3", 201),
+                            rep("storm4", 193),
+                            rep("storm5", 229),
+                            rep("storm6", 257),
+                            rep("storm7", 133),
+                            rep("storm8", 105),
+                            rep("storm9a", 61),
+                            rep("storm9b", 149))
+
+names(FRCH_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+FRCH_NO3_storm$site.ID <- "FRCH"
+
+cols <- c("NO3.norm","Q.norm")
+FRCH_NO3_storm[cols] <- log(FRCH_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_NO3_storm <- FRCH_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_NO3_storm_ascending <- filter(FRCH_NO3_storm, limb == "ascending")
+
+FRCH_NO3_storm_ascending <- FRCH_NO3_storm_ascending[is.finite(FRCH_NO3_storm_ascending$Q.norm) & is.finite(FRCH_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3 <- FRCH_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_NO3_storm$storm.ID = c(rep("storm1", 702),
+                            rep("storm3", 250),
+                            rep("storm4", 256),
+                            rep("storm5", 266),
+                            rep("storm6a", 114),
+                            rep("storm6b", 95),
+                            rep("storm6c", 223),
+                            rep("storm6d", 479),
+                            rep("storm7a", 166),
+                            rep("storm7b", 84),
+                            rep("storm7c", 430),
+                            rep("storm8", 174),
+                            rep("storm9", 530))
+names(MOOS_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+MOOS_NO3_storm$site.ID <- "MOOS"
+
+MOOS_NO3_storm[cols] <- log(MOOS_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_NO3_storm <- MOOS_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_NO3_storm_ascending <- filter(MOOS_NO3_storm, limb == "ascending")
+
+MOOS_NO3_storm_ascending <- MOOS_NO3_storm_ascending[is.finite(MOOS_NO3_storm_ascending$Q.norm) & is.finite(MOOS_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_NO3_storm$storm.num = c(rep("storm1", 103),
+                             rep("storm2", 91),
+                             rep("storm3", 147),
+                             rep("storm4", 115),
+                             rep("storm5a", 87),
+                             rep("storm5b", 239),
+                             rep("storm5c", 111),
+                             rep("storm5d", 99),
+                             rep("storm6a", 51),
+                             rep("storm6b", 227),
+                             rep("storm7", 267),
+                             rep("storm8", 95),
+                             rep("storm9", 211))
+names(MOOS_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.num")
+MOOS_NO3_storm$Site <- "MOOS"
+
+MOOS_NO3_storm[cols] <- log(MOOS_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_NO3_storm <- MOOS_NO3_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_NO3_storm_ascending <- filter(MOOS_NO3_storm, limb == "ascending")
+
+MOOS_NO3_storm_ascending <- MOOS_NO3_storm_ascending[is.finite(MOOS_NO3_storm_ascending$Q.norm) & is.finite(MOOS_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_NO3_storm$storm.ID = c(rep("storm1", 638),
+                            rep("storm2", 274),
+                            rep("storm3a", 1035),
+                            rep("storm3b", 286),
+                            rep("storm3c", 174),
+                            rep("storm4", 466),
+                            rep("storm5", 98),
+                            rep("storm6", 246),
+                            rep("storm7", 218),
+                            rep("storm7b", 266),
+                            rep("storm7c", 258))
+
+names(STRT_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+STRT_NO3_storm$site.ID <- "STRT"
+
+STRT_NO3_storm[cols] <- log(STRT_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_NO3_storm <- STRT_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_NO3_storm_ascending <- filter(STRT_NO3_storm, limb == "ascending")
+
+STRT_NO3_storm_ascending <- STRT_NO3_storm_ascending[is.finite(STRT_NO3_storm_ascending$Q.norm) & is.finite(STRT_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.strt <- STRT_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_NO3_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+VAUL_NO3_storm$site.ID <- "VAUL"
+
+VAUL_NO3_storm[cols] <- log(VAUL_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_NO3_storm <- VAUL_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_NO3_storm_ascending <- filter(VAUL_NO3_storm, limb == "ascending")
+
+VAUL_NO3_storm_ascending <- VAUL_NO3_storm_ascending[is.finite(VAUL_NO3_storm_ascending$Q.norm) & is.finite(VAUL_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# CARI # 
+CARI_NO3_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
+VAUL_NO3_storm$site.ID <- "VAUL"
+
+VAUL_NO3_storm[cols] <- log(VAUL_NO3_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_NO3_storm <- VAUL_NO3_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_NO3_storm_ascending <- filter(VAUL_NO3_storm, limb == "ascending")
+
+VAUL_NO3_storm_ascending <- VAUL_NO3_storm_ascending[is.finite(VAUL_NO3_storm_ascending$Q.norm) & is.finite(VAUL_NO3_storm_ascending$NO3.norm), ]
+
+beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_NO3_storm_ascending$DateTime <- as.POSIXct(STRT_NO3_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_NO3_storm_ascending$DateTime <- as.POSIXct(VAUL_NO3_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_NO3_storm <- rbind(FRCH_NO3_storm_ascending, MOOS_NO3_storm_ascending, 
+                       STRT_NO3_storm_ascending, VAUL_NO3_storm_ascending )
+
+beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 
+beta.all.no3$response_var <- "NO3"
+
+##### fDOM #####
+FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_fDOM_storm <- map2_df(POKE_Q_storm_list_beta, POKE_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_fDOM_storm <- map2_df(STRT_Q_storm_list_beta, STRT_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_fDOM_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_fDOM_storm$storm.ID = c(rep("storm1", 993),
+                             rep("storm10a", 121),
+                             rep("storm10b", 95),
+                             rep("storm10c", 207),
+                             rep("storm11", 479),
+                             rep("storm12a", 183),
+                             rep("storm12b", 67),
+                             rep("storm12c", 511),
+                             rep("storm12d", 99),
+                             rep("storm12e", 127),
+                             rep("storm13", 391),
+                             rep("storm14", 631),
+                             rep("storm2", 165),
+                             rep("storm3", 201),
+                             rep("storm4", 193),
+                             rep("storm5", 229),
+                             rep("storm6", 257),
+                             rep("storm7", 133),
+                             rep("storm8", 105),
+                             rep("storm9a", 61),
+                             rep("storm9b", 149))
+
+names(FRCH_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+FRCH_fDOM_storm$site.ID <- "FRCH"
+
+cols <- c("fDOM.norm","Q.norm")
+FRCH_fDOM_storm[cols] <- log(FRCH_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_fDOM_storm <- FRCH_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_fDOM_storm_ascending <- filter(FRCH_fDOM_storm, limb == "ascending")
+
+FRCH_fDOM_storm_ascending <- FRCH_fDOM_storm_ascending[is.finite(FRCH_fDOM_storm_ascending$Q.norm) & is.finite(FRCH_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM <- FRCH_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_fDOM_storm$storm.ID = c(rep("storm1", 702),
+                             rep("storm3", 250),
+                             rep("storm4", 256),
+                             rep("storm5", 266),
+                             rep("storm6a", 114),
+                             rep("storm6b", 95),
+                             rep("storm6c", 223),
+                             rep("storm6d", 479),
+                             rep("storm7a", 166),
+                             rep("storm7b", 84),
+                             rep("storm7c", 430),
+                             rep("storm8", 174),
+                             rep("storm9", 530))
+names(MOOS_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+MOOS_fDOM_storm$site.ID <- "MOOS"
+
+MOOS_fDOM_storm[cols] <- log(MOOS_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_fDOM_storm <- MOOS_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_fDOM_storm_ascending <- filter(MOOS_fDOM_storm, limb == "ascending")
+
+MOOS_fDOM_storm_ascending <- MOOS_fDOM_storm_ascending[is.finite(MOOS_fDOM_storm_ascending$Q.norm) & is.finite(MOOS_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.moos.with.all <- MOOS_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_fDOM_storm$storm.num = c(rep("storm1", 103),
+                              rep("storm2", 91),
+                              rep("storm3", 147),
+                              rep("storm4", 115),
+                              rep("storm5a", 87),
+                              rep("storm5b", 239),
+                              rep("storm5c", 111),
+                              rep("storm5d", 99),
+                              rep("storm6a", 51),
+                              rep("storm6b", 227),
+                              rep("storm7", 267),
+                              rep("storm8", 95),
+                              rep("storm9", 211))
+names(POKE_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", ".norm", "storm.num")
+POKE_fDOM_storm$Site <- "POKE"
+
+POKE_fDOM_storm[cols] <- log(POKE_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_fDOM_storm <- POKE_fDOM_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_fDOM_storm_ascending <- filter(POKE_fDOM_storm, limb == "ascending")
+
+POKE_fDOM_storm_ascending <- POKE_fDOM_storm_ascending[is.finite(POKE_fDOM_storm_ascending$Q.norm) & is.finite(POKE_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.pok <- POKE_fDOM_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_fDOM_storm$storm.ID = c(rep("storm1", 638),
+                             rep("storm2", 274),
+                             rep("storm3a", 1035),
+                             rep("storm3b", 286),
+                             rep("storm3c", 174),
+                             rep("storm4", 466),
+                             rep("storm5", 98),
+                             rep("storm6", 246),
+                             rep("storm7", 218),
+                             rep("storm7b", 266),
+                             rep("storm7c", 258))
+
+names(STRT_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+STRT_fDOM_storm$site.ID <- "STRT"
+
+STRT_fDOM_storm[cols] <- log(STRT_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_fDOM_storm <- STRT_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_fDOM_storm_ascending <- filter(STRT_fDOM_storm, limb == "ascending")
+
+STRT_fDOM_storm_ascending <- STRT_fDOM_storm_ascending[is.finite(STRT_fDOM_storm_ascending$Q.norm) & is.finite(STRT_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.strt <- STRT_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_fDOM_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 207),
+                             rep("storm3", 191),
+                             rep("storm4a", 83),
+                             rep("storm4b", 219),
+                             rep("storm4c", 707),
+                             rep("storm5", 275),
+                             rep("storm6", 263),
+                             rep("storm7", 107),
+                             rep("storm8a", 167),
+                             rep("storm8b", 223),
+                             rep("storm8c", 479))
+
+names(VAUL_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
+VAUL_fDOM_storm$site.ID <- "VAUL"
+
+VAUL_fDOM_storm[cols] <- log(VAUL_fDOM_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_fDOM_storm <- VAUL_fDOM_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_fDOM_storm_ascending <- filter(VAUL_fDOM_storm, limb == "ascending")
+
+VAUL_fDOM_storm_ascending <- VAUL_fDOM_storm_ascending[is.finite(VAUL_fDOM_storm_ascending$Q.norm) & is.finite(VAUL_fDOM_storm_ascending$fDOM.norm), ]
+
+beta.all.fDOM.vaul <- VAUL_fDOM_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_fDOM_storm_ascending$DateTime <- as.POSIXct(STRT_fDOM_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_fDOM_storm_ascending$DateTime <- as.POSIXct(VAUL_fDOM_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_fDOM_storm <- rbind(FRCH_fDOM_storm_ascending, MOOS_fDOM_storm_ascending, 
+                        STRT_fDOM_storm_ascending, VAUL_fDOM_storm_ascending )
+
+beta.all.fdom <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 
+beta.all.fdom$response_var <- "fDOM"
+
+##### SPC #####
+FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_SPC_storm <- map2_df(POKE_Q_storm_list_beta, POKE_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_SPC_storm <- map2_df(STRT_Q_storm_list_beta, STRT_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_SPC_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_SPC_storm$storm.ID = c(rep("storm1", 993),
+                            rep("storm10a", 121),
+                            rep("storm10b", 95),
+                            rep("storm10c", 207),
+                            rep("storm11", 479),
+                            rep("storm12a", 183),
+                            rep("storm12b", 67),
+                            rep("storm12c", 511),
+                            rep("storm12d", 99),
+                            rep("storm12e", 127),
+                            rep("storm13", 391),
+                            rep("storm14", 631),
+                            rep("storm2", 165),
+                            rep("storm3", 201),
+                            rep("storm4", 193),
+                            rep("storm5", 229),
+                            rep("storm6", 257),
+                            rep("storm7", 133),
+                            rep("storm8", 105),
+                            rep("storm9a", 61),
+                            rep("storm9b", 149))
+
+names(FRCH_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+FRCH_SPC_storm$site.ID <- "FRCH"
+
+cols <- c("SPC.norm","Q.norm")
+FRCH_SPC_storm[cols] <- log(FRCH_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_SPC_storm <- FRCH_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_SPC_storm_ascending <- filter(FRCH_SPC_storm, limb == "ascending")
+
+FRCH_SPC_storm_ascending <- FRCH_SPC_storm_ascending[is.finite(FRCH_SPC_storm_ascending$Q.norm) & is.finite(FRCH_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC <- FRCH_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_SPC_storm$storm.ID = c(rep("storm1", 702),
+                            rep("storm3", 250),
+                            rep("storm4", 256),
+                            rep("storm5", 266),
+                            rep("storm6a", 114),
+                            rep("storm6b", 95),
+                            rep("storm6c", 223),
+                            rep("storm6d", 479),
+                            rep("storm7a", 166),
+                            rep("storm7b", 84),
+                            rep("storm7c", 430),
+                            rep("storm8", 174),
+                            rep("storm9", 530))
+names(MOOS_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+MOOS_SPC_storm$site.ID <- "MOOS"
+
+MOOS_SPC_storm[cols] <- log(MOOS_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_SPC_storm <- MOOS_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_SPC_storm_ascending <- filter(MOOS_SPC_storm, limb == "ascending")
+
+MOOS_SPC_storm_ascending <- MOOS_SPC_storm_ascending[is.finite(MOOS_SPC_storm_ascending$Q.norm) & is.finite(MOOS_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.moos.with.all <- MOOS_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_SPC_storm$storm.num = c(rep("storm1", 103),
+                             rep("storm2", 91),
+                             rep("storm3", 147),
+                             rep("storm4", 115),
+                             rep("storm5a", 87),
+                             rep("storm5b", 239),
+                             rep("storm5c", 111),
+                             rep("storm5d", 99),
+                             rep("storm6a", 51),
+                             rep("storm6b", 227),
+                             rep("storm7", 267),
+                             rep("storm8", 95),
+                             rep("storm9", 211))
+names(POKE_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.num")
+POKE_SPC_storm$Site <- "POKE"
+
+POKE_SPC_storm[cols] <- log(POKE_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_SPC_storm <- POKE_SPC_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_SPC_storm_ascending <- filter(POKE_SPC_storm, limb == "ascending")
+
+POKE_SPC_storm_ascending <- POKE_SPC_storm_ascending[is.finite(POKE_SPC_storm_ascending$Q.norm) & is.finite(POKE_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.pok <- POKE_SPC_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_SPC_storm$storm.ID = c(rep("storm1", 638),
+                            rep("storm2", 274),
+                            rep("storm3a", 1035),
+                            rep("storm3b", 286),
+                            rep("storm3c", 174),
+                            rep("storm4", 466),
+                            rep("storm5", 98),
+                            rep("storm6", 246),
+                            rep("storm7", 218),
+                            rep("storm7b", 266),
+                            rep("storm7c", 258))
+
+names(STRT_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+STRT_SPC_storm$site.ID <- "STRT"
+
+STRT_SPC_storm[cols] <- log(STRT_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_SPC_storm <- STRT_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_SPC_storm_ascending <- filter(STRT_SPC_storm, limb == "ascending")
+
+STRT_SPC_storm_ascending <- STRT_SPC_storm_ascending[is.finite(STRT_SPC_storm_ascending$Q.norm) & is.finite(STRT_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.strt <- STRT_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_SPC_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 207),
+                            rep("storm3", 191),
+                            rep("storm4a", 83),
+                            rep("storm4b", 219),
+                            rep("storm4c", 707),
+                            rep("storm5", 275),
+                            rep("storm6", 263),
+                            rep("storm7", 107),
+                            rep("storm8a", 167),
+                            rep("storm8b", 223),
+                            rep("storm8c", 479))
+
+names(VAUL_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
+VAUL_SPC_storm$site.ID <- "VAUL"
+
+VAUL_SPC_storm[cols] <- log(VAUL_SPC_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_SPC_storm <- VAUL_SPC_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_SPC_storm_ascending <- filter(VAUL_SPC_storm, limb == "ascending")
+
+VAUL_SPC_storm_ascending <- VAUL_SPC_storm_ascending[is.finite(VAUL_SPC_storm_ascending$Q.norm) & is.finite(VAUL_SPC_storm_ascending$SPC.norm), ]
+
+beta.all.SPC.vaul <- VAUL_SPC_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_SPC_storm_ascending$DateTime <- as.POSIXct(STRT_SPC_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_SPC_storm_ascending$DateTime <- as.POSIXct(VAUL_SPC_storm_ascending$DateTime, 
+                                                "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_SPC_storm <- rbind(FRCH_SPC_storm_ascending, MOOS_SPC_storm_ascending, 
+                       STRT_SPC_storm_ascending, VAUL_SPC_storm_ascending )
+
+beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 
+beta.all.SPC$response_var <- "SPC"
+
+##### Turb #####
+FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
+MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, inner_join, by = "valuedatetime")
+POKE_turb_storm <- map2_df(POKE_Q_storm_list_beta, POKE_turb_storm_list_beta, inner_join, by = "valuedatetime")
+STRT_turb_storm <- map2_df(STRT_Q_storm_list_beta, STRT_turb_storm_list_beta, inner_join, by = "valuedatetime")
+VAUL_turb_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_turb_storm_list_beta, inner_join, by = "valuedatetime")
+
+FRCH_turb_storm$storm.ID = c(rep("storm1", 993),
+                             rep("storm10a", 121),
+                             rep("storm10b", 95),
+                             rep("storm10c", 207),
+                             rep("storm11", 479),
+                             rep("storm12a", 183),
+                             rep("storm12b", 67),
+                             rep("storm12c", 511),
+                             rep("storm12d", 99),
+                             rep("storm12e", 127),
+                             rep("storm13", 391),
+                             rep("storm14", 631),
+                             rep("storm2", 165),
+                             rep("storm3", 201),
+                             rep("storm4", 193),
+                             rep("storm5", 229),
+                             rep("storm6", 257),
+                             rep("storm7", 133),
+                             rep("storm8", 105),
+                             rep("storm9a", 61),
+                             rep("storm9b", 149))
+
+names(FRCH_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+FRCH_turb_storm$site.ID <- "FRCH"
+
+cols <- c("turb.norm","Q.norm")
+FRCH_turb_storm[cols] <- log(FRCH_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+FRCH_turb_storm <- FRCH_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+FRCH_turb_storm_ascending <- filter(FRCH_turb_storm, limb == "ascending")
+
+FRCH_turb_storm_ascending <- FRCH_turb_storm_ascending[is.finite(FRCH_turb_storm_ascending$Q.norm) & is.finite(FRCH_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb <- FRCH_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# MOOS # 
+MOOS_turb_storm$storm.ID = c(rep("storm1", 702),
+                             rep("storm3", 250),
+                             rep("storm4", 256),
+                             rep("storm5", 266),
+                             rep("storm6a", 114),
+                             rep("storm6b", 95),
+                             rep("storm6c", 223),
+                             rep("storm6d", 479),
+                             rep("storm7a", 166),
+                             rep("storm7b", 84),
+                             rep("storm7c", 430),
+                             rep("storm8", 174),
+                             rep("storm9", 530))
+names(MOOS_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+MOOS_turb_storm$site.ID <- "MOOS"
+
+MOOS_turb_storm[cols] <- log(MOOS_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+MOOS_turb_storm <- MOOS_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+MOOS_turb_storm_ascending <- filter(MOOS_turb_storm, limb == "ascending")
+
+MOOS_turb_storm_ascending <- MOOS_turb_storm_ascending[is.finite(MOOS_turb_storm_ascending$Q.norm) & is.finite(MOOS_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.moos.with.all <- MOOS_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# POKE # 
+POKE_turb_storm$storm.num = c(rep("storm1", 103),
+                              rep("storm2", 91),
+                              rep("storm3", 147),
+                              rep("storm4", 115),
+                              rep("storm5a", 87),
+                              rep("storm5b", 239),
+                              rep("storm5c", 111),
+                              rep("storm5d", 99),
+                              rep("storm6a", 51),
+                              rep("storm6b", 227),
+                              rep("storm7", 267),
+                              rep("storm8", 95),
+                              rep("storm9", 211))
+names(POKE_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.num")
+POKE_turb_storm$Site <- "POKE"
+
+POKE_turb_storm[cols] <- log(POKE_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+POKE_turb_storm <- POKE_turb_storm %>% group_by(storm.num) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+POKE_turb_storm_ascending <- filter(POKE_turb_storm, limb == "ascending")
+
+POKE_turb_storm_ascending <- POKE_turb_storm_ascending[is.finite(POKE_turb_storm_ascending$Q.norm) & is.finite(POKE_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.poke <- POKE_turb_storm_ascending %>% group_by(storm.num) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# STRT # 
+STRT_turb_storm$storm.ID = c(rep("storm1", 638),
+                             rep("storm2", 274),
+                             rep("storm3a", 1035),
+                             rep("storm3b", 286),
+                             rep("storm3c", 174),
+                             rep("storm4", 466),
+                             rep("storm5", 98),
+                             rep("storm6", 246),
+                             rep("storm7", 218),
+                             rep("storm7b", 266),
+                             rep("storm7c", 258))
+
+names(STRT_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+STRT_turb_storm$site.ID <- "STRT"
+
+STRT_turb_storm[cols] <- log(STRT_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+STRT_turb_storm <- STRT_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+STRT_turb_storm_ascending <- filter(STRT_turb_storm, limb == "ascending")
+
+STRT_turb_storm_ascending <- STRT_turb_storm_ascending[is.finite(STRT_turb_storm_ascending$Q.norm) & is.finite(STRT_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.strt <- STRT_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# VAUL # 
+VAUL_turb_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 207),
+                             rep("storm3", 191),
+                             rep("storm4a", 83),
+                             rep("storm4b", 219),
+                             rep("storm4c", 707),
+                             rep("storm5", 275),
+                             rep("storm6", 263),
+                             rep("storm7", 107),
+                             rep("storm8a", 167),
+                             rep("storm8b", 223),
+                             rep("storm8c", 479))
+
+names(VAUL_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
+VAUL_turb_storm$site.ID <- "VAUL"
+
+VAUL_turb_storm[cols] <- log(VAUL_turb_storm[cols]) # making concentrations and Q log transformed
+
+slope <- function(x, y){
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  nom <- sum((x - mean_x)*(y-mean_y))
+  denom <- sum((x - mean_x)^2)
+  m <- nom / denom
+  return(m)
+}
+VAUL_turb_storm <- VAUL_turb_storm %>% group_by(storm.ID) %>% 
+  mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
+
+VAUL_turb_storm_ascending <- filter(VAUL_turb_storm, limb == "ascending")
+
+VAUL_turb_storm_ascending <- VAUL_turb_storm_ascending[is.finite(VAUL_turb_storm_ascending$Q.norm) & is.finite(VAUL_turb_storm_ascending$turb.norm), ]
+
+beta.all.turb.vaul <- VAUL_turb_storm_ascending %>% group_by(storm.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
+
+# ALL # 
+STRT_turb_storm_ascending$DateTime <- as.POSIXct(STRT_turb_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+VAUL_turb_storm_ascending$DateTime <- as.POSIXct(VAUL_turb_storm_ascending$DateTime, 
+                                                 "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+
+All_turb_storm <- rbind(FRCH_turb_storm_ascending, MOOS_turb_storm_ascending, 
+                        STRT_turb_storm_ascending, VAUL_turb_storm_ascending )
+
+beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>% 
+  summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 
+beta.all.turb$response_var <- "turb"
+
+beta.all.2019 <- rbind(beta.all.no3, beta.all.fdom,
+                       beta.all.SPC, beta.all.turb)
+
+#### plot ####
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+
+HI_FI_beta = left_join(HI_FI, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
+
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results.csv")
+
+# NO3 #
+HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
+HI_FI_NO3$site.ID <- factor(HI_FI_NO3$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_NO3.p = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p
+
+# NO3 #
+HI_beta_NO3 = subset(HI_FI_beta, response_var == "NO3")
+HI_beta_NO3$site.ID <- factor(HI_beta_NO3$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_NO3.p = 
+  ggplot(HI_beta_NO3, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_NO3.p
+
+# fDOM #
+HI_FI_fDOM = subset(HI_FI_beta, response_var == "fDOM")
+HI_FI_fDOM$site.ID <- factor(HI_FI_fDOM$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_fDOM.p = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_fDOM.p
+
+HI_beta_fDOM = subset(HI_FI_beta, response_var == "fDOM")
+HI_beta_fDOM$site.ID <- factor(HI_beta_fDOM$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_fDOM.p = 
+  ggplot(HI_beta_fDOM, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_fDOM.p
+
+# SPC#
+HI_FI_SPC = subset(HI_FI_beta, response_var == "SPC")
+HI_FI_SPC$site.ID <- factor(HI_FI_SPC$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_SPC.p = 
+  ggplot(HI_FI_SPC, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_SPC.p
 
 
+HI_beta_SPC = subset(HI_FI_beta, response_var == "SPC")
+HI_beta_SPC$site.ID <- factor(HI_beta_SPC$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_SPC.p = 
+  ggplot(HI_beta_SPC, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_SPC.p
+
+# turb #
+HI_FI_turb = subset(HI_FI_beta, response_var == "turb")
+HI_FI_turb$site.ID <- factor(HI_FI_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_FI_turb.p = 
+  ggplot(HI_FI_turb, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) Turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_turb.p
 
 
+HI_beta_turb = subset(HI_FI_beta, response_var == "turb")
+HI_beta_turb$site.ID <- factor(HI_beta_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL'))
+
+HI_beta_turb.p = 
+  ggplot(HI_beta_turb, aes(beta, Hyst_index)) + geom_point(aes(colour=factor(site.ID)), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  scale_color_manual(values = c("orange red", viridis::viridis(4)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20), legend.title = element_blank()) 
+HI_beta_turb.p
+
+grid.arrange(HI_beta_NO3.p, HI_beta_fDOM.p, HI_beta_SPC.p, HI_beta_turb.p)
+
+#### Regression between beta and FI #######
+FI_beta_comp = 
+  ggplot(HI_FI_NO3, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp
+
+FI_beta_comp_fDOM = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_fDOM
+
+FI_beta_comp_SPC = 
+  ggplot(HI_FI_SPC, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_SPC
+
+FI_beta_comp_turb = 
+  ggplot(HI_FI_turb, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE)
+FI_beta_comp_turb
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+grid.arrange(FI_beta_comp_NO3, FI_beta_comp_fDOM, FI_beta_comp_SPC, FI_beta_comp_turb)
 
 
 
