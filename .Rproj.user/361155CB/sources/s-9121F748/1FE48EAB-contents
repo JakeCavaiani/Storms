@@ -1424,7 +1424,7 @@ ggsave("/Users/alexwebster/Dropbox/Harms Lab/CPCRW 2017/new tidy files/CPCRW_201
 #### load storm data to R ####
 
 ### Q dat ###
-C3_storm1_Q = read.csv("Stitched_data/storms/C3_storm1_Q.csv", header=T, row.names = 1) 
+C3_storm1_Q = read.csv("~/Documents/CPCRW_2017/Stitched_data/storms/C3_storm1_Q.csv", header=T, row.names = 1) 
 C3_storm2_Q = read.csv("Stitched_data/storms/C3_storm2_Q.csv", header=T, row.names=1) 
 C3_storm3_Q = read.csv("Stitched_data/storms/C3_storm3_Q.csv", header=T, row.names=1) 
 C3_storm4_Q = read.csv("Stitched_data/storms/C3_storm4_Q.csv", header=T, row.names=1) 
@@ -1447,13 +1447,13 @@ C4_storm3_Q = read.csv("Stitched_data/storms/C4_storm3_Q.csv", header=T, row.nam
 C4_storm4_Q = read.csv("Stitched_data/storms/C4_storm4_Q.csv", header=T, row.names=1) 
 
 ### solute data with bursts ###
-C2_NO3_storm_list = readRDS("Stitched_data/storms/with bursts/C2_NO3_storm_list.RData")
-C3_NO3_storm_list = readRDS("Stitched_data/storms/with bursts/C3_NO3_storm_list.RData")
+C2_NO3_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/C2_NO3_storm_list.RData")
+C3_NO3_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/C3_NO3_storm_list.RData")
 
-C2_fDOM_storm_list = readRDS("Stitched_data/storms/with bursts/C2_fDOM_storm_list.RData")
-C3_fDOM_storm_list = readRDS("Stitched_data/storms/with bursts/C3_fDOM_storm_list.RData")
-C4_fDOM_storm_list = readRDS("Stitched_data/storms/with bursts/C4_fDOM_storm_list.RData")
-P6_fDOM_storm_list = readRDS("Stitched_data/storms/with bursts/P6_fDOM_storm_list.RData")
+C2_fDOM_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/C2_fDOM_storm_list.RData")
+C3_fDOM_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/C3_fDOM_storm_list.RData")
+C4_fDOM_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/C4_fDOM_storm_list.RData")
+P6_fDOM_storm_list = readRDS("~/Documents/CPCRW_2017/Stitched_data/storms/with bursts/P6_fDOM_storm_list.RData")
 
 C2_SpCond_storm_list = readRDS("Stitched_data/storms/with bursts/C2_SpCond_storm_list.RData")
 C3_SpCond_storm_list = readRDS("Stitched_data/storms/with bursts/C3_SpCond_storm_list.RData")
