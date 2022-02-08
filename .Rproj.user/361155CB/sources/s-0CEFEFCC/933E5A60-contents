@@ -1,0 +1,118 @@
+---
+title: "Model selection"
+author: "Jake Cavaiani"
+date: "1/28/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(lubridate)
+library(data.table)
+library(ggplot2)
+library(scales)
+library(lme4)
+library(nlme)
+library(datasets)
+library(arm)
+
+```
+
+
+
+The purpose of this script is to model HI/FI against fixed and random effects and perform model selection techniques to see which model is best fit
+
+Input: 2019_2020 HI for each catchment that is will be from Output_from_analysis->07_Models
+Step 1) import HI.dat file which is HI for individual storms in 2018-2021 across DoD sites
+Step 2) standardize and center the data
+Step 3) add fixed (storm total, intensity, week precip, month precip, 3month precip and doy) and random effects (catchments)
+Output: linear model plot 
+
+```{r}
+# Read in data # 
+antecedent_HI_FI_1_0 <- read_csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/antecedent_HI_FI_1.0.csv")
+is.na(antecedent_HI_FI_1_0) <- sapply(antecedent_HI_FI_1_0, is.na)
+# scaling data # 
+#scaling # 
+antecedent_HI_FI_1_0[c(20:25,32)] <- lapply(antecedent_HI_FI_1_0[c(20:25,32)], function(x) c(scale(x)))
+
+
+```
+
+## Assessing model assumptions
+
+```{r, echo=FALSE}
+pairs(antecedent_HI_FI_1_0[c(3,20:25,27,32)])
+```
+Scatterplot matrix: It looks like precipitation week and precipitation month are correlated with each other 
+
+```{r, echo=FALSE}
+my_data <- antecedent_HI_FI_1_0[, c(3,20:25,27,32)]
+my_data <- na.omit(my_data)
+cor(my_data)
+
+```
+Correlation values >0.5 are 1) Temperature during the storm and temperature week leading up to a storm are heavily correlated (0.806) and since temperature during the storm is slightly more correlated with HI I will keep temperature during the storm in my model
+                            2) Precipitation week leading up and Precipitation month = 0.545 and since precip week is more correlated with HI I will keep precip week in the model
+                            3) Precip month is correlated with 3 month and since precip month is taken out I will also not include 3month
+                            
+First model selection will include HI ~ precip + temp + precip.week + TimeSinceChena
+                     
+```{r, echo=FALSE}
+f1 <- formula(Hyst_index ~ precip + temp + precip.week + TimeSinceChena +
+                (1|site.ID))
+
+M0 <- lmer(f1, data = antecedent_HI_FI_1_0)
+
+summary(M0)
+
+
+```
+1) Ideally the median would be 0 and the quartiles would be similar on each side of 0 and the max and min would be similar as well. 
+
+2)Site taking up a small chunk of the total variance as a random effect
+
+3) t values for each predictor reveal timesincechena would be most significant
+
+
+```{r, echo=FALSE}
+plot(M0)
+```
+1) Ideally the residual plot will show no fitted pattern. The red line should be horizontal at 0.
+
+This residual are spread equally along the ranges of predictors. It is good to see a horizontal line with equal spread points
+
+```{r, echo=FALSE}
+qqnorm(resid(M0))
+```
+QQ plot of residuals can be used to visually check the normality assumptions... should be a straight line
+
+Let me try log transforming the QQ-plot
+
+```{r, echo=FALSE}
+f2 <- formula(log(Hyst_index + 1) ~ precip + temp + precip.week + TimeSinceChena +
+                (1|site.ID))
+
+M1 <- lmer(f2, data = antecedent_HI_FI_1_0)
+
+qqnorm(resid(M1))
+
+```
+This does not improve the linearity of this reall so I am going to stick with the untransformed data 
+
+
+
+```{r, echo=FALSE}
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+library(ggplot2)
+plot_model(M0, vline.color = "red")
+
+```
+
+
