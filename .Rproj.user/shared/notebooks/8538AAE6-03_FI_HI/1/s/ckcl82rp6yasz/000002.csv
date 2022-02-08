@@ -1,0 +1,17 @@
+"0","reticulate::repl_python()
+"
+"2","Python 3.6.13 (/Users/jakecavaiani/Library/r-miniconda/envs/r-reticulate/bin/python)
+Reticulate 1.20 REPL -- A Python interpreter in R.
+"
+"0","STRT_storm1b_08_17_Q = pd.read_csv(""~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_Q.csv"")"
+"0","STRT_storm1b_08_17_NO3 = pd.read_csv(""~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_NO3.csv"")"
+"0","STRT_storm1b_08_17_fDOM = pd.read_csv(""~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_fDOM.csv"")"
+"0","STRT_storm1b_08_17_SPC = pd.read_csv(""~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_SPC.csv"")"
+"0","STRT_storm1b_08_17_turb = pd.read_csv(""~/Documents/Storms/Storm_Events/2021/STRT/STRT_storm1b_08_17_Turb.csv"")"
+"0",""
+"0","STRT_storm1b_08_17_Q = STRT_storm1b_08_17_Q.dropna(subset=['datavalue'])"
+"0","STRT_storm1b_08_17_NO3 = STRT_storm1b_08_17_NO3.dropna(subset=['datavalue'])"
+"0","STRT_storm1b_08_17_fDOM = STRT_storm1b_08_17_fDOM.dropna(subset=['datavalue'])"
+"0","STRT_storm1b_08_17_SPC = STRT_storm1b_08_17_SPC.dropna(subset=['datavalue'])"
+"0","STRT_storm1b_08_17_turb = STRT_storm1b_08_17_turb.dropna(subset=['datavalue'])"
+"0",""
