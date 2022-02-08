@@ -1,9 +1,0 @@
-"0","ggplot(all.results.sig) +
-  geom_boxplot(aes(site.ID, HI_mean_Interp, colour=site.ID)) +
-  #scale_color_brewer(palette=""RdBu"", direction = -1, name=""site.ID"") +
-  scale_color_manual(values = c(""#0571B0"", ""#92C5DE"", ""#F4A582"", ""#CA0020"", ""brown""))+
-  facet_wrap(~ response) +
-  theme_bw()
-"
-"2","Error in ggplot(all.results.sig) : object 'all.results.sig' not found
-"

@@ -1,8 +1,0 @@
-"0","STRT_storm2_07_09_Q['valuedatetime'] =  pd.to_datetime(STRT_storm2_07_09_Q['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
-STRT_storm2_07_09_fDOM['valuedatetime'] =  pd.to_datetime(STRT_storm2_07_09_fDOM['valuedatetime'], format='%Y-%m-%d %H:%M:%S')
-timespacing = 15 # 15 minutes between records
-hysdict_STRT_storm2_07_09_fDOM = hysteresisMetrics(STRT_storm2_07_09_Q, STRT_storm2_07_09_fDOM, timespacing, timespacing, debug=False, interpall=True, discharge_time_spacing_units='minutes', response_time_spacing_units='minutes', discharge_units='Lsec')
-"
-"2","ValueError: attempt to get argmax of an empty sequence
-"
-"0",""
