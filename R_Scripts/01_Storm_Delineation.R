@@ -3683,12 +3683,24 @@ for(i in 1:length(storm_list)){
 } # changing character format into datetime 
 
 #  organize storm data by site and solute #
-FRCH_storm_list = storm_list[c(1:75)]
+CARI_storm_list = storm_list[c(1:80)] # 80
+FRCH_storm_list = storm_list[c(81:155)] # 75
+MOOS_storm_list = storm_list[c(156:235)] # 80
+
+CARI_NO3_storm_list = CARI_storm_list[c(grep("NO3", names(CARI_storm_list)))]
+CARI_fDOM_storm_list = CARI_storm_list[c(grep("fDOM", names(CARI_storm_list)))]
+CARI_SpCond_storm_list = CARI_storm_list[c(grep("SPC", names(CARI_storm_list)))]
+CARI_turb_storm_list = CARI_storm_list[c(grep("Turb", names(CARI_storm_list)))]
 
 FRCH_NO3_storm_list = FRCH_storm_list[c(grep("NO3", names(FRCH_storm_list)))]
 FRCH_fDOM_storm_list = FRCH_storm_list[c(grep("fDOM", names(FRCH_storm_list)))]
 FRCH_SpCond_storm_list = FRCH_storm_list[c(grep("SPC", names(FRCH_storm_list)))]
 FRCH_turb_storm_list = FRCH_storm_list[c(grep("Turb", names(FRCH_storm_list)))]
+
+MOOS_NO3_storm_list = MOOS_storm_list[c(grep("NO3", names(MOOS_storm_list)))]
+MOOS_fDOM_storm_list = MOOS_storm_list[c(grep("fDOM", names(MOOS_storm_list)))]
+MOOS_SpCond_storm_list = MOOS_storm_list[c(grep("SPC", names(MOOS_storm_list)))]
+MOOS_turb_storm_list = MOOS_storm_list[c(grep("Turb", names(MOOS_storm_list)))]
 
 # load burst SUNA data #
 
@@ -3697,6 +3709,11 @@ FRCHfile_list <- list.files(path="~/Documents/DoD_2018/SUNA_data/from_internal_h
                           pattern=".CSV", 
                           full.names=TRUE)
 
+MOOSfile_list <- list.files(path="~/Documents/DoD_2018/SUNA_data/from_internal_harddrive/raw/MOOS/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
 # Merge all data files for sensor #
 #correct header=14
 
@@ -3704,6 +3721,11 @@ SUNA.FRCH<-do.call("rbind", lapply(FRCHfile_list,
                                  read.csv, 
                                  stringsAsFactors=FALSE, 
                                  skip=14, header=FALSE))
+
+SUNA.MOOS<-do.call("rbind", lapply(MOOSfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
 
 # Variable names for SUNA output file #
 pre<-"ch"
@@ -3715,18 +3737,24 @@ SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", 
              "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
              "CTDsal", "CTDT", "CTDdBar", "checksum")
 names(SUNA.FRCH)<-SUNAnames
+names(SUNA.MOOS)<-SUNAnames
 
 
 # Remove unneeded columns #
 
 #remove raw channel data
 SUNA.FRCHr<-SUNA.FRCH[,c(1:11,268:286)]
+SUNA.MOOSr<-SUNA.MOOS[,c(1:11,268:286)]
 
 #remove dark frames. 
 ### <<Note: Change date below>> ###
 sum(SUNA.FRCHr$ID == 'DF')
 SUNA.FRCHr %>% group_by(ID) %>% tally()
 SUNA.FRCHrlf<-SUNA.FRCHr[!grepl("DF", SUNA.FRCHr$ID),]
+
+
+SUNA.MOOSr %>% group_by(ID) %>% tally()
+SUNA.MOOSrlf<-SUNA.MOOSr[!grepl("DF", SUNA.MOOSr$ID),]
 
 
 ### Date and time reformatting ###
@@ -3859,14 +3887,14 @@ names(EXO.MOOS)<-(c("Date", "Time", "Time_s", "Site", "FaultCode",
                   "TSSmgL", "date_time", "date_timeET", "date_timeAK"))
 
 ### reduce columns ###
-EXO.FRCH.burst = subset(EXO.FRCH, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.FRCH.burst = subset(EXO.FRCH, select=c("date_timeAK", "fDOMQSU", "SpConduScm", "TurbidityFNU"))
 EXO.MOOS.burst = subset(EXO.MOOS, select=c("date_timeAK", "fDOMQSU", "SpConduScm", "TurbidityFNU"))
 
 ### round to nearest 15 min ###
 EXO.FRCH.burst$date_timeAK = lubridate::round_date(EXO.FRCH.burst$date_timeAK, "15 minutes") 
 EXO.MOOS.burst$date_timeAK = lubridate::round_date(EXO.MOOS.burst$date_timeAK, "15 minutes") 
 
-# fDOM outlier removal and baseline corrections #
+### fDOM outlier removal and baseline corrections ########
 # plot #
 library(ggplot2)
 ggplot(EXO.FRCH.burst) +
@@ -3890,7 +3918,7 @@ EXO.C2.burst$fDOMQSU[EXO.C2.burst$fDOMQSU < 20 &
 plot(EXO.FRCH.burst.1$fDOMQSU ~ EXO.FRCH.burst.1$date_timeAK)
 
 
-# match NAs in DOD.2018 to bursts #
+# match NAs in DOD.2018 to bursts #####
 
 DOD_2018 <- read_csv("~/Documents/DoD_Discharge/Discharge_Chem/2018/DOD.2018.csv")
 
@@ -3929,7 +3957,17 @@ EXO.C2.burst$TurbidityFNU = temp$TurbidityFNU
 
 #### save clean-ish burst data ####
 
-write.csv(EXO.C2.burst, "Stitched_data/EXO.C2.burst.csv")
+EXO.FRCH.burst$site.ID <- "FRCH"
+EXO.MOOS.burst$site.ID <- "MOOS"
+SUNA.FRCH.burst$site.ID <- "FRCH"
+SUNA.MOOS.burst$site.ID <- "MOOS"
+
+write.csv(SUNA.FRCH.burst, "~/Documents/DoD_2018/Stitched_data/SUNA.FRCH.burst.csv")
+write.csv(SUNA.MOOS.burst, "~/Documents/DoD_2018/Stitched_data/SUNA.MOOS.burst.csv")
+
+
+write.csv(EXO.FRCH.burst, "~/Documents/DoD_2018/Stitched_data/EXO.FRCH.burst.csv")
+write.csv(EXO.MOOS.burst, "~/Documents/DoD_2018/Stitched_data/EXO.MOOS.burst.csv")
 
 #### join burst and storm data ####
 
@@ -3939,29 +3977,50 @@ for(i in 1:length(FRCH_NO3_storm_list)){
   FRCH_NO3_storm_list[[i]] = inner_join(FRCH_NO3_storm_list[[i]], SUNA.FRCH.burst, by=c("valuedatetime" = "date_timeAK"))
 }
 
+for(i in 1:length(MOOS_NO3_storm_list)){
+  MOOS_NO3_storm_list[[i]] = inner_join(MOOS_NO3_storm_list[[i]], SUNA.MOOS.burst, by=c("valuedatetime" = "date_timeAK"))
+}
 
 ### fDOM ###
 
 for(i in 1:length(FRCH_fDOM_storm_list)){
   FRCH_fDOM_storm_list[[i]] = inner_join(FRCH_fDOM_storm_list[[i]], 
-                                       subset(EXO.FRCH.burst, select=c("date_timeAK", "fDOM.QSU")), 
+                                       subset(EXO.FRCH.burst, select=c("date_timeAK", "fDOMQSU")), 
                                        by=c("valuedatetime" = "date_timeAK"))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list)){
+  MOOS_fDOM_storm_list[[i]] = inner_join(MOOS_fDOM_storm_list[[i]], 
+                                         subset(EXO.MOOS.burst, select=c("date_timeAK", "fDOMQSU")), 
+                                         by=c("valuedatetime" = "date_timeAK"))
 }
 
 ### SpCond ###
 
 for(i in 1:length(FRCH_SpCond_storm_list)){
   FRCH_SpCond_storm_list[[i]] = inner_join(FRCH_SpCond_storm_list[[i]], 
-                                         subset(EXO.FRCH.burst, select=c("date_timeAK", "SpCond.µS.cm")), 
+                                         subset(EXO.FRCH.burst, select=c("date_timeAK", "SpConduScm")), 
                                          by=c("valuedatetime" = "date_timeAK"))
+}
+
+for(i in 1:length(MOOS_SpCond_storm_list)){
+  MOOS_SpCond_storm_list[[i]] = inner_join(MOOS_SpCond_storm_list[[i]], 
+                                           subset(EXO.MOOS.burst, select=c("date_timeAK", "SpConduScm")), 
+                                           by=c("valuedatetime" = "date_timeAK"))
 }
 
 ### turb ###
 
 for(i in 1:length(FRCH_turb_storm_list)){
   FRCH_turb_storm_list[[i]] = inner_join(FRCH_turb_storm_list[[i]], 
-                                       subset(EXO.FRCH.burst, select=c("date_timeAK", "Turbidity.FNU")), 
+                                       subset(EXO.FRCH.burst, select=c("date_timeAK", "TurbidityFNU")), 
                                        by=c("valuedatetime" = "date_timeAK"))
+}
+
+for(i in 1:length(MOOS_turb_storm_list)){
+  MOOS_turb_storm_list[[i]] = inner_join(MOOS_turb_storm_list[[i]], 
+                                         subset(EXO.MOOS.burst, select=c("date_timeAK", "TurbidityFNU")), 
+                                         by=c("valuedatetime" = "date_timeAK"))
 }
 
 
@@ -3969,12 +4028,15 @@ for(i in 1:length(FRCH_turb_storm_list)){
 
 # save storm with burst data #
 
-saveRDS(FRCH_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/FRCH_NO3_storm_list.RData")
-saveRDS(FRCH_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/FRCH_fDOM_storm_list.RData")
-saveRDS(FRCH_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/FRCH_SpCond_storm_list.RData")
+saveRDS(FRCH_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_NO3_storm_list.RData")
+saveRDS(FRCH_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_fDOM_storm_list.RData")
+saveRDS(FRCH_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_SpCond_storm_list.RData")
+saveRDS(FRCH_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/FRCH_turb_storm_list.RData")
 
-saveRDS(FRCH_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/C2_turb_storm_list.RData")
-
+saveRDS(MOOS_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/MOOS_NO3_storm_list.RData")
+saveRDS(MOOS_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/MOOS_fDOM_storm_list.RData")
+saveRDS(MOOS_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/MOOS_SpCond_storm_list.RData")
+saveRDS(MOOS_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2018/MOOS_turb_storm_list.RData")
 
 
 
@@ -17234,7 +17296,7 @@ write.csv(CARI_storm9_09_07_turb, "~/Documents/Storms/Storm_Events/2020/CARI/CAR
 
 # load storm data #
 
-storm_file_list <- list.files(path="Storms/", 
+storm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI/", 
                               recursive=F, 
                               pattern=".csv", 
                               full.names=TRUE)
@@ -17244,28 +17306,563 @@ storm_list<-do.call("list", lapply(storm_file_list,
                                    stringsAsFactors=FALSE, 
                                    header=T, row.names=1))
 
-storm_file_list = sub("Storms//", storm_file_list, replacement = "")
+storm_file_list = sub("~/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//", storm_file_list, replacement = "")
 storm_file_list = sub(".csv", storm_file_list, replacement = "")
 names(storm_list) = storm_file_list
 
 for(i in 1:length(storm_list)){
   storm_list[[i]][["valuedatetime"]] = as.POSIXct(storm_list[[i]][["valuedatetime"]],
                                                   "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
-}
+} # changing character format into datetime 
 
-# organize storm data by site and solute #
-STRT_storm_list = storm_list[c(1:72)]
+#  organize storm data by site and solute # 5 for each storm 
+CARI_storm_list = storm_list[c(1:60)] #60
+FRCH_storm_list = storm_list[c(61:150)] #90
+MOOS_storm_list = storm_list[c(151:205)] #55
+POKE_storm_list = storm_list[c(206:325)]# 120
+STRT_storm_list = storm_list[c(326:415)] #90
+VAUL_storm_list = storm_list[c(416:500)] #85
+
+CARI_NO3_storm_list = CARI_storm_list[c(grep("NO3", names(CARI_storm_list)))]
+CARI_fDOM_storm_list = CARI_storm_list[c(grep("fDOM", names(CARI_storm_list)))]
+CARI_SpCond_storm_list = CARI_storm_list[c(grep("SPC", names(CARI_storm_list)))]
+CARI_turb_storm_list = CARI_storm_list[c(grep("Turb", names(CARI_storm_list)))]
+
+FRCH_NO3_storm_list = FRCH_storm_list[c(grep("NO3", names(FRCH_storm_list)))]
+FRCH_fDOM_storm_list = FRCH_storm_list[c(grep("fDOM", names(FRCH_storm_list)))]
+FRCH_SpCond_storm_list = FRCH_storm_list[c(grep("SPC", names(FRCH_storm_list)))]
+FRCH_turb_storm_list = FRCH_storm_list[c(grep("Turb", names(FRCH_storm_list)))]
+
+MOOS_NO3_storm_list = MOOS_storm_list[c(grep("NO3", names(MOOS_storm_list)))]
+MOOS_fDOM_storm_list = MOOS_storm_list[c(grep("fDOM", names(MOOS_storm_list)))]
+MOOS_SpCond_storm_list = MOOS_storm_list[c(grep("SPC", names(MOOS_storm_list)))]
+MOOS_turb_storm_list = MOOS_storm_list[c(grep("Turb", names(MOOS_storm_list)))]
+
+POKE_NO3_storm_list = POKE_storm_list[c(grep("NO3", names(POKE_storm_list)))]
+POKE_fDOM_storm_list = POKE_storm_list[c(grep("fDOM", names(POKE_storm_list)))]
+POKE_SpCond_storm_list = POKE_storm_list[c(grep("SPC", names(POKE_storm_list)))]
+POKE_turb_storm_list = POKE_storm_list[c(grep("turb", names(POKE_storm_list)))]
 
 STRT_NO3_storm_list = STRT_storm_list[c(grep("NO3", names(STRT_storm_list)))]
 STRT_fDOM_storm_list = STRT_storm_list[c(grep("fDOM", names(STRT_storm_list)))]
+STRT_SpCond_storm_list = STRT_storm_list[c(grep("SPC", names(STRT_storm_list)))]
+STRT_turb_storm_list = STRT_storm_list[c(grep("Turb", names(STRT_storm_list)))]
 
-## load burst SUNA data ##
+VAUL_NO3_storm_list = VAUL_storm_list[c(grep("NO3", names(VAUL_storm_list)))]
+VAUL_fDOM_storm_list = VAUL_storm_list[c(grep("fDOM", names(VAUL_storm_list)))]
+VAUL_SpCond_storm_list = VAUL_storm_list[c(grep("SPC", names(VAUL_storm_list)))]
+VAUL_turb_storm_list = VAUL_storm_list[c(grep("Turb", names(VAUL_storm_list)))]
 
+#### load burst SUNA data #
 
-STRTfile_list <- list.files(path="SUNA_raw/C2/", 
+FRCHfile_list <- list.files(path="~/Documents/DoD_2020/SUNA_data/from_internal_harddrive/raw/FRCH/", 
                             recursive=F, 
                             pattern=".CSV", 
                             full.names=TRUE)
+
+MOOSfile_list <- list.files(path="~/Documents/DoD_2020/SUNA_data/from_internal_harddrive/raw/MOOS/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+POKEfile_list <- list.files(path="~/Documents/DoD_2020/SUNA_data/from_internal_harddrive/raw/POKE/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+STRTfile_list <- list.files(path="~/Documents/DoD_2020/SUNA_data/from_internal_harddrive/raw/STRT/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+VAULfile_list <- list.files(path="~/Documents/DoD_2020/SUNA_data/from_internal_harddrive/raw/VAUL/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+### Merge all data files for sensor ###
+#correct header=14
+
+SUNA.FRCH<-do.call("rbind", lapply(FRCHfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.MOOS<-do.call("rbind", lapply(MOOSfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.POKE<-do.call("rbind", lapply(POKEfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.STRT<-do.call("rbind", lapply(STRTfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.VAUL<-do.call("rbind", lapply(VAULfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+### Variable names for SUNA output file ###
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(SUNA.FRCH)<-SUNAnames
+names(SUNA.MOOS)<-SUNAnames
+names(SUNA.POKE)<-SUNAnames
+names(SUNA.STRT)<-SUNAnames
+names(SUNA.VAUL)<-SUNAnames
+### Remove unneeded columns ###
+
+#remove raw channel data
+SUNA.FRCHr<-SUNA.FRCH[,c(1:11,268:286)]
+SUNA.MOOSr<-SUNA.MOOS[,c(1:11,268:286)]
+SUNA.POKEr<-SUNA.POKE[,c(1:11,268:286)]
+SUNA.STRTr<-SUNA.STRT[,c(1:11,268:286)]
+SUNA.VAULr<-SUNA.VAUL[,c(1:11,268:286)]
+
+#remove dark frames. 
+### <<Note: Change date below>> ###
+sum(SUNA.FRCHr$ID == 'DF')
+SUNA.FRCHr %>% group_by(ID) %>% tally()
+SUNA.FRCHrlf<-SUNA.FRCHr[!grepl("DF", SUNA.FRCHr$ID),]
+
+SUNA.MOOSr %>% group_by(ID) %>% tally()
+SUNA.MOOSrlf<-SUNA.MOOSr[!grepl("DF", SUNA.MOOSr$ID),]
+
+SUNA.POKEr %>% group_by(ID) %>% tally()
+SUNA.POKErlf<-SUNA.POKEr[!grepl("DF", SUNA.POKEr$ID),]
+
+SUNA.STRTr %>% group_by(ID) %>% tally()
+SUNA.STRTrlf<-SUNA.STRTr[!grepl("DF", SUNA.STRTr$ID),]
+
+SUNA.VAULr %>% group_by(ID) %>% tally()
+SUNA.VAULrlf<-SUNA.VAULr[!grepl("DF", SUNA.VAULr$ID),]
+
+### Date and time reformatting ###
+## FRCH ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.FRCHrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.FRCHrlf<-cbind(SUNA.FRCHrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.FRCHrlf$day_timeUTC<-SUNA.FRCHrlf$day+(SUNA.FRCHrlf$time_fhoursUTC/24)
+# assign year to 2020 data
+origin17 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+SUNA.FRCHrlf$date_timeUTC<-origin17 + SUNA.FRCHrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.FRCHrlf$date_timeAK<-as.POSIXct(format(SUNA.FRCHrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.FRCHrlf$date_timeAK)
+class(SUNA.FRCHrlf$date_timeAK)
+tz(SUNA.FRCHrlf$date_timeAK) = "America/Anchorage"
+
+## MOOS ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.MOOSrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.MOOSrlf<-cbind(SUNA.MOOSrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.MOOSrlf$day_timeUTC<-SUNA.MOOSrlf$day+(SUNA.MOOSrlf$time_fhoursUTC/24)
+# assign year to 2020 data
+origin17 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+SUNA.MOOSrlf$date_timeUTC<-origin17 + SUNA.MOOSrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.MOOSrlf$date_timeAK<-as.POSIXct(format(SUNA.MOOSrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.MOOSrlf$date_timeAK)
+class(SUNA.MOOSrlf$date_timeAK)
+tz(SUNA.MOOSrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.MOOSrlf$date_timeAK)
+
+## POKE ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.POKErlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.POKErlf<-cbind(SUNA.POKErlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.POKErlf$day_timeUTC<-SUNA.POKErlf$day+(SUNA.POKErlf$time_fhoursUTC/24)
+# assign year to 2020 data
+origin17 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+SUNA.POKErlf$date_timeUTC<-origin17 + SUNA.POKErlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.POKErlf$date_timeAK<-as.POSIXct(format(SUNA.POKErlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.POKErlf$date_timeAK)
+class(SUNA.POKErlf$date_timeAK)
+tz(SUNA.POKErlf$date_timeAK) = "America/Anchorage"
+head(SUNA.POKErlf$date_timeAK)
+
+## STRT ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.STRTrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.STRTrlf<-cbind(SUNA.STRTrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.STRTrlf$day_timeUTC<-SUNA.STRTrlf$day+(SUNA.STRTrlf$time_fhoursUTC/24)
+# assign year to 2020 data
+origin17 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+SUNA.STRTrlf$date_timeUTC<-origin17 + SUNA.STRTrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.STRTrlf$date_timeAK<-as.POSIXct(format(SUNA.STRTrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.STRTrlf$date_timeAK)
+class(SUNA.STRTrlf$date_timeAK)
+tz(SUNA.STRTrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.STRTrlf$date_timeAK)
+
+## VAUL ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.VAULrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.VAULrlf<-cbind(SUNA.VAULrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.VAULrlf$day_timeUTC<-SUNA.VAULrlf$day+(SUNA.VAULrlf$time_fhoursUTC/24)
+# assign year to 2020 data
+origin17 <- as.POSIXct("2019-12-31 00:00:00", tz="GMT")
+SUNA.VAULrlf$date_timeUTC<-origin17 + SUNA.VAULrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.VAULrlf$date_timeAK<-as.POSIXct(format(SUNA.VAULrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.VAULrlf$date_timeAK)
+class(SUNA.VAULrlf$date_timeAK)
+tz(SUNA.VAULrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.VAULrlf$date_timeAK)
+
+### reduce columns ###
+
+SUNA.FRCH.burst = subset(SUNA.FRCHrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.MOOS.burst = subset(SUNA.MOOSrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.POKE.burst = subset(SUNA.POKErlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.STRT.burst = subset(SUNA.STRTrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.VAUL.burst = subset(SUNA.VAULrlf, select = c("date_timeAK", "nitrateuM"))
+
+### rename columns ###
+names(SUNA.FRCH.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.MOOS.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.POKE.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.STRT.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.VAUL.burst) <- c("DateTime", "nitrateuM")
+
+### round to nearest 15 min ###
+
+SUNA.FRCH.burst$DateTime = lubridate::round_date(SUNA.FRCH.burst$DateTime, "15 minutes") 
+SUNA.MOOS.burst$DateTime = lubridate::round_date(SUNA.MOOS.burst$DateTime, "15 minutes") 
+SUNA.POKE.burst$DateTime = lubridate::round_date(SUNA.POKE.burst$DateTime, "15 minutes") 
+SUNA.STRT.burst$DateTime = lubridate::round_date(SUNA.STRT.burst$DateTime, "15 minutes") 
+SUNA.VAUL.burst$DateTime = lubridate::round_date(SUNA.VAUL.burst$DateTime, "15 minutes") 
+
+#### load burst EXO data #
+
+### load and stitch EXO data ###
+
+# FRCH #
+FRCHfile_list <- list.files(path="~/Documents/DoD_2020/EXO_data/from_internal_harddrive/raw/FRCH/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.FRCH<-do.call("rbind", lapply(FRCHfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE, 
+                                  skip = 9,
+                                  header=F))
+colNames <- c("Date..MM.DD.YYYY.", "Time..HH.mm.ss.", "Time..Fract..Sec.", "Site.Name" , "Cond.µS.cm" ,
+              "fDOM.QSU", "fDOM.RFU", "nLF.Cond.µS.cm", "ODO...sat", "ODO...local",
+              "ODO.mg.L", "Sal.psu","SpCond.µS.cm",  "TDS.mg.L", "Turbidity.FNU" ,
+              "TSS.mg.L", "Wiper.Position.volt", "Temp..C", "Battery.V", "Cable.Pwr.V")
+
+names(EXO.FRCH)<-colNames
+
+# MOOS #
+MOOSfile_list <- list.files(path="~/Documents/DoD_2020/EXO_data/from_internal_harddrive/raw/MOOS/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.MOOS<-do.call("rbind", lapply(MOOSfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE, 
+                                  skip = 9,
+                                  header=F))
+names(EXO.MOOS)<-colNames
+# POKE #
+POKEfile_list <- list.files(path="~/Documents/DoD_2020/EXO_data/from_internal_harddrive/raw/POKE/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.POKE<-do.call("rbind", lapply(POKEfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.POKE)<-colNames
+# STRT #
+STRTfile_list <- list.files(path="~/Documents/DoD_2020/EXO_data/from_internal_harddrive/raw/STRT/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.STRT<-do.call("rbind", lapply(STRTfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.STRT)<-colNames
+# VAUL #
+VAULfile_list <- list.files(path="~/Documents/DoD_2020/EXO_data/from_internal_harddrive/raw/VAUL/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.VAUL<-do.call("rbind", lapply(VAULfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.VAUL)<-colNames
+
+## FRCH ##
+# put date and time in same column
+EXO.FRCH$date_time = paste(EXO.FRCH$Date..MM.DD.YYYY., EXO.FRCH$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.FRCH$date_timeET<-mdy_hms(EXO.FRCH$date_time)
+# convert to Alaska Time
+EXO.FRCH$date_timeAK<-with_tz(EXO.FRCH$date_timeET, tz="America/Anchorage")
+head(EXO.FRCH)
+class(EXO.FRCH$date_timeAK)
+tz(EXO.FRCH$date_timeAK)
+
+## MOOS ##
+# put date and time in same column
+EXO.MOOS$date_time = paste(EXO.MOOS$Date..MM.DD.YYYY., EXO.MOOS$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.MOOS$date_timeET<-mdy_hms(EXO.MOOS$date_time)
+# convert to Alaska Time
+EXO.MOOS$date_timeAK<-with_tz(EXO.MOOS$date_timeET, tz="America/Anchorage")
+head(EXO.MOOS)
+class(EXO.MOOS$date_timeAK)
+tz(EXO.MOOS$date_timeAK)
+
+## POKE ##
+# put date and time in same column
+EXO.POKE$date_time = paste(EXO.POKE$Date..MM.DD.YYYY., EXO.POKE$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.POKE$date_timeET<-mdy_hms(EXO.POKE$date_time)
+# convert to Alaska Time
+EXO.POKE$date_timeAK<-with_tz(EXO.POKE$date_timeET, tz="America/Anchorage")
+head(EXO.POKE)
+class(EXO.POKE$date_timeAK)
+tz(EXO.POKE$date_timeAK)
+
+## STRT ##
+# put date and time in same column
+EXO.STRT$date_time = paste(EXO.STRT$Date..MM.DD.YYYY., EXO.STRT$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.STRT$date_timeET<-mdy_hms(EXO.STRT$date_time)
+# convert to Alaska Time
+EXO.STRT$date_timeAK<-with_tz(EXO.STRT$date_timeET, tz="America/Anchorage")
+head(EXO.STRT)
+class(EXO.STRT$date_timeAK)
+tz(EXO.STRT$date_timeAK)
+
+## VAUL ##
+# put date and time in same column
+EXO.VAUL$date_time = paste(EXO.VAUL$Date..MM.DD.YYYY., EXO.VAUL$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.VAUL$date_timeET<-mdy_hms(EXO.VAUL$date_time)
+# convert to Alaska Time
+EXO.VAUL$date_timeAK<-with_tz(EXO.VAUL$date_timeET, tz="America/Anchorage")
+head(EXO.VAUL)
+class(EXO.VAUL$date_timeAK)
+tz(EXO.VAUL$date_timeAK)
+
+### reduce columns ###
+
+EXO.FRCH.burst = subset(EXO.FRCH, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.MOOS.burst = subset(EXO.MOOS, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.POKE.burst = subset(EXO.POKE, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.STRT.burst = subset(EXO.STRT, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.VAUL.burst = subset(EXO.VAUL, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+
+###  rename columns ###
+names(EXO.FRCH.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.MOOS.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.POKE.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.STRT.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.VAUL.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+
+### round to nearest 15 min ###
+
+EXO.FRCH.burst$DateTime = lubridate::round_date(EXO.FRCH.burst$DateTime, "15 minutes") 
+EXO.MOOS.burst$DateTime = lubridate::round_date(EXO.MOOS.burst$DateTime, "15 minutes") 
+EXO.POKE.burst$DateTime = lubridate::round_date(EXO.POKE.burst$DateTime, "15 minutes") 
+EXO.STRT.burst$DateTime = lubridate::round_date(EXO.STRT.burst$DateTime, "15 minutes") 
+EXO.VAUL.burst$DateTime = lubridate::round_date(EXO.VAUL.burst$DateTime, "15 minutes") 
+
+#### match NAs in DOD 2020 to bursts ####
+
+## NO3 ##
+#temp= inner_join(SUNA.FRCH.burst, subset(FRCH, select=c("DateTime", "nitrateuM")), by= "DateTime")
+#temp$nitrateuM = ifelse(is.na(temp$nitrateuM), NA, temp$nitrateuM)
+#SUNA.FRCH.burst$nitrateuM = temp$nitrateuM # not the same amount of rows 
+
+#temp= inner_join(SUNA.C3.burst, subset(C3, select=c("date_timeAK", "nitrate_uM")), by= "date_timeAK")
+#temp$nitrateuM = ifelse(is.na(temp$nitrate_uM), NA, temp$nitrateuM)
+#SUNA.C3.burst$nitrateuM = temp$nitrateuM
+
+
+#### save clean-ish burst data ####
+
+write_csv(SUNA.FRCH.burst, "~/Documents/DoD_2020/Stitched_data/SUNA.FRCH.burst.csv")
+write_csv(SUNA.MOOS.burst, "~/Documents/DoD_2020/Stitched_data/SUNA.MOOS.burst.csv")
+write_csv(SUNA.POKE.burst, "~/Documents/DoD_2020/Stitched_data/SUNA.POKE.burst.csv")
+write_csv(SUNA.STRT.burst, "~/Documents/DoD_2020/Stitched_data/SUNA.STRT.burst.csv")
+write_csv(SUNA.VAUL.burst, "~/Documents/DoD_2020/Stitched_data/SUNA.VAUL.burst.csv")
+
+write_csv(EXO.FRCH.burst, "~/Documents/DoD_2020/Stitched_data/EXO.FRCH.burst.csv")
+write_csv(EXO.MOOS.burst, "~/Documents/DoD_2020/Stitched_data/EXO.MOOS.burst.csv")
+write_csv(EXO.POKE.burst, "~/Documents/DoD_2020/Stitched_data/EXO.POKE.burst.csv")
+write_csv(EXO.STRT.burst, "~/Documents/DoD_2020/Stitched_data/EXO.STRT.burst.csv")
+write_csv(EXO.VAUL.burst, "~/Documents/DoD_2020/Stitched_data/EXO.VAUL.burst.csv")
+
+
+#### join burst and storm data ####
+
+### NO3 ###
+
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]] = inner_join(FRCH_NO3_storm_list[[i]], SUNA.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_NO3_storm_list)){
+  MOOS_NO3_storm_list[[i]] = inner_join(MOOS_NO3_storm_list[[i]], SUNA.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_NO3_storm_list)){
+  POKE_NO3_storm_list[[i]] = inner_join(POKE_NO3_storm_list[[i]], SUNA.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+
+for(i in 1:length(STRT_NO3_storm_list)){
+  STRT_NO3_storm_list[[i]] = inner_join(STRT_NO3_storm_list[[i]], SUNA.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_NO3_storm_list)){
+  VAUL_NO3_storm_list[[i]] = inner_join(VAUL_NO3_storm_list[[i]], SUNA.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]] = inner_join(FRCH_fDOM_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list)){
+  MOOS_fDOM_storm_list[[i]] = inner_join(MOOS_fDOM_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_fDOM_storm_list)){
+  POKE_fDOM_storm_list[[i]] = inner_join(POKE_fDOM_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_fDOM_storm_list)){
+  STRT_fDOM_storm_list[[i]] = inner_join(STRT_fDOM_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list)){
+  VAUL_fDOM_storm_list[[i]] = inner_join(VAUL_fDOM_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#SPC
+for(i in 1:length(FRCH_SpCond_storm_list)){
+  FRCH_SpCond_storm_list[[i]] = inner_join(FRCH_SpCond_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_SpCond_storm_list)){
+  MOOS_SpCond_storm_list[[i]] = inner_join(MOOS_SpCond_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_SpCond_storm_list)){
+  POKE_SpCond_storm_list[[i]] = inner_join(POKE_SpCond_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_SpCond_storm_list)){
+  STRT_SpCond_storm_list[[i]] = inner_join(STRT_SpCond_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_SpCond_storm_list)){
+  VAUL_SpCond_storm_list[[i]] = inner_join(VAUL_SpCond_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#Turb
+for(i in 1:length(FRCH_turb_storm_list)){
+  FRCH_turb_storm_list[[i]] = inner_join(FRCH_turb_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_turb_storm_list)){
+  MOOS_turb_storm_list[[i]] = inner_join(MOOS_turb_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_turb_storm_list)){
+  POKE_turb_storm_list[[i]] = inner_join(POKE_turb_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_turb_storm_list)){
+  STRT_turb_storm_list[[i]] = inner_join(STRT_turb_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+
+for(i in 1:length(VAUL_turb_storm_list)){
+  VAUL_turb_storm_list[[i]] = inner_join(VAUL_turb_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+# save storm with burst data #
+
+saveRDS(FRCH_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/FRCH_NO3_storm_list.RData")
+saveRDS(MOOS_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/MOOS_NO3_storm_list.RData")
+saveRDS(POKE_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/POKE_NO3_storm_list.RData")
+saveRDS(STRT_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/STRT_NO3_storm_list.RData")
+saveRDS(VAUL_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/VAUL_NO3_storm_list.RData")
+
+saveRDS(FRCH_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/FRCH_fDOM_storm_list.RData")
+saveRDS(MOOS_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/MOOS_fDOM_storm_list.RData")
+saveRDS(POKE_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/POKE_fDOM_storm_list.RData")
+saveRDS(STRT_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/STRT_fDOM_storm_list.RData")
+saveRDS(VAUL_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/VAUL_fDOM_storm_list.RData")
+
+saveRDS(FRCH_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/FRCH_SPC_storm_list.RData")
+saveRDS(MOOS_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/MOOS_SPC_storm_list.RData")
+saveRDS(POKE_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/POKE_SPC_storm_list.RData")
+saveRDS(STRT_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/STRT_SPC_storm_list.RData")
+saveRDS(VAUL_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/VAUL_SPC_storm_list.RData")
+
+saveRDS(FRCH_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/FRCH_turb_storm_list.RData")
+saveRDS(MOOS_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/MOOS_turb_storm_list.RData")
+saveRDS(POKE_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/POKE_turb_storm_list.RData")
+saveRDS(STRT_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/STRT_turb_storm_list.RData")
+saveRDS(VAUL_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2020/VAUL_turb_storm_list.RData")
+
 
 
 
@@ -17631,7 +18228,7 @@ write.csv(FRCH.2021.chem, "~/Documents/Storms/Q_Chem/FRCH/FRCH_chem_2021.csv")
 write.csv(STRT.2021.chem, "~/Documents/Storms/Q_Chem/STRT/STRT_chem_2021.csv")
 write.csv(POKE.2021.chem, "~/Documents/Storms/Q_Chem/POKE/POKE_chem_2021.csv")
 write.csv(VAUL.2021.chem, "~/Documents/Storms/Q_Chem/VAUL/VAUL_chem_2021.csv")
-write.csv(MOOS.2021.chem, "~/Documents/Storms/Q_Chem/VAUL/MOOS_chem_2021.csv")
+write.csv(MOOS.2021.chem, "~/Documents/Storms/Q_Chem/MOOS/MOOS_chem_2021.csv")
 write.csv(DOD.2021.1, "~/Documents/DoD_Discharge/Discharge_Chem/2021/DOD.2021.1.csv")
 
 # Baseflow Separation #
@@ -20387,8 +20984,8 @@ abline(v = as.POSIXct(poke.five.twenty.four$DateTime), col="green", lwd = 0.05)
 abline(v= as.POSIXct("2021-08-23 07:30:00", tz="America/Anchorage"), col="purple")
 abline(v= as.POSIXct("2021-08-24 08:30:00", tz="America/Anchorage"), col="purple")
 
-POKE_storm7c_08_23 = POKE[POKE$DateTime > as.POSIXct("2021-08-19 13:30:00", tz="America/Anchorage") &
-                            POKE$DateTime < as.POSIXct("2021-08-22 07:30:00", tz="America/Anchorage"),]
+POKE_storm7c_08_23 = POKE[POKE$DateTime > as.POSIXct("2021-08-23 07:30:00", tz="America/Anchorage") &
+                            POKE$DateTime < as.POSIXct("2021-08-24 08:30:00", tz="America/Anchorage"),]
 plot(POKE_storm7c_08_23$MeanDischarge ~ as.POSIXct(POKE_storm7c_08_23$DateTime, tz="America/Anchorage"), type="l", xlab="", ylab="Q (L/sec)",ylim = c(800,1000), col="blue", main="POKE 210823 storm 7c",
      xlim = as.POSIXct(c("2021-08-01 00:00:00","2021-08-31 23:45:00"), tz="America/Anchorage"))
 par(new = T)
@@ -21212,6 +21809,633 @@ write.csv(CARI_storm10_08_27_NO3, "~/Documents/Storms/Storm_Events/2021/CARI/CAR
 write.csv(CARI_storm10_08_27_fDOM, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_fDOM.csv")
 write.csv(CARI_storm10_08_27_SPC, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_SPC.csv")
 write.csv(CARI_storm10_08_27_turb, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm10_08_27_Turb.csv")
+
+
+# load storm data #
+
+storm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI/", 
+                              recursive=F, 
+                              pattern=".csv", 
+                              full.names=TRUE)
+
+storm_list<-do.call("list", lapply(storm_file_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   header=T, row.names=1))
+
+storm_file_list = sub("~/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//", storm_file_list, replacement = "")
+storm_file_list = sub(".csv", storm_file_list, replacement = "")
+names(storm_list) = storm_file_list
+
+
+#  organize storm data by site and solute # 5 for each storm 
+CARI_storm_list = storm_list[c(1:50)] #50
+FRCH_storm_list = storm_list[c(51:100)] #50
+MOOS_storm_list = storm_list[c(101:150)] #50
+POKE_storm_list = storm_list[c(151:200)]# 50
+STRT_storm_list = storm_list[c(201:225)] #25
+VAUL_storm_list = storm_list[c(226:265)] #40
+
+for(i in 1:length(CARI_storm_list)){
+  CARI_storm_list[[i]][["valuedatetime"]] = as.POSIXct(CARI_storm_list[[i]][["valuedatetime"]],
+                                                            "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} 
+
+CARI_NO3_storm_list = CARI_storm_list[c(grep("NO3", names(CARI_storm_list)))]
+CARI_fDOM_storm_list = CARI_storm_list[c(grep("fDOM", names(CARI_storm_list)))]
+CARI_SpCond_storm_list = CARI_storm_list[c(grep("SPC", names(CARI_storm_list)))]
+CARI_turb_storm_list = CARI_storm_list[c(grep("Turb", names(CARI_storm_list)))]
+
+FRCH_NO3_storm_list = FRCH_storm_list[c(grep("NO3", names(FRCH_storm_list)))]
+FRCH_fDOM_storm_list = FRCH_storm_list[c(grep("fDOM", names(FRCH_storm_list)))]
+FRCH_SpCond_storm_list = FRCH_storm_list[c(grep("SPC", names(FRCH_storm_list)))]
+FRCH_turb_storm_list = FRCH_storm_list[c(grep("Turb", names(FRCH_storm_list)))]
+
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]][["valuedatetime"]] = mdy_hm(FRCH_NO3_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]][["valuedatetime"]] = mdy_hm(FRCH_fDOM_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(FRCH_SpCond_storm_list)){
+  FRCH_SpCond_storm_list[[i]][["valuedatetime"]] = mdy_hm(FRCH_SpCond_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(FRCH_turb_storm_list)){
+  FRCH_turb_storm_list[[i]][["valuedatetime"]] = mdy_hm(FRCH_turb_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+
+for(i in 1:length(MOOS_storm_list)){
+  MOOS_storm_list[[i]][["valuedatetime"]] = as.POSIXct(MOOS_storm_list[[i]][["valuedatetime"]],
+                                                            "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} 
+
+MOOS_NO3_storm_list = MOOS_storm_list[c(grep("NO3", names(MOOS_storm_list)))]
+MOOS_fDOM_storm_list = MOOS_storm_list[c(grep("fDOM", names(MOOS_storm_list)))]
+MOOS_SpCond_storm_list = MOOS_storm_list[c(grep("SPC", names(MOOS_storm_list)))]
+MOOS_turb_storm_list = MOOS_storm_list[c(grep("Turb", names(MOOS_storm_list)))]
+
+for(i in 1:length(POKE_storm_list)){
+  POKE_storm_list[[i]][["valuedatetime"]] = as.POSIXct(POKE_storm_list[[i]][["valuedatetime"]],
+                                                            "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} 
+
+POKE_NO3_storm_list = POKE_storm_list[c(grep("NO3", names(POKE_storm_list)))]
+POKE_fDOM_storm_list = POKE_storm_list[c(grep("fDOM", names(POKE_storm_list)))]
+POKE_SpCond_storm_list = POKE_storm_list[c(grep("SPC", names(POKE_storm_list)))]
+POKE_turb_storm_list = POKE_storm_list[c(grep("Turb", names(POKE_storm_list)))]
+
+STRT_NO3_storm_list = STRT_storm_list[c(grep("NO3", names(STRT_storm_list)))]
+STRT_fDOM_storm_list = STRT_storm_list[c(grep("fDOM", names(STRT_storm_list)))]
+STRT_SpCond_storm_list = STRT_storm_list[c(grep("SPC", names(STRT_storm_list)))]
+STRT_turb_storm_list = STRT_storm_list[c(grep("Turb", names(STRT_storm_list)))]
+
+
+for(i in 1:length(STRT_NO3_storm_list)){
+  STRT_NO3_storm_list[[i]][["valuedatetime"]] = mdy_hm(STRT_NO3_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(STRT_fDOM_storm_list)){
+  STRT_fDOM_storm_list[[i]][["valuedatetime"]] = mdy_hm(STRT_fDOM_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(STRT_SpCond_storm_list)){
+  STRT_SpCond_storm_list[[i]][["valuedatetime"]] = mdy_hm(STRT_SpCond_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(STRT_turb_storm_list)){
+  STRT_turb_storm_list[[i]][["valuedatetime"]] = mdy_hm(STRT_turb_storm_list[[i]][["valuedatetime"]])
+  
+} 
+
+for(i in 1:length(VAUL_storm_list)){
+  VAUL_storm_list[[i]][["valuedatetime"]] = as.POSIXct(VAUL_storm_list[[i]][["valuedatetime"]],
+                                                            "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+} 
+
+VAUL_NO3_storm_list = VAUL_storm_list[c(grep("NO3", names(VAUL_storm_list)))]
+VAUL_fDOM_storm_list = VAUL_storm_list[c(grep("fDOM", names(VAUL_storm_list)))]
+VAUL_SpCond_storm_list = VAUL_storm_list[c(grep("SPC", names(VAUL_storm_list)))]
+VAUL_turb_storm_list = VAUL_storm_list[c(grep("Turb", names(VAUL_storm_list)))]
+
+#### load burst SUNA data #
+
+FRCHfile_list <- list.files(path="~/Documents/DoD_2021/SUNA_data/from_internal_harddrive/raw/FRCH/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+MOOSfile_list <- list.files(path="~/Documents/DoD_2021/SUNA_data/from_internal_harddrive/raw/MOOS/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+POKEfile_list <- list.files(path="~/Documents/DoD_2021/SUNA_data/from_internal_harddrive/raw/POKE/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+STRTfile_list <- list.files(path="~/Documents/DoD_2021/SUNA_data/from_internal_harddrive/raw/STRT/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+VAULfile_list <- list.files(path="~/Documents/DoD_2021/SUNA_data/from_internal_harddrive/raw/VAUL/", 
+                            recursive=F, 
+                            pattern=".CSV", 
+                            full.names=TRUE)
+
+### Merge all data files for sensor ###
+#correct header=14
+
+SUNA.FRCH<-do.call("rbind", lapply(FRCHfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.MOOS<-do.call("rbind", lapply(MOOSfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.POKE<-do.call("rbind", lapply(POKEfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.STRT<-do.call("rbind", lapply(STRTfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+SUNA.VAUL<-do.call("rbind", lapply(VAULfile_list, 
+                                   read.csv, 
+                                   stringsAsFactors=FALSE, 
+                                   skip=14, header=FALSE))
+
+### Variable names for SUNA output file ###
+pre<-"ch"
+suff<-seq(12:267)
+ch<-paste(pre, suff)
+SUNAnames<-c("ID", "date_yearday", "time_fhoursUTC", "nitrateuM", "nitratemgL", "abs254", 
+             "abs350", "brtrace", "specave", "darkvaluefit", "inttimefac", ch, "int_TC", 
+             "spec_TC", "lamp_TC", "lamptimecum", "relhum", "mainV", "lampV", "intV", 
+             "mainmA", "fit1", "fit2", "fitbase1", "fitbase2", "fitRMSE", "CTDtime", 
+             "CTDsal", "CTDT", "CTDdBar", "checksum")
+names(SUNA.FRCH)<-SUNAnames
+names(SUNA.MOOS)<-SUNAnames
+names(SUNA.POKE)<-SUNAnames
+names(SUNA.STRT)<-SUNAnames
+names(SUNA.VAUL)<-SUNAnames
+### Remove unneeded columns ###
+
+#remove raw channel data
+SUNA.FRCHr<-SUNA.FRCH[,c(1:11,268:286)]
+SUNA.MOOSr<-SUNA.MOOS[,c(1:11,268:286)]
+SUNA.POKEr<-SUNA.POKE[,c(1:11,268:286)]
+SUNA.STRTr<-SUNA.STRT[,c(1:11,268:286)]
+SUNA.VAULr<-SUNA.VAUL[,c(1:11,268:286)]
+
+#remove dark frames. 
+### <<Note: Change date below>> ###
+sum(SUNA.FRCHr$ID == 'DF')
+SUNA.FRCHr %>% group_by(ID) %>% tally()
+SUNA.FRCHrlf<-SUNA.FRCHr[!grepl("DF", SUNA.FRCHr$ID),]
+
+SUNA.MOOSr %>% group_by(ID) %>% tally()
+SUNA.MOOSrlf<-SUNA.MOOSr[!grepl("DF", SUNA.MOOSr$ID),]
+
+SUNA.POKEr %>% group_by(ID) %>% tally()
+SUNA.POKErlf<-SUNA.POKEr[!grepl("DF", SUNA.POKEr$ID),]
+
+SUNA.STRTr %>% group_by(ID) %>% tally()
+SUNA.STRTrlf<-SUNA.STRTr[!grepl("DF", SUNA.STRTr$ID),]
+
+SUNA.VAULr %>% group_by(ID) %>% tally()
+SUNA.VAULrlf<-SUNA.VAULr[!grepl("DF", SUNA.VAULr$ID),]
+
+### Date and time reformatting ###
+## FRCH ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.FRCHrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.FRCHrlf<-cbind(SUNA.FRCHrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.FRCHrlf$day_timeUTC<-SUNA.FRCHrlf$day+(SUNA.FRCHrlf$time_fhoursUTC/24)
+# assign year to 2021 data
+origin17 <- as.POSIXct("2020-12-31 00:00:00", tz="GMT")
+SUNA.FRCHrlf$date_timeUTC<-origin17 + SUNA.FRCHrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.FRCHrlf$date_timeAK<-as.POSIXct(format(SUNA.FRCHrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.FRCHrlf$date_timeAK)
+class(SUNA.FRCHrlf$date_timeAK)
+tz(SUNA.FRCHrlf$date_timeAK) = "America/Anchorage"
+
+## MOOS ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.MOOSrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.MOOSrlf<-cbind(SUNA.MOOSrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.MOOSrlf$day_timeUTC<-SUNA.MOOSrlf$day+(SUNA.MOOSrlf$time_fhoursUTC/24)
+# assign year to 2021 data
+origin17 <- as.POSIXct("2020-12-31 00:00:00", tz="GMT")
+SUNA.MOOSrlf$date_timeUTC<-origin17 + SUNA.MOOSrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.MOOSrlf$date_timeAK<-as.POSIXct(format(SUNA.MOOSrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.MOOSrlf$date_timeAK)
+class(SUNA.MOOSrlf$date_timeAK)
+tz(SUNA.MOOSrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.MOOSrlf$date_timeAK)
+
+## POKE ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.POKErlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.POKErlf<-cbind(SUNA.POKErlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.POKErlf$day_timeUTC<-SUNA.POKErlf$day+(SUNA.POKErlf$time_fhoursUTC/24)
+# assign year to 2021 data
+origin17 <- as.POSIXct("2020-12-31 00:00:00", tz="GMT")
+SUNA.POKErlf$date_timeUTC<-origin17 + SUNA.POKErlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.POKErlf$date_timeAK<-as.POSIXct(format(SUNA.POKErlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.POKErlf$date_timeAK)
+class(SUNA.POKErlf$date_timeAK)
+tz(SUNA.POKErlf$date_timeAK) = "America/Anchorage"
+head(SUNA.POKErlf$date_timeAK)
+
+## STRT ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.STRTrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.STRTrlf<-cbind(SUNA.STRTrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.STRTrlf$day_timeUTC<-SUNA.STRTrlf$day+(SUNA.STRTrlf$time_fhoursUTC/24)
+# assign year to 2021 data
+origin17 <- as.POSIXct("2020-12-31 00:00:00", tz="GMT")
+SUNA.STRTrlf$date_timeUTC<-origin17 + SUNA.STRTrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.STRTrlf$date_timeAK<-as.POSIXct(format(SUNA.STRTrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.STRTrlf$date_timeAK)
+class(SUNA.STRTrlf$date_timeAK)
+tz(SUNA.STRTrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.STRTrlf$date_timeAK)
+
+## VAUL ##
+# create separate year and day columns
+year_day <- t(sapply(SUNA.VAULrlf$date_yearday, function(x) substring(x, first=c(1,5), last=c(4,7))))
+year_day<-as.data.frame(year_day)
+names(year_day)<-c("year", "day")
+year_day$year <- as.numeric(year_day$year)
+year_day$day<-as.numeric(year_day$day)
+SUNA.VAULrlf<-cbind(SUNA.VAULrlf, year_day)
+# combine hours and julian day into fractional days
+SUNA.VAULrlf$day_timeUTC<-SUNA.VAULrlf$day+(SUNA.VAULrlf$time_fhoursUTC/24)
+# assign year to 2021 data
+origin17 <- as.POSIXct("2020-12-31 00:00:00", tz="GMT")
+SUNA.VAULrlf$date_timeUTC<-origin17 + SUNA.VAULrlf$day_timeUTC * 3600 * 24
+# convert from UTC to AKDT
+SUNA.VAULrlf$date_timeAK<-as.POSIXct(format(SUNA.VAULrlf$date_timeUTC, tz="America/Anchorage", usetz=TRUE))
+summary(SUNA.VAULrlf$date_timeAK)
+class(SUNA.VAULrlf$date_timeAK)
+tz(SUNA.VAULrlf$date_timeAK) = "America/Anchorage"
+head(SUNA.VAULrlf$date_timeAK)
+
+### reduce columns ###
+
+SUNA.FRCH.burst = subset(SUNA.FRCHrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.MOOS.burst = subset(SUNA.MOOSrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.POKE.burst = subset(SUNA.POKErlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.STRT.burst = subset(SUNA.STRTrlf, select = c("date_timeAK", "nitrateuM"))
+SUNA.VAUL.burst = subset(SUNA.VAULrlf, select = c("date_timeAK", "nitrateuM"))
+
+### rename columns ###
+names(SUNA.FRCH.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.MOOS.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.POKE.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.STRT.burst) <- c("DateTime", "nitrateuM")
+names(SUNA.VAUL.burst) <- c("DateTime", "nitrateuM")
+
+### round to nearest 15 min ###
+
+SUNA.FRCH.burst$DateTime = lubridate::round_date(SUNA.FRCH.burst$DateTime, "15 minutes") 
+SUNA.MOOS.burst$DateTime = lubridate::round_date(SUNA.MOOS.burst$DateTime, "15 minutes") 
+SUNA.POKE.burst$DateTime = lubridate::round_date(SUNA.POKE.burst$DateTime, "15 minutes") 
+SUNA.STRT.burst$DateTime = lubridate::round_date(SUNA.STRT.burst$DateTime, "15 minutes") 
+SUNA.VAUL.burst$DateTime = lubridate::round_date(SUNA.VAUL.burst$DateTime, "15 minutes") 
+
+#### load burst EXO data #
+
+### load and stitch EXO data ###
+
+# FRCH #
+FRCHfile_list <- list.files(path="~/Documents/DoD_2021/EXO_data/from_internal_harddrive/raw/FRCH/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.FRCH<-do.call("rbind", lapply(FRCHfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE, 
+                                  skip = 9,
+                                  header=F))
+colNames <- c("Date..MM.DD.YYYY.", "Time..HH.mm.ss.", "Time..Fract..Sec.", "Site.Name" , "Cond.µS.cm" ,
+              "fDOM.QSU", "fDOM.RFU", "nLF.Cond.µS.cm", "ODO...sat", "ODO...local",
+              "ODO.mg.L", "Sal.psu","SpCond.µS.cm",  "TDS.mg.L", "Turbidity.FNU" ,
+              "TSS.mg.L", "Wiper.Position.volt", "Temp..C", "Battery.V", "Cable.Pwr.V")
+
+names(EXO.FRCH)<-colNames
+
+# MOOS #
+MOOSfile_list <- list.files(path="~/Documents/DoD_2021/EXO_data/from_internal_harddrive/raw/MOOS/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.MOOS<-do.call("rbind", lapply(MOOSfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE, 
+                                  skip = 9,
+                                  header=F))
+names(EXO.MOOS)<-colNames
+# POKE #
+POKEfile_list <- list.files(path="~/Documents/DoD_2021/EXO_data/from_internal_harddrive/raw/POKE/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.POKE<-do.call("rbind", lapply(POKEfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.POKE)<-colNames
+# STRT #
+STRTfile_list <- list.files(path="~/Documents/DoD_2021/EXO_data/from_internal_harddrive/raw/STRT/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.STRT<-do.call("rbind", lapply(STRTfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.STRT)<-colNames
+# VAUL #
+VAULfile_list <- list.files(path="~/Documents/DoD_2021/EXO_data/from_internal_harddrive/raw/VAUL/", 
+                            recursive=F, 
+                            pattern=".csv", 
+                            full.names=TRUE)
+
+EXO.VAUL<-do.call("rbind", lapply(VAULfile_list, 
+                                  read.csv, 
+                                  stringsAsFactors=FALSE,
+                                  skip = 9,
+                                  header=F))
+names(EXO.VAUL)<-colNames
+
+## FRCH ##
+# put date and time in same column
+EXO.FRCH$date_time = paste(EXO.FRCH$Date..MM.DD.YYYY., EXO.FRCH$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.FRCH$date_timeET<-mdy_hms(EXO.FRCH$date_time)
+# convert to Alaska Time
+EXO.FRCH$date_timeAK<-with_tz(EXO.FRCH$date_timeET, tz="America/Anchorage")
+head(EXO.FRCH)
+class(EXO.FRCH$date_timeAK)
+tz(EXO.FRCH$date_timeAK)
+
+## MOOS ##
+# put date and time in same column
+EXO.MOOS$date_time = paste(EXO.MOOS$Date..MM.DD.YYYY., EXO.MOOS$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.MOOS$date_timeET <- mdy_hms(EXO.MOOS$date_time)
+# convert to Alaska Time
+EXO.MOOS$date_timeAK<-with_tz(EXO.MOOS$date_timeET, tz="America/Anchorage")
+head(EXO.MOOS)
+class(EXO.MOOS$date_timeAK)
+tz(EXO.MOOS$date_timeAK)
+
+## POKE ##
+# put date and time in same column
+EXO.POKE$date_time = paste(EXO.POKE$Date..MM.DD.YYYY., EXO.POKE$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.POKE$date_timeET<-mdy_hms(EXO.POKE$date_time)
+# convert to Alaska Time
+EXO.POKE$date_timeAK<-with_tz(EXO.POKE$date_timeET, tz="America/Anchorage")
+head(EXO.POKE)
+class(EXO.POKE$date_timeAK)
+tz(EXO.POKE$date_timeAK)
+
+## STRT ##
+# put date and time in same column
+EXO.STRT$date_time = paste(EXO.STRT$Date..MM.DD.YYYY., EXO.STRT$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.STRT$date_timeET<-mdy_hms(EXO.STRT$date_time)
+# convert to Alaska Time
+EXO.STRT$date_timeAK<-with_tz(EXO.STRT$date_timeET, tz="America/Anchorage")
+head(EXO.STRT)
+class(EXO.STRT$date_timeAK)
+tz(EXO.STRT$date_timeAK)
+
+## VAUL ##
+# put date and time in same column
+EXO.VAUL$date_time = paste(EXO.VAUL$Date..MM.DD.YYYY., EXO.VAUL$Time..HH.mm.ss., sep = " ")
+# convert to POIXct and set timezone
+EXO.VAUL$date_timeET<-mdy_hms(EXO.VAUL$date_time)
+# convert to Alaska Time
+EXO.VAUL$date_timeAK<-with_tz(EXO.VAUL$date_timeET, tz="America/Anchorage")
+head(EXO.VAUL)
+class(EXO.VAUL$date_timeAK)
+tz(EXO.VAUL$date_timeAK)
+
+### reduce columns ###
+
+EXO.FRCH.burst = subset(EXO.FRCH, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.MOOS.burst = subset(EXO.MOOS, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.POKE.burst = subset(EXO.POKE, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.STRT.burst = subset(EXO.STRT, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+EXO.VAUL.burst = subset(EXO.VAUL, select=c("date_timeAK", "fDOM.QSU", "SpCond.µS.cm", "Turbidity.FNU"))
+
+###  rename columns ###
+names(EXO.FRCH.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.MOOS.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.POKE.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.STRT.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+names(EXO.VAUL.burst) <- c("DateTime", "fDOM.QSU.mn", "SpCond.µS.cm", "Turbidity.FNU")
+
+### round to nearest 15 min ###
+
+EXO.FRCH.burst$DateTime = lubridate::round_date(EXO.FRCH.burst$DateTime, "15 minutes") 
+EXO.MOOS.burst$DateTime = lubridate::round_date(EXO.MOOS.burst$DateTime, "15 minutes") 
+EXO.POKE.burst$DateTime = lubridate::round_date(EXO.POKE.burst$DateTime, "15 minutes") 
+EXO.STRT.burst$DateTime = lubridate::round_date(EXO.STRT.burst$DateTime, "15 minutes") 
+EXO.VAUL.burst$DateTime = lubridate::round_date(EXO.VAUL.burst$DateTime, "15 minutes") 
+
+#### match NAs in DOD 2019 to bursts ####
+
+## NO3 ##
+#temp= inner_join(SUNA.FRCH.burst, subset(FRCH, select=c("DateTime", "nitrateuM")), by= "DateTime")
+#temp$nitrateuM = ifelse(is.na(temp$nitrateuM), NA, temp$nitrateuM)
+#SUNA.FRCH.burst$nitrateuM = temp$nitrateuM # not the same amount of rows 
+
+#temp= inner_join(SUNA.C3.burst, subset(C3, select=c("date_timeAK", "nitrate_uM")), by= "date_timeAK")
+#temp$nitrateuM = ifelse(is.na(temp$nitrate_uM), NA, temp$nitrateuM)
+#SUNA.C3.burst$nitrateuM = temp$nitrateuM
+
+
+#### save clean-ish burst data ####
+
+write_csv(SUNA.FRCH.burst, "~/Documents/DoD_2021/Stitched_data/SUNA.FRCH.burst.csv")
+write_csv(SUNA.MOOS.burst, "~/Documents/DoD_2021/Stitched_data/SUNA.MOOS.burst.csv")
+write_csv(SUNA.POKE.burst, "~/Documents/DoD_2021/Stitched_data/SUNA.POKE.burst.csv")
+write_csv(SUNA.STRT.burst, "~/Documents/DoD_2021/Stitched_data/SUNA.STRT.burst.csv")
+write_csv(SUNA.VAUL.burst, "~/Documents/DoD_2021/Stitched_data/SUNA.VAUL.burst.csv")
+
+write_csv(EXO.FRCH.burst, "~/Documents/DoD_2021/Stitched_data/EXO.FRCH.burst.csv")
+write_csv(EXO.MOOS.burst, "~/Documents/DoD_2021/Stitched_data/EXO.MOOS.burst.csv")
+write_csv(EXO.POKE.burst, "~/Documents/DoD_2021/Stitched_data/EXO.POKE.burst.csv")
+write_csv(EXO.STRT.burst, "~/Documents/DoD_2021/Stitched_data/EXO.STRT.burst.csv")
+write_csv(EXO.VAUL.burst, "~/Documents/DoD_2021/Stitched_data/EXO.VAUL.burst.csv")
+
+
+#### join burst and storm data ####
+
+### NO3 ### 
+
+for(i in 1:length(FRCH_NO3_storm_list)){
+  FRCH_NO3_storm_list[[i]] = inner_join(FRCH_NO3_storm_list[[i]], SUNA.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_NO3_storm_list)){
+  MOOS_NO3_storm_list[[i]] = inner_join(MOOS_NO3_storm_list[[i]], SUNA.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_NO3_storm_list)){
+  POKE_NO3_storm_list[[i]] = inner_join(POKE_NO3_storm_list[[i]], SUNA.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_NO3_storm_list)){
+  STRT_NO3_storm_list[[i]] = inner_join(STRT_NO3_storm_list[[i]], SUNA.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_NO3_storm_list)){
+  VAUL_NO3_storm_list[[i]] = inner_join(VAUL_NO3_storm_list[[i]], SUNA.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#fDOM
+for(i in 1:length(FRCH_fDOM_storm_list)){
+  FRCH_fDOM_storm_list[[i]] = inner_join(FRCH_fDOM_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_fDOM_storm_list)){
+  MOOS_fDOM_storm_list[[i]] = inner_join(MOOS_fDOM_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_fDOM_storm_list)){
+  POKE_fDOM_storm_list[[i]] = inner_join(POKE_fDOM_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_fDOM_storm_list)){
+  STRT_fDOM_storm_list[[i]] = inner_join(STRT_fDOM_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_fDOM_storm_list)){
+  VAUL_fDOM_storm_list[[i]] = inner_join(VAUL_fDOM_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#SPC
+for(i in 1:length(FRCH_SpCond_storm_list)){
+  FRCH_SpCond_storm_list[[i]] = inner_join(FRCH_SpCond_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_SpCond_storm_list)){
+  MOOS_SpCond_storm_list[[i]] = inner_join(MOOS_SpCond_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_SpCond_storm_list)){
+  POKE_SpCond_storm_list[[i]] = inner_join(POKE_SpCond_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_SpCond_storm_list)){
+  STRT_SpCond_storm_list[[i]] = inner_join(STRT_SpCond_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(VAUL_SpCond_storm_list)){
+  VAUL_SpCond_storm_list[[i]] = inner_join(VAUL_SpCond_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+#Turb
+for(i in 1:length(FRCH_turb_storm_list)){
+  FRCH_turb_storm_list[[i]] = inner_join(FRCH_turb_storm_list[[i]], EXO.FRCH.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(MOOS_turb_storm_list)){
+  MOOS_turb_storm_list[[i]] = inner_join(MOOS_turb_storm_list[[i]], EXO.MOOS.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(POKE_turb_storm_list)){
+  POKE_turb_storm_list[[i]] = inner_join(POKE_turb_storm_list[[i]], EXO.POKE.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+for(i in 1:length(STRT_turb_storm_list)){
+  STRT_turb_storm_list[[i]] = inner_join(STRT_turb_storm_list[[i]], EXO.STRT.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+
+for(i in 1:length(VAUL_turb_storm_list)){
+  VAUL_turb_storm_list[[i]] = inner_join(VAUL_turb_storm_list[[i]], EXO.VAUL.burst, by=c("valuedatetime" = "DateTime"))
+}
+
+# save storm with burst data #
+
+saveRDS(FRCH_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/FRCH_NO3_storm_list.RData")
+saveRDS(MOOS_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/MOOS_NO3_storm_list.RData")
+saveRDS(POKE_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/POKE_NO3_storm_list.RData")
+saveRDS(STRT_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/STRT_NO3_storm_list.RData")
+saveRDS(VAUL_NO3_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/VAUL_NO3_storm_list.RData")
+
+saveRDS(FRCH_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/FRCH_fDOM_storm_list.RData")
+saveRDS(MOOS_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/MOOS_fDOM_storm_list.RData")
+saveRDS(POKE_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/POKE_fDOM_storm_list.RData")
+saveRDS(STRT_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/STRT_fDOM_storm_list.RData")
+saveRDS(VAUL_fDOM_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/VAUL_fDOM_storm_list.RData")
+
+saveRDS(FRCH_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/FRCH_SPC_storm_list.RData")
+saveRDS(MOOS_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/MOOS_SPC_storm_list.RData")
+saveRDS(POKE_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/POKE_SPC_storm_list.RData")
+saveRDS(STRT_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/STRT_SPC_storm_list.RData")
+saveRDS(VAUL_SpCond_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/VAUL_SPC_storm_list.RData")
+
+saveRDS(FRCH_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/FRCH_turb_storm_list.RData")
+saveRDS(MOOS_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/MOOS_turb_storm_list.RData")
+saveRDS(POKE_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/POKE_turb_storm_list.RData")
+saveRDS(STRT_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/STRT_turb_storm_list.RData")
+saveRDS(VAUL_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/2021/VAUL_turb_storm_list.RData")
 
 
 ############################## 2019 & 2020 data together #########################################
