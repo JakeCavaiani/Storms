@@ -15,52 +15,67 @@ library(readr)
 
 
 # Load in 2018 data # 
-FRCH_HI_doy_df_2018 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2018/FRCH/FRCH.HI.doy.df.csv")
-MOOS_HI_doy_df_2018 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2018/MOOS/MOOS.HI.doy.df.csv")
+FRCH_HI_doy_df_2018 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2018/FRCH/FRCH.HI.df.doy.csv")
+MOOS_HI_doy_df_2018 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2018/MOOS/MOOS.HI.df.doy.csv")
+CARI_HI_df_doy_2018 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2018/CARI/CARI.HI.df.doy.csv")
+CARI_HI_df_doy_2018 <- CARI_HI_df_doy_2018[,-2]
 FRCH_HI_doy_df_2018$year <- "2018"
 MOOS_HI_doy_df_2018$year <- "2018"
+CARI_HI_df_doy_2018$year <- "2018"
 
-comb.hi.2018 <- rbind(FRCH_HI_doy_df_2018, MOOS_HI_doy_df_2018)
+comb.hi.2018 <- rbind(FRCH_HI_doy_df_2018, MOOS_HI_doy_df_2018, CARI_HI_df_doy_2018)
 
 # Load in 2019 data #
-MOOS_HI_doy_df_2019 <- read_csv("Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.doy.df.csv")
-POKE_HI_doy_df_2019 <- read_csv("Output_from_analysis/HI_plots/2019/POKE/POKE.HI.doy.df.csv")
-STRT_HI_doy_df_2019 <- read_csv("Output_from_analysis/HI_plots/2019/STRT/STRT.HI.doy.df.csv")
-FRCH_HI_doy_df_2019 <- read_csv("Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.doy.df.csv")
-VAUL_HI_doy_df_2019 <- read_csv("Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.doy.df.csv")
+MOOS_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/MOOS/MOOS.HI.df.doy.csv")
+POKE_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/POKE/POKE.HI.df.doy.csv")
+STRT_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/STRT/STRT.HI.df.doy.csv")
+FRCH_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/FRCH/FRCH.HI.df.doy.csv")
+VAUL_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/VAUL/VAUL.HI.df.doy.csv")
+CARI_HI_doy_df_2019 <- read.csv("Output_from_analysis/HI_plots/2019/CARI/CARI.HI.df.doy.csv")
 
 MOOS_HI_doy_df_2019$year <- "2019"
 POKE_HI_doy_df_2019$year <- "2019"
 STRT_HI_doy_df_2019$year <- "2019"
 FRCH_HI_doy_df_2019$year <- "2019"
 VAUL_HI_doy_df_2019$year <- "2019"
+CARI_HI_doy_df_2019$year <- "2019"
 
 comb.hi.2019 <- rbind(MOOS_HI_doy_df_2019, POKE_HI_doy_df_2019, STRT_HI_doy_df_2019, FRCH_HI_doy_df_2019, VAUL_HI_doy_df_2019)
 
 
 #Load in 2020 data #
-FRCH_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/FRCH/FRCH.HI.doy.df.csv")
-STRT_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/STRT/STRT.HI.doy.df.csv")
-VAUL_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/VAUL/VAUL.HI.doy.df.csv")
-MOOS_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/MOOS/MOOS.HI.doy.df.csv")
-POKE_HI_doy_df_2020 <- read_csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/POKE/POKE.HI.doy.df.csv")
+FRCH_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/FRCH/FRCH.HI.df.doy.csv")
+STRT_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/STRT/STRT.HI.df.doy.csv")
+VAUL_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/VAUL/VAUL.HI.df.doy.csv")
+MOOS_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/MOOS/MOOS.HI.df.doy.csv")
+POKE_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/POKE/POKE.HI.df.doy.csv")
+CARI_HI_doy_df_2020 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2020/CARI/CARI.HI.df.doy.csv")
 
 FRCH_HI_doy_df_2020$year <- "2020"
 STRT_HI_doy_df_2020$year <- "2020"
 VAUL_HI_doy_df_2020$year <- "2020"
 MOOS_HI_doy_df_2020$year <- "2020"
 POKE_HI_doy_df_2020$year <- "2020"
+CARI_HI_doy_df_2020$year <- "2020"
 
 comb.hi.2020 <- rbind(FRCH_HI_doy_df_2020, STRT_HI_doy_df_2020, VAUL_HI_doy_df_2020, MOOS_HI_doy_df_2020, POKE_HI_doy_df_2020)
 
 # load in 2021 data # 
-FRCH_HI_doy_df_2021 <- read_csv("Output_from_analysis/HI_plots/2021/FRCH/FRCH.HI.doy.df.csv")
-MOOS_HI_doy_df_2021 <- read_csv("Output_from_analysis/HI_plots/2021/MOOS/MOOS.HI.doy.df.csv")
-# VAUL_HI_doy_df_2021 <- read_csv("Output_from_analysis/HI_plots/2021/VAUL/VAUL.HI.doy.df.csv") # confidence intervals cant be calculated 
-FRCH_HI_doy_df_2021$year <- "2021"
-MOOS_HI_doy_df_2021$year <- "2021"
+FRCH_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/FRCH/FRCH.HI.doy.df.csv")
+STRT_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/STRT/STRT.HI.df.doy.csv")
+VAUL_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/VAUL/VAUL.HI.doy.df.csv")
+MOOS_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/MOOS/MOOS.HI.doy.df.csv")
+POKE_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/POKE/POKE.HI.df.doy.csv")
+CARI_HI_doy_df_2021 <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2021/CARI/CARI.HI.df.doy.csv")
 
-comb.hi.2021 <- rbind(MOOS_HI_doy_df_2021, FRCH_HI_doy_df_2021)
+FRCH_HI_doy_df_2021$year <- "2021"
+STRT_HI_doy_df_2021$year <- "2021"
+VAUL_HI_doy_df_2021$year <- "2021"
+MOOS_HI_doy_df_2021$year <- "2021"
+POKE_HI_doy_df_2021$year <- "2021"
+CARI_HI_doy_df_2021$year <- "2021"
+
+comb.hi.2021 <- rbind(FRCH_HI_doy_df_2021, STRT_HI_doy_df_2021, VAUL_HI_doy_df_2021, MOOS_HI_doy_df_2021, POKE_HI_doy_df_2021)
 
 # Combine all years #
 HI.dat.2019.2020 <- rbind(comb.hi.2019, comb.hi.2020)
@@ -83,8 +98,9 @@ median_cl_boot <- function(x, conf = 0.95) {
                                                                           uconf))
 }
 
+HI.dat.2019.2020 <- as.vector(aframe['HI.dat.2019.2020'])
 
-HI.med <- HI.dat %>% 
+HI.med <- HI.dat.2019.2020 %>% 
   group_by(response, doy, site.ID, year, storm.num) %>%
   nest() %>%
   mutate(medHI.boot = map(data,
@@ -93,7 +109,6 @@ HI.med <- HI.dat %>%
                                 R = 1000)),
          boot_tidy = map(medHI.boot, tidy, conf.int = TRUE, con.method = "perc"),
          n = map(data, nrow)) %>%
-  select(-data, -medHI.boot) %>%
   unnest(cols = -c(response, doy, site.ID, year, storm.num)) %>% 
   ungroup()
 

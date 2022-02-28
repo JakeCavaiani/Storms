@@ -1,0 +1,2 @@
+"","column_label","HI_mean_Interp","HI_sd_with_Interp","N.S.","Max_width_Interp","Min_response","Max_response","Peak_Q","ShapiroTest.W","ShapiroTest.p","t.test.stat","t.test.p","t.test.CIlow","t.test.CIhigh","wilcox.test.stat","wilcox.test.p","storm.ID","site.ID"
+"1","1",-0.196660482374768,0.226938577195165,NA,-0.636363636363637,26.8,31.2,1397.19,0.9279,0.0051,-6.0038,0,-0.2625,-0.1308,130.5,0,"CARI_storm12a_09_20_NO3","CARI"

@@ -17866,6 +17866,7 @@ saveRDS(VAUL_turb_storm_list, file="~/Documents/Storms/Storm_Events/WithBurst/20
 
 
 
+
 ######################################################### 2021 ##########################################
 ### Load from local machine ###
 EXO.2021 <- read_csv("~/Documents/DoD_2021/EXO_data/from_internal_harddrive/processed/EXO.processed.csv")
@@ -18045,7 +18046,7 @@ frch.turb.final <- as.data.frame(aggregate(Turbidity.FNU ~ frch.turb.1, data = f
 frch.turb.final$DateTime <-as.POSIXct(frch.turb.final$frch.turb.1, "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 frch.turb.final$DateTime <- lubridate::round_date(frch.spcond.final$DateTime, "15 minutes") 
 
-FRCH.2021.chem = left_join(frch.final.discharge.2021, frch.fdom.final, by="DateTime")
+FRCH.2021.chem = left_join(frch.fdom.final, frch.final.discharge.2021, by="DateTime")
 FRCH.2021.chem = left_join(FRCH.2021.chem, frch.no3.final, by="DateTime")
 FRCH.2021.chem = left_join(FRCH.2021.chem, frch.spcond.final, by="DateTime")
 FRCH.2021.chem = left_join(FRCH.2021.chem, frch.turb.final, by="DateTime")
@@ -18084,7 +18085,7 @@ strt.turb.1 <- cut(strt.turb$DateTime, breaks = "15 min")
 strt.turb.final <- as.data.frame(aggregate(Turbidity.FNU ~ strt.turb.1, data = strt.turb, FUN = mean)) # Averaging 15 minute intervals
 strt.turb.final$DateTime <-as.POSIXct(strt.turb.final$strt.turb.1, "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 
-STRT.2021.chem = left_join(strt.final.discharge.2021, strt.fdom.final, by="DateTime")
+STRT.2021.chem = left_join(strt.fdom.final, strt.final.discharge.2021, by="DateTime")
 STRT.2021.chem = left_join(STRT.2021.chem, strt.no3.final, by="DateTime")
 STRT.2021.chem = left_join(STRT.2021.chem, strt.spcond.final, by="DateTime")
 STRT.2021.chem = left_join(STRT.2021.chem, strt.turb.final, by="DateTime")
@@ -18126,7 +18127,7 @@ poke.turb.final <- as.data.frame(aggregate(Turbidity.FNU ~ poke.turb.1, data = p
 poke.turb.final$DateTime <-as.POSIXct(poke.turb.final$poke.turb.1, "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 poke.turb.final$DateTime <- lubridate::round_date(poke.turb.final$DateTime, "15 min")
 
-POKE.2021.chem = left_join(poke.final.discharge.2021, poke.fdom.final, by="DateTime")
+POKE.2021.chem = left_join(poke.fdom.final, poke.final.discharge.2021, by="DateTime")
 POKE.2021.chem = left_join(POKE.2021.chem, poke.no3.final, by="DateTime")
 POKE.2021.chem = left_join(POKE.2021.chem, poke.spcond.final, by="DateTime")
 POKE.2021.chem = left_join(POKE.2021.chem, poke.turb.final, by="DateTime")
@@ -18167,7 +18168,7 @@ vaul.turb.final <- as.data.frame(aggregate(Turbidity.FNU ~ vaul.turb.1, data = v
 vaul.turb.final$DateTime <-as.POSIXct(vaul.turb.final$vaul.turb.1, "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 vaul.turb.final$DateTime <- lubridate::round_date(vaul.turb.final$DateTime, "15 min")
 
-VAUL.2021.chem = left_join(vaul.final.discharge.2021, vaul.fdom.final, by="DateTime")
+VAUL.2021.chem = left_join(vaul.fdom.final, vaul.final.discharge.2021, by="DateTime")
 VAUL.2021.chem = left_join(VAUL.2021.chem, vaul.no3.final, by="DateTime")
 VAUL.2021.chem = left_join(VAUL.2021.chem, vaul.spcond.final, by="DateTime")
 VAUL.2021.chem = left_join(VAUL.2021.chem, vaul.turb.final, by="DateTime")
@@ -18208,7 +18209,7 @@ moos.turb.final <- as.data.frame(aggregate(Turbidity.FNU ~ moos.turb.1, data = m
 moos.turb.final$DateTime <-as.POSIXct(moos.turb.final$moos.turb.1, "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 moos.turb.final$DateTime <- lubridate::round_date(moos.turb.final$DateTime, "15 min")
 
-MOOS.2021.chem = left_join(moos.final.discharge.2021, moos.fdom.final, by="DateTime")
+MOOS.2021.chem = left_join(moos.fdom.final, moos.final.discharge.2021, by="DateTime")
 MOOS.2021.chem = left_join(MOOS.2021.chem, moos.no3.final, by="DateTime")
 MOOS.2021.chem = left_join(MOOS.2021.chem, moos.spcond.final, by="DateTime")
 MOOS.2021.chem = left_join(MOOS.2021.chem, moos.turb.final, by="DateTime")
@@ -21754,12 +21755,12 @@ write.csv(CARI_storm2_06_01_fDOM, "~/Documents/Storms/Storm_Events/2021/CARI/CAR
 write.csv(CARI_storm2_06_01_SPC, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_SPC.csv")
 write.csv(CARI_storm2_06_01_turb, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_01_Turb.csv")
 
-write.csv(CARI_storm3_06_19, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19.csv")
-write.csv(CARI_storm3_06_19_Q, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19_Q.csv")
-write.csv(CARI_storm3_06_19_NO3, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19_NO3.csv")
-write.csv(CARI_storm3_06_19_fDOM, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19_fDOM.csv")
-write.csv(CARI_storm3_06_19_SPC, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19_SPC.csv")
-write.csv(CARI_storm3_06_19_turb, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm2_06_19_Turb.csv")
+write.csv(CARI_storm3_06_19, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19.csv")
+write.csv(CARI_storm3_06_19_Q, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_Q.csv")
+write.csv(CARI_storm3_06_19_NO3, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_NO3.csv")
+write.csv(CARI_storm3_06_19_fDOM, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_fDOM.csv")
+write.csv(CARI_storm3_06_19_SPC, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_SPC.csv")
+write.csv(CARI_storm3_06_19_turb, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm3_06_19_Turb.csv")
 
 write.csv(CARI_storm4_07_24, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24.csv")
 write.csv(CARI_storm4_07_24_Q, "~/Documents/Storms/Storm_Events/2021/CARI/CARI_storm4_07_24_Q.csv")

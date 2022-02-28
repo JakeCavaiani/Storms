@@ -4125,18 +4125,18 @@ CARI_storms<-do.call("rbind", lapply(CARIstorm_file_list,
                                      stringsAsFactors=FALSE, 
                                      header=T, blank.lines.skip = TRUE, fill=TRUE))
 
-CARI_storms$storm.num = c(rep("storm1", 11158),
-                          rep("storm2", 4318),
-                          rep("storm3", 2518),
-                          rep("storm4", 4438),
-                          rep("storm5", 4078),
-                          rep("storm6a", 2518),
-                          rep("storm6b", 7079),
-                          rep("storm6c", 13199),
-                          rep("storm6d", 4078),
-                          rep("storm7a", 1558),
-                          rep("storm7b", 6598),
-                          rep("storm8", 8038))
+CARI_storms$storm.num = c(rep("storm1", 371),
+                          rep("storm2", 143),
+                          rep("storm3", 72),
+                          rep("storm4", 0),
+                          rep("storm5", 135),
+                          rep("storm6a", 83),
+                          rep("storm6b", 235),
+                          rep("storm6c", 426),
+                          rep("storm6d", 135),
+                          rep("storm7a", 51),
+                          rep("storm7b", 217),
+                          rep("storm8", 267))
 
 CARI_storms$DateTime <- as.POSIXct(CARI_storms$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M") 
 CARI.2019.storms.1<- left_join(CARI_storms, POKE_RainGauge_2019, by = "DateTime")
@@ -4158,10 +4158,10 @@ CARI.2019 <- CARI.2019[,-c(1,10)]
 CARI.2019$DateTime <- as.POSIXct(CARI.2019$DateTime, tz = "America/Anchorage", format = "%Y-%m-%d %H:%M")
 CARI.2019 <- left_join(CARI.2019, POKE_RainGauge_2019, by = "DateTime")
 CARI.2019 <- left_join(CARI.2019, airtempmean, by = "DateTime")
-CARI.2019$week <- rollapplyr(CARI.2019$inst_rainfall_mm, 10080, sum, na.rm = TRUE, fill = NA, partial = TRUE)
-CARI.2019$month <- rollapplyr(CARI.2019$inst_rainfall_mm, 40320, sum, na.rm = TRUE, fill = NA, partial = TRUE)
-CARI.2019$ThreeMonth <- rollapplyr(CARI.2019$inst_rainfall_mm, 120960, sum, na.rm = TRUE, fill = NA, partial = TRUE)
-CARI.2019$temp.week <- rollapplyr(CARI.2019$airtemp_100.1000cm_mean, 10080, mean, na.rm = TRUE, fill = NA, partial = TRUE)
+CARI.2019$week <- rollapplyr(CARI.2019$inst_rainfall_mm, 672, sum, na.rm = TRUE, fill = NA, partial = TRUE)
+CARI.2019$month <- rollapplyr(CARI.2019$inst_rainfall_mm, 2688, sum, na.rm = TRUE, fill = NA, partial = TRUE)
+CARI.2019$ThreeMonth <- rollapplyr(CARI.2019$inst_rainfall_mm, 8064, sum, na.rm = TRUE, fill = NA, partial = TRUE)
+CARI.2019$temp.week <- rollapplyr(CARI.2019$airtemp_100.1000cm_mean, 672, mean, na.rm = TRUE, fill = NA, partial = TRUE)
 
 CARI.2019.1 <- left_join(CARI.2019.storms.1, CARI.2019, by = "DateTime") # week month and 3 month precip totals 
 
@@ -5088,7 +5088,7 @@ www <- HI.moos.turb.2.2020 %>%
 
 
 HI.moos.2020 <- rbind(HI.moos.no3.2.2020, HI.moos.fDOM.2.2020, HI.moos.SPC.2.2020, HI.moos.turb.2.2020) # merging all responses together 
-HI.moos.2020$burn <- "unburned" # adding a burn column
+HI.moos.2020$burn <- "burned" # adding a burn column
 HI.moos.2020$pf <- "medium" # adding a pf column
 
 write.csv(HI.moos.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.moos.2020.csv")
@@ -9837,7 +9837,7 @@ HI.strt.2021$pf <- "high" # adding a pf column
 
 write.csv(HI.strt.2021, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI.strt.2021.csv")
 
-# CARI # 
+# CARI ####
 CARIstorm_file_list <- list.files(path="~/Documents/Storms/Storm_Events/2021/All_Sites/", 
                                   recursive=F, 
                                   pattern="CARI", 
@@ -10338,6 +10338,8 @@ origin_date <- as.Date("2021-05-12")
 HI.2021$TimeSinceChena <- julian(HI.2021$date, origin_date)
 
 write.csv(HI.2021, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/All_years/HI.2021.csv")
+
+
 
 
 
@@ -12111,22 +12113,23 @@ for(i in 1:length(storm_list_beta)){
 
 
 #  organize storm data by site and solute # 5 for each storm 
-CARI_storm_list_beta = storm_list_beta[c(1:80)] #80
-FRCH_storm_list_beta = storm_list_beta[c(81:155)] #75
-MOOS_storm_list_beta = storm_list_beta[c(156:235)] #80
+CARI_storm_list_beta = storm_list_beta[c(1:65)] #65
+FRCH_storm_list_beta = storm_list_beta[c(66:140)] #75
+MOOS_storm_list_beta = storm_list_beta[c(141:220)] #80
 
 CARI_Q_storm_list_beta = CARI_storm_list_beta[c(grep("Q", names(CARI_storm_list_beta)))]
 FRCH_Q_storm_list_beta = FRCH_storm_list_beta[c(grep("Q", names(FRCH_storm_list_beta)))]
 MOOS_Q_storm_list_beta = MOOS_storm_list_beta[c(grep("Q", names(MOOS_storm_list_beta)))]
 
 # normalize Q data 
+
 # FRCH
 for(i in 1:length(FRCH_Q_storm_list_beta)){
   FRCH_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
     (FRCH_Q_storm_list_beta[[i]][["datavalue"]]-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
     (max(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(FRCH_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))
 }
-
+# MOOS
 for(i in 1:length(MOOS_Q_storm_list_beta)){
   MOOS_Q_storm_list_beta[[i]][["datavalue.norm"]] = 
     (MOOS_Q_storm_list_beta[[i]][["datavalue"]]-min(MOOS_Q_storm_list_beta[[i]][["datavalue"]], na.rm=T))/
@@ -12466,60 +12469,59 @@ CARI_storm5c_08_06_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/
 #CARI_storm12b_09_25_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_NO3`)
 
 # fDOM
-CARI_storm1_06_10_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Q`,CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_fDOM`) #0.247818910634285
-CARI_storm2_06_21_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_fDOM`) # 0.587121212121212
-CARI_storm3_06_29_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_fDOM`) #0.77623179732695
-CARI_storm4a_06_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_fDOM`) #0.373843342959863
-CARI_storm4b_07_01_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_fDOM`) #0.420978398040234
-#CARI_storm5a_08_04_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_fDOM`)
-CARI_storm5b_08_05_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_fDOM`) #0.521353746978243
-CARI_storm5c_08_06_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`,  CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_fDOM`) #0.136092567868269
-#CARI_storm6_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_fDOM`)
-#CARI_storm7_08_21_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_fDOM`)
-CARI_storm8_08_24_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_fDOM`) #0.0765288293535235
-CARI_storm9_08_26_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_fDOM`) #0.233740546829552
-CARI_storm10_08_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_fDOM`) # 0.660296981499513
-CARI_storm11_09_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_fDOM`) #0.635993899339095
-#CARI_storm12a_09_20_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_fDOM`)
-CARI_storm12b_09_25_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_fDOM`) #0.0576057605760575
+#CARI_storm1_06_10_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Q`,CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_fDOM`) 
+CARI_storm2_06_21_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_fDOM`) # 0.453265044814341
+CARI_storm3_06_29_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_fDOM`) #0.654370489174017
+#CARI_storm4a_06_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_fDOM`) 
+#CARI_storm4b_07_01_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_fDOM`) 
+CARI_storm5a_08_04_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_fDOM`) #0.161242603550296
+CARI_storm5b_08_05_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_fDOM`) #0.572166514737162
+CARI_storm5c_08_06_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`,  CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_fDOM`) #0.316719453242207
+CARI_storm6_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_fDOM`) #0.777721416252409
+#CARI_storm7_08_21_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_fDOM`) w is infinite
+CARI_storm8_08_24_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_fDOM`) #0.608794197642793
+CARI_storm9_08_26_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_fDOM`) #0.884684684684685
+CARI_storm10_08_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_fDOM`) # 0.650042782055983
+CARI_storm11_09_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_fDOM`) #0.814095449500555
+#CARI_storm12a_09_20_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_fDOM`) # missing value where TRUE/FALSE needed
+CARI_storm12b_09_25_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_fDOM`) #0.0677162175799779
 
 
 # SPC
-CARI_storm1_06_10_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_SPC`)
-CARI_storm2_06_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_SPC`)
-CARI_storm3_06_29_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_SPC`)
-CARI_storm4a_06_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_SPC`)
-CARI_storm4b_07_01_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_SPC`)
-CARI_storm5a_08_04_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_SPC`)
-CARI_storm5b_08_05_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_SPC`)
-CARI_storm5c_08_06_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_SPC`)
-CARI_storm6_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_SPC`)
-CARI_storm7_08_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_SPC`)
-CARI_storm8_08_24_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_SPC`)
-CARI_storm9_08_26_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_SPC`)
-CARI_storm10_08_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_SPC`)
-CARI_storm11_09_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_SPC`)
-CARI_storm12a_09_20_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_SPC`)
-CARI_storm12b_09_25_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_SPC`) # 0.0371479928100658
+#CARI_storm1_06_10_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_SPC`)
+CARI_storm2_06_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_SPC`) # 0.24927536231884
+##CARI_storm3_06_29_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_SPC`) # w is inifinite
+#CARI_storm4a_06_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_SPC`) #w is inifinite
+#CARI_storm4b_07_01_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_SPC`)#w is inifinite
+#CARI_storm5a_08_04_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_SPC`)# w is infnite
+#CARI_storm5b_08_05_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_SPC`) # w is infinite
+#CARI_storm5c_08_06_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_SPC`)#w is inifinite
+#CARI_storm6_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_SPC`)#w is inifinite
+#CARI_storm7_08_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_SPC`)#w is inifinite
+#CARI_storm8_08_24_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_SPC`)#w is inifinite
+#CARI_storm9_08_26_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_SPC`)#w is inifinite
+#CARI_storm10_08_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_SPC`)#w is inifinite
+#CARI_storm11_09_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_SPC`)#w is inifinite
+#CARI_storm12a_09_20_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_SPC`) # missing values 
+CARI_storm12b_09_25_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_SPC`) # 0.058107696988135
 
 # turb
 CARI_storm1_06_10_SP_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm1_06_10_Turb`) #0.27755905511811
 #CARI_storm2_06_21_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm2_06_21_Turb`)
-CARI_storm3_06_29_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Turb`)#0.51186943620178
+CARI_storm3_06_29_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm3_06_29_Turb`)#0.778284671532847
 CARI_storm4a_06_30_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4a_06_30_Turb`) # 0.0558476295886368
 CARI_storm4b_07_01_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm4b_07_01_Turb`) #0.390557939914163
-CARI_storm5a_08_04_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Turb`)#0.584375
-CARI_storm5b_08_05_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Turb`) #0.641880341880342
-CARI_storm5c_08_06_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Turb`) #0.450121654501216
-#CARI_storm6_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Turb`)
-#CARI_storm7_08_21_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Turb`)
-CARI_storm8_08_24_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Turb`) # 0.124151309408341
-CARI_storm9_08_26_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Turb`) # 0.0625
-CARI_storm10_08_30_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Turb`) #0.000902086560321599
-CARI_storm11_09_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Turb`) #0.00251876563803169
+CARI_storm5a_08_04_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5a_08_04_Turb`)#0.689542483660131
+CARI_storm5b_08_05_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5b_08_05_Turb`) #0.702678571428571
+CARI_storm5c_08_06_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm5c_08_06_Turb`) #0.528497409326425
+CARI_storm6_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm6_08_13_Turb`) #0.315496098104794
+CARI_storm7_08_21_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm7_08_21_Turb`)#0.308176100628931
+CARI_storm8_08_24_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm8_08_24_Turb`) # 0.725738396624473
+CARI_storm9_08_26_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm9_08_26_Turb`) # 0.431818181818182
+CARI_storm10_08_30_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm10_08_30_Turb`) #0.0079810604885815
+CARI_storm11_09_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm11_09_02_Turb`) #0.011472275334608
 #CARI_storm12a_09_20_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12a_09_20_Turb`)
-CARI_storm12b_09_25_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Turb`) # 0.149437052200614
-
+CARI_storm12b_09_25_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2018/FRCH_MOOS_CARI//CARI_storm12b_09_25_Turb`) # 0.0937499999999999
 
 
 # gather results and save #
@@ -12569,7 +12571,7 @@ FI_results = rbind(
   c("FRCH_storm6_08_13_SPC_FI",FRCH_storm6_08_13_SPC_FI[[2]]),
   c("FRCH_storm7_08_23_SPC_FI",FRCH_storm7_08_23_SPC_FI[[2]]),
   c("FRCH_storm8a_08_26_SPC_FI",NA, NA, NA),
-  c("FRCH_storm8b_08_27_SPC_FI",0.0277777777777762, 0, 0),
+  c("FRCH_storm8b_08_27_SPC_FI",0.0277777777777762, NA, NA),
   c("FRCH_storm9_08_29_SPC_FI",FRCH_storm9_08_29_SPC_FI[[2]]),
   c("FRCH_storm10_09_01_SPC_FI",FRCH_storm10_09_01_SPC_FI[[2]]),
   c("FRCH_storm11b_09_24_SPC_FI",FRCH_storm11b_09_24_SPC_FI[[2]]),
@@ -12612,15 +12614,15 @@ FI_results = rbind(
   c("MOOS_storm2c_07_04_fDOM_FI",NA, NA, NA),
   c("MOOS_storm3_07_09_fDOM_FI",NA, NA, NA),
   c("MOOS_storm4_07_15_fDOM_FI",NA, NA, NA),
-  c("MOOS_storm5_08_04_fDOM_FI",0.254818972259281, 0,0),
-  c("MOOS_storm6_08_13_fDOM_FI",0.139685321981553, 0, 0),
-  c("MOOS_storm7_08_23_fDOM_FI",0.150231221097363, 0, 0),
+  c("MOOS_storm5_08_04_fDOM_FI",0.254818972259281, NA,NA),
+  c("MOOS_storm6_08_13_fDOM_FI",0.139685321981553, NA, NA),
+  c("MOOS_storm7_08_23_fDOM_FI",0.150231221097363, NA, NA),
   c("MOOS_storm8a_08_26_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm8b_08_27_fDOM_FI",0.206574024585783, 0, 0),
+  c("MOOS_storm8b_08_27_fDOM_FI",0.206574024585783, NA, NA),
   c("MOOS_storm9_08_29_fDOM_FI",NA,NA,NA),
   c("MOOS_storm10_09_01_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm11a_09_22_fDOM_FI",0.569246097641979, 0, 0),
-  c("MOOS_storm11b_09_23_fDOM_FI",0.346520146520147, 0, 0),
+  c("MOOS_storm11a_09_22_fDOM_FI",0.569246097641979, NA, NA),
+  c("MOOS_storm11b_09_23_fDOM_FI",0.346520146520147, NA, NA),
   c("MOOS_storm12_09_24_fDOM_FI",NA,NA,NA),
   c("MOOS_storm1_06_21_SPC_FI", MOOS_storm1_06_21_SPC_FI[[2]]),
   c("MOOS_storm2a_06_29_SPC_FI",NA, NA, NA),
@@ -12633,27 +12635,27 @@ FI_results = rbind(
   c("MOOS_storm7_08_23_SPC_FI",NA, NA, NA),
   c("MOOS_storm8a_08_26_SPC_FI",NA,NA,NA),
   c("MOOS_storm8b_08_27_SPC_FI",NA, NA, NA),
-  c("MOOS_storm9_08_29_SPC_FI", 0.00893854748603373, 0, 0),
+  c("MOOS_storm9_08_29_SPC_FI", 0.00893854748603373, NA, NA),
   c("MOOS_storm10_09_01_SPC_FI",NA, NA, NA),
   c("MOOS_storm11a_09_22_SPC_FI",NA, NA, NA),
   c("MOOS_storm11b_09_23_SPC_FI",NA, NA, NA),
-  c("MOOS_storm12_09_24_SPC_FI", 0.00101214574898778, 0, 0),
+  c("MOOS_storm12_09_24_SPC_FI", 0.00101214574898778, NA, NA),
   c("MOOS_storm1_06_21_turb_FI",MOOS_storm1_06_21_NO3_FI[[2]]),
   c("MOOS_storm2a_06_29_turb_FI",NA, NA, NA),
   c("MOOS_storm2b_07_01_turb_FI",NA, NA, NA),
   c("MOOS_storm2c_07_04_turb_FI",NA, NA, NA),
   c("MOOS_storm3_07_09_turb_FI",NA, NA, NA),
   c("MOOS_storm4_07_15_turb_FI",NA, NA, NA),
-  c("MOOS_storm5_08_04_turb_FI",0.330552981155391, 0, 0), 
-  c("MOOS_storm6_08_13_turb_FI",0.354272517321016, 0, 0),
-  c("MOOS_storm7_08_23_turb_FI",0.45563465879493, 0, 0),
-  c("MOOS_storm8a_08_26_turb_FI", 0.451545433418545, 0, 0),
-  c("MOOS_storm8b_08_27_turb_FI",0.0596426084938501, 0, 0),
-  c("MOOS_storm9_08_29_turb_FI",0.216361788617886, 0, 0),
-  c("MOOS_storm10_09_01_turb_FI",0.21969732984708 ,0, 0),
-  c("MOOS_storm11a_09_22_turb_FI",0.395529380270379, 0, 0),
-  c("MOOS_storm11b_09_23_turb_FI", 0.0449070631970259, 0, 0),
-  c("MOOS_storm12_09_24_turb_FI",0.0935303526097228, 0, 0),
+  c("MOOS_storm5_08_04_turb_FI",0.330552981155391, NA, NA), 
+  c("MOOS_storm6_08_13_turb_FI",0.354272517321016, NA, NA),
+  c("MOOS_storm7_08_23_turb_FI",0.45563465879493, NA, NA),
+  c("MOOS_storm8a_08_26_turb_FI", 0.451545433418545, NA, NA),
+  c("MOOS_storm8b_08_27_turb_FI",0.0596426084938501, NA, NA),
+  c("MOOS_storm9_08_29_turb_FI",0.216361788617886, NA, NA),
+  c("MOOS_storm10_09_01_turb_FI",0.21969732984708 ,NA, NA),
+  c("MOOS_storm11a_09_22_turb_FI",0.395529380270379, NA, NA),
+  c("MOOS_storm11b_09_23_turb_FI", 0.0449070631970259, NA, NA),
+  c("MOOS_storm12_09_24_turb_FI",0.0935303526097228, NA, NA),
   
   c("CARI_storm1_06_10_NO3_FI",NA, NA, NA),
   c("CARI_storm2_06_21_NO3_FI",NA, NA, NA),
@@ -12662,7 +12664,7 @@ FI_results = rbind(
   c("CARI_storm4b_07_01_NO3_FI",NA, NA, NA),
   c("CARI_storm5a_08_04_NO3_FI",NA, NA, NA),
   c("CARI_storm5b_08_05_NO3_FI",NA, NA, NA),
-  c("CARI_storm5c_08_06_NO3_FI",0.0465116279069774, 0, 0),
+  c("CARI_storm5c_08_06_NO3_FI",0.0465116279069774, NA, NA),
   c("CARI_storm6_08_13_NO3_FI",NA, NA, NA),
   c("CARI_storm7_08_21_NO3_FI",NA, NA, NA),
   c("CARI_storm8_08_24_NO3_FI",NA, NA, NA),
@@ -12672,25 +12674,25 @@ FI_results = rbind(
   c("CARI_storm12a_09_20_NO3_FI",NA, NA, NA),
   c("CARI_storm12b_09_25_NO3_FI",NA, NA, NA),
   
-  c("CARI_storm1_06_10_fDOM_FI",0.247818910634285, 0, 0),
-  c("CARI_storm2_06_21_fDOM_FI",0.587121212121212,0,0),
-  c("CARI_storm3_06_29_fDOM_FI",0.77623179732695,0,0),
-  c("CARI_storm4a_06_30_fDOM_FI",0.373843342959863,0,0),
-  c("CARI_storm4b_07_01_fDOM_FI",0.420978398040234,0,0),
-  c("CARI_storm5a_08_04_fDOM_FI",NA,NA,NA),
-  c("CARI_storm5b_08_05_fDOM_FI",0.521353746978243,0,0),
-  c("CARI_storm5c_08_06_fDOM_FI",0.136092567868269,0,0),
-  c("CARI_storm6_08_13_fDOM_FI",NA,NA,NA),
+  c("CARI_storm1_06_10_fDOM_FI",0.247818910634285, NA, NA),
+  c("CARI_storm2_06_21_fDOM_FI",0.453265044814341,NA,NA),
+  c("CARI_storm3_06_29_fDOM_FI",0.654370489174017,NA,NA),
+  c("CARI_storm4a_06_30_fDOM_FI",0.373843342959863,NA,NA),
+  c("CARI_storm4b_07_01_fDOM_FI",0.420978398040234,NA,NA),
+  c("CARI_storm5a_08_04_fDOM_FI",0.161242603550296,NA,NA),
+  c("CARI_storm5b_08_05_fDOM_FI",0.572166514737162,NA,NA),
+  c("CARI_storm5c_08_06_fDOM_FI",0.316719453242207,NA,NA),
+  c("CARI_storm6_08_13_fDOM_FI",0.777721416252409,NA,NA),
   c("CARI_storm7_08_21_fDOM_FI",NA,NA,NA),
-  c("CARI_storm8_08_24_fDOM_FI",0.0765288293535235),
-  c("CARI_storm9_08_26_fDOM_FI",0.233740546829552),
-  c("CARI_storm10_08_30_fDOM_FI",0.660296981499513),
-  c("CARI_storm11_09_02_fDOM_FI",0.635993899339095),
+  c("CARI_storm8_08_24_fDOM_FI",0.608794197642793,NA,NA),
+  c("CARI_storm9_08_26_fDOM_FI",0.884684684684685,NA,NA),
+  c("CARI_storm10_08_30_fDOM_FI",0.650042782055983,NA,NA),
+  c("CARI_storm11_09_02_fDOM_FI",0.814095449500555,NA,NA),
   c("CARI_storm12a_09_20_fDOM_FI",NA,NA,NA),
-  c("CARI_storm12b_09_25_fDOM_FI",0.0576057605760575,0,0),
+  c("CARI_storm12b_09_25_fDOM_FI",0.0677162175799779,NA,NA),
   
   c("CARI_storm1_06_10_SPC_FI",NA,NA,NA),
-  c("CARI_storm2_06_21_SPC_FI",NA,NA,NA),
+  c("CARI_storm2_06_21_SPC_FI",.24927536231884,NA,NA),
   c("CARI_storm3_06_29_SPC_FI",NA,NA,NA),
   c("CARI_storm4a_06_30_SPC_FI",NA,NA,NA),
   c("CARI_storm4b_07_01_SPC_FI",NA,NA,NA),
@@ -12704,24 +12706,24 @@ FI_results = rbind(
   c("CARI_storm10_08_30_SPC_FI",NA,NA,NA),
   c("CARI_storm11_09_02_SPC_FI",NA,NA,NA),
   c("CARI_storm12a_09_20_SPC_FI",NA,NA,NA),
-  c("CARI_storm12b_09_25_SPC_FI",0.0371479928100658,0,0),
+  c("CARI_storm12b_09_25_SPC_FI",0.0371479928100658,NA,NA),
   
-  c("CARI_storm1_06_10_turb_FI",0.27755905511811,0,0),
+  c("CARI_storm1_06_10_turb_FI",0.27755905511811,NA,NA),
   c("CARI_storm2_06_21_turb_FI",NA,NA,NA),
-  c("CARI_storm3_06_29_turb_FI",0.51186943620178),
-  c("CARI_storm4a_06_30_turb_FI", 0.0558476295886368,0,0),
-  c("CARI_storm4b_07_01_turb_FI",0.390557939914163),
-  c("CARI_storm5a_08_04_turb_FI",0.584375),
-  c("CARI_storm5b_08_05_turb_FI",0.641880341880342),
-  c("CARI_storm5c_08_06_turb_FI",0.450121654501216),
-  c("CARI_storm6_08_13_turb_FI",NA,NA,NA),
-  c("CARI_storm7_08_21_turb_FI",NA,NA,NA),
-  c("CARI_storm8_08_24_turb_FI",0.124151309408341,0,0),
-  c("CARI_storm9_08_26_turb_FI",0.0625,0,0),
-  c("CARI_storm10_08_30_turb_FI",0.000902086560321599,0,0),
-  c("CARI_storm11_09_02_turb_FI",0.00251876563803169,0,0),
+  c("CARI_storm3_06_29_turb_FI",0.778284671532847,NA,NA),
+  c("CARI_storm4a_06_30_turb_FI", 0.0558476295886368,NA,NA),
+  c("CARI_storm4b_07_01_turb_FI",0.390557939914163,NA,NA),
+  c("CARI_storm5a_08_04_turb_FI",0.689542483660131,NA,NA),
+  c("CARI_storm5b_08_05_turb_FI",0.702678571428571,NA,NA),
+  c("CARI_storm5c_08_06_turb_FI",0.528497409326425,NA,NA),
+  c("CARI_storm6_08_13_turb_FI",0.315496098104794,NA,NA),
+  c("CARI_storm7_08_21_turb_FI",0.308176100628931,NA,NA),
+  c("CARI_storm8_08_24_turb_FI",0.725738396624473,NA,NA),
+  c("CARI_storm9_08_26_turb_FI",0.431818181818182,NA,NA),
+  c("CARI_storm10_08_30_turb_FI",0.0079810604885815,NA,NA),
+  c("CARI_storm11_09_02_turb_FI",0.011472275334608,NA,NA),
   c("CARI_storm12a_09_20_turb_FI",NA,NA,NA),
-  c("CARI_storm12b_09_25_turb_FI",0.149437052200614,0,0))
+  c("CARI_storm12b_09_25_turb_FI",0.0937499999999999,NA,NA))
   
 
 
@@ -13838,74 +13840,62 @@ VAUL_storm4c_08_05_turb_FI = FI_diff(VAUL_storm4c_08_05_Q, VAUL_turb_storm_list$
 
 # CARI # 
 #NO3 #
-#CARI_storm1_05_08_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_NO3`)
-#CARI_storm2_06_30_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_NO3`)
-#CARI_storm3_07_12_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_NO3`)
-#CARI_storm4_07_26_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_NO3`)
-#CARI_storm5_07_31_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_NO3`)
+#CARI_storm1_05_08_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_NO3`) # w is infinite
+#CARI_storm2_06_30_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_NO3`)# w is infinite
+#CARI_storm3_07_12_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_NO3`)# w is infinite
+#CARI_storm4_07_26_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_NO3`) # empty
+#CARI_storm5_07_31_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_NO3`)# w is infinite
 CARI_storm6a_08_02_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_NO3`) # 0.566666666666667
-#CARI_storm6b_08_03_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_NO3`)
-#CARI_storm6c_08_05_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_NO3`)
-#CARI_storm6d_08_10_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_NO3`)
-#CARI_storm7a_08_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_NO3`)
-#CARI_storm7b_08_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_NO3`)
-#CARI_storm8_08_16_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_NO3`)
+#CARI_storm6b_08_03_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_NO3`)# w is infinite
+#CARI_storm6c_08_05_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_NO3`)# w is infinite
+#CARI_storm6d_08_10_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_NO3`)# w is infinite
+#CARI_storm7a_08_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_NO3`)# w is infinite
+#CARI_storm7b_08_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_NO3`)# w is infinite
+#CARI_storm8_08_16_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_NO3`)# w is infinite
 
 #fDOM #
-CARI_storm1_05_08_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_fDOM`) #0.240096477123228
-#CARI_storm2_06_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_fDOM`)
-#CARI_storm3_07_12_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_fDOM`)
+CARI_storm1_05_08_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_fDOM`) #0.694059200993583
+CARI_storm2_06_30_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_fDOM`) # 0.992816091954023
+CARI_storm3_07_12_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_fDOM`) #0.72083879423329
 CARI_storm4_07_26_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_fDOM`) #0.358464012866908
-#CARI_storm5_07_31_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_fDOM`)
-CARI_storm6a_08_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_fDOM`) #0.372865344088366
-CARI_storm6b_08_03_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_fDOM`) # 0.109286128845038
-#CARI_storm6c_08_05_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_fDOM`)
-CARI_storm6d_08_10_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_fDOM`) # 0.124389617065022
-CARI_storm7a_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_fDOM`) #0.377979250397233
-CARI_storm7b_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_fDOM`) # 0.038199478109597
-CARI_storm8_08_16_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_fDOM`) # 0.457214166864749
+CARI_storm5_07_31_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_fDOM`)#0.367280606717227
+CARI_storm6a_08_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_fDOM`) #00.586084770935679
+CARI_storm6b_08_03_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_fDOM`) # 0.14290473017988
+CARI_storm6c_08_05_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_fDOM`) #0.0903590157321501
+CARI_storm6d_08_10_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_fDOM`) # 0.450790861159929
+CARI_storm7a_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_fDOM`) #0.965415019762846
+CARI_storm7b_08_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_fDOM`) # 0.0436741515878206
+CARI_storm8_08_16_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_fDOM`) # 0.902075075775239
 
-# SPC #
-#CARI_storm1_05_08_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_SPC`)
-#CARI_storm2_06_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_SPC`)
-#CARI_storm3_07_12_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_SPC`)
-CARI_storm4_07_26_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_SPC`)
-#CARI_storm5_07_31_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_SPC`)
-CARI_storm6a_08_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_SPC`)
-CARI_storm6b_08_03_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_SPC`)
-#CARI_storm6c_08_05_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_SPC`)
-CARI_storm6d_08_10_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_SPC`)
-CARI_storm7a_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_SPC`)
-CARI_storm7b_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_SPC`)
-CARI_storm8_08_16_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_SPC`)
+
+#CARI_storm1_05_08_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_SPC`)# w is infinite
+#CARI_storm2_06_30_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_SPC`)# w is infinite
+#CARI_storm3_07_12_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_SPC`)# w is infinite
+#CARI_storm4_07_26_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_SPC`)# w is infinite
+#CARI_storm5_07_31_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_SPC`)# w is infinite
+#CARI_storm6a_08_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_SPC`)# w is infinite
+#CARI_storm6b_08_03_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_SPC`)# w is infinite
+#CARI_storm6c_08_05_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_SPC`)# w is infinite
+#CARI_storm6d_08_10_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_SPC`)# w is infinite
+#CARI_storm7a_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_SPC`)# w is infinite
+#CARI_storm7b_08_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_SPC`)# w is infinite
+#CARI_storm8_08_16_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_SPC`)# w is infinite
 
 
 # turb #
-CARI_storm1_05_08_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Turb`) #0.273908174692049
-CARI_storm2_06_30_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Turb`)
-CARI_storm3_07_12_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Turb`)
-CARI_storm4_07_26_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Turb`)
-CARI_storm5_07_31_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Turb`)
-CARI_storm6a_08_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Turb`)
-CARI_storm6b_08_03_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Turb`)
-CARI_storm6c_08_05_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Turb`)
-CARI_storm6d_08_10_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Turb`)
-CARI_storm7a_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Turb`)
-CARI_storm7b_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Turb`)
-CARI_storm8_08_16_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Turb`)
+CARI_storm1_05_08_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_08_Turb`) #0.428325292901447
+#CARI_storm2_06_30_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_30_Turb`)# w is infinite
+CARI_storm3_07_12_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_07_12_Turb`) #0.174224343675418
+#CARI_storm4_07_26_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_26_Turb`)# empty
+CARI_storm5_07_31_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_31_Turb`) #0.636363636363636
+CARI_storm6a_08_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6a_08_02_Turb`) #0.0814886983632112
+#CARI_storm6b_08_03_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6b_08_03_Turb`) ## w is infinite
+CARI_storm6c_08_05_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6c_08_05_Turb`)#0.164294954721863
+CARI_storm6d_08_10_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6d_08_10_Turb`) #0.497340425531915
+CARI_storm7a_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7a_08_13_Turb`) #0.203671830177854
+CARI_storm7b_08_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7b_08_13_Turb`) #0.42369962108164
+CARI_storm8_08_16_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8_08_16_Turb`) #0.0444750114626318
 
-c("CARI_storm1_05_08_SPC_FI",NA, NA, NA),
-c("CARI_storm2_06_30_SPC_FI",NA, NA, NA),
-c("CARI_storm3_07_12_SPC_FI",NA,NA,NA),
-c("CARI_storm4_07_26_SPC_FI",CARI_storm4_07_26_SPC_FI[[2]]),
-c("CARI_storm5_07_31_SPC_FI",NA,NA,NA),
-c("CARI_storm6a_08_02_SPC_FI",CARI_storm6a_08_02_SPC_FI[[2]]),
-c("CARI_storm6b_08_03_SPC_FI",CARI_storm6b_08_03_SPC_FI[[2]]),
-c("CARI_storm6c_08_05_SPC_FI",NA,NA,NA),
-c("CARI_storm6d_08_10_SPC_FI",CARI_storm6d_08_10_SPC_FI[[2]]),
-c("CARI_storm7a_08_13_SPC_FI",NA,NA,NA),
-c("CARI_storm7b_08_13_SPC_FI",NA,NA,NA),
-c("CARI_storm8_08_16_SPC_FI",NA,NA,NA),
 
 
 # gather results and save ##
@@ -14049,12 +14039,12 @@ FI_results = rbind(
   
   c("POKE_storm1_06_30_NO3_FI",POKE_storm1_06_30_NO3_FI[[2]]),
   c("POKE_storm2_07_12_NO3_FI",POKE_storm2_07_12_NO3_FI[[2]]),
-  c("POKE_storm3_07_26_NO3_FI",0.556451612903223, 0, 0),
-  c("POKE_storm4_07_31_NO3_FI",0.609090909090907, 0, 0),
-  c("POKE_storm5a_08_02_NO3_FI",0.357142857142857, 0, 0),
-  c("POKE_storm5b_08_03_NO3_FI",0.187875574407918, 0 ,0),
+  c("POKE_storm3_07_26_NO3_FI",0.556451612903223, NA, NA),
+  c("POKE_storm4_07_31_NO3_FI",0.609090909090907, NA, NA),
+  c("POKE_storm5a_08_02_NO3_FI",0.357142857142857, NA, NA),
+  c("POKE_storm5b_08_03_NO3_FI",0.187875574407918, NA ,NA),
   c("POKE_storm5c_08_05_NO3_FI",NA, NA, NA),
-  c("POKE_storm5d_08_10_NO3_FI",0.0632183908045973, 0, 0),
+  c("POKE_storm5d_08_10_NO3_FI",0.0632183908045973, NA, NA),
   c("POKE_storm6a_08_12_NO3_FI",NA, NA, NA),
   c("POKE_storm6b_08_13_NO3_FI",NA, NA, NA),
   c("POKE_storm7_08_15_NO3_FI",NA, NA, NA),
@@ -14208,7 +14198,7 @@ FI_results = rbind(
   c("CARI_storm3_07_12_NO3_FI",NA,NA,NA),
   c("CARI_storm4_07_26_NO3_FI",NA, NA, NA),
   c("CARI_storm5_07_31_NO3_FI",NA,NA,NA),
-  c("CARI_storm6a_08_02_NO3_FI",0.566666666666667,0,0),
+  c("CARI_storm6a_08_02_NO3_FI",0.566666666666667,NA,NA),
   c("CARI_storm6b_08_03_NO3_FI",NA, NA, NA),
   c("CARI_storm6c_08_05_NO3_FI",NA,NA,NA),
   c("CARI_storm6d_08_10_NO3_FI",NA,NA,NA),
@@ -14216,32 +14206,46 @@ FI_results = rbind(
   c("CARI_storm7b_08_13_NO3_FI",NA,NA,NA),
   c("CARI_storm8_08_16_NO3_FI",NA,NA,NA),
   
-  c("CARI_storm1_05_08_fDOM_FI",0.240096477123228, 0,0),
-  c("CARI_storm2_06_30_fDOM_FI",NA, NA, NA),
-  c("CARI_storm3_07_12_fDOM_FI",NA,NA,NA),
-  c("CARI_storm4_07_26_fDOM_FI",0.358464012866908,0,0),
-  c("CARI_storm5_07_31_fDOM_FI",NA,NA,NA),
-  c("CARI_storm6a_08_02_fDOM_FI",0.372865344088366,0,0),
-  c("CARI_storm6b_08_03_fDOM_FI",0.109286128845038,0,0),
-  c("CARI_storm6c_08_05_fDOM_FI",NA,NA,NA),
-  c("CARI_storm6d_08_10_fDOM_FI",0.124389617065022,0,0),
-  c("CARI_storm7a_08_13_fDOM_FI",0.377979250397233,0,0),
-  c("CARI_storm7b_08_13_fDOM_FI",0.038199478109597,0,0),
-  c("CARI_storm8_08_16_fDOM_FI",0.457214166864749,0,0),
+  c("CARI_storm1_05_08_fDOM_FI",0.694059200993583, NA,NA),
+  c("CARI_storm2_06_30_fDOM_FI",0.992816091954023, NA, NA),
+  c("CARI_storm3_07_12_fDOM_FI",0.72083879423329,NA,NA),
+  c("CARI_storm4_07_26_fDOM_FI",0.358464012866908,NA,NA),
+  c("CARI_storm5_07_31_fDOM_FI",0.367280606717227,NA,NA),
+  c("CARI_storm6a_08_02_fDOM_FI",0.586084770935679,NA,NA),
+  c("CARI_storm6b_08_03_fDOM_FI",0.14290473017988,NA,NA),
+  c("CARI_storm6c_08_05_fDOM_FI",0.0903590157321501,NA,NA),
+  c("CARI_storm6d_08_10_fDOM_FI",0.450790861159929,NA,NA),
+  c("CARI_storm7a_08_13_fDOM_FI",0.965415019762846,NA,NA),
+  c("CARI_storm7b_08_13_fDOM_FI",0.0436741515878206,NA,NA),
+  c("CARI_storm8_08_16_fDOM_FI",0.902075075775239,NA,NA),
   
   c("CARI_storm1_05_08_SPC_FI",NA, NA, NA),
   c("CARI_storm2_06_30_SPC_FI",NA, NA, NA),
   c("CARI_storm3_07_12_SPC_FI",NA,NA,NA),
-  c("CARI_storm4_07_26_SPC_FI",CARI_storm4_07_26_SPC_FI[[2]]),
+  c("CARI_storm4_07_26_SPC_FI",NA,NA,NA),
   c("CARI_storm5_07_31_SPC_FI",NA,NA,NA),
-  c("CARI_storm6a_08_02_SPC_FI",CARI_storm6a_08_02_SPC_FI[[2]]),
-  c("CARI_storm6b_08_03_SPC_FI",CARI_storm6b_08_03_SPC_FI[[2]]),
+  c("CARI_storm6a_08_02_SPC_FI",NA,NA,NA),
+  c("CARI_storm6b_08_03_SPC_FI",NA,NA,NA),
   c("CARI_storm6c_08_05_SPC_FI",NA,NA,NA),
-  c("CARI_storm6d_08_10_SPC_FI",CARI_storm6d_08_10_SPC_FI[[2]]),
-  c("CARI_storm7a_08_13_SPC_FI",CARI_storm7a_08_13_SPC_FI[[2]]),
-  c("CARI_storm7b_08_13_SPC_FI",CARI_storm7b_08_13_SPC_FI[[2]]),
-  c("CARI_storm8_08_16_SPC_FI",CARI_storm8_08_16_SPC_FI[[2]]),
-  )
+  c("CARI_storm6d_08_10_SPC_FI",NA,NA,NA),
+  c("CARI_storm7a_08_13_SPC_FI",NA,NA,NA),
+  c("CARI_storm7b_08_13_SPC_FI",NA,NA,NA),
+  c("CARI_storm8_08_16_SPC_FI",NA,NA,NA),
+  
+  c("CARI_storm1_05_08_turb_FI",0.428325292901447, NA, NA),
+  c("CARI_storm2_06_30_turb_FI",NA, NA, NA),
+  c("CARI_storm3_07_12_turb_FI",0.174224343675418,NA,NA),
+  c("CARI_storm4_07_26_turb_FI",NA,NA,NA),
+  c("CARI_storm5_07_31_turb_FI",636363636363636,NA,NA),
+  c("CARI_storm6a_08_02_turb_FI",0.0814886983632112,NA,NA),
+  c("CARI_storm6b_08_03_turb_FI",NA,NA,NA),
+  c("CARI_storm6c_08_05_turb_FI",0.164294954721863,NA,NA),
+  c("CARI_storm6d_08_10_turb_FI",0.497340425531915,NA,NA),
+  c("CARI_storm7a_08_13_turb_FI",0.203671830177854,NA,NA),
+  c("CARI_storm7b_08_13_turb_FI",0.42369962108164,NA,NA),
+  c("CARI_storm8_08_16_turb_FI",0.0444750114626318,NA,NA))
+  
+ 
   
 FI_results = as.data.frame(FI_results)
 
@@ -14252,7 +14256,7 @@ FI_results$Flushing_index = round(as.numeric(as.character(FI_results$Flushing_in
 FI_results$`percCI_2.5` = round(as.numeric(as.character(FI_results$`percCI_2.5`)), 4)
 FI_results$`percCI_97.5` = round(as.numeric(as.character(FI_results$`percCI_97.5`)), 4)
 
-write.csv(FI_results, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results.csv")
+write.csv(FI_results, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results_2019.csv")
 
 # calculate 95% bootstrap around median of Hyst. Indicies for each site and storm #
 
@@ -14322,6 +14326,17 @@ VAUL.HI.boot <- do.call(rbind.data.frame,
                         }))
 VAUL.HI.boot$storm.ID = storm.list
 
+# CARI #
+CARI.HI.df <- read.csv("~/Documents/Storms/Output_from_analysis/HI_plots/2019/CARI/CARI.HI.df.csv")
+
+storm.list = unique(CARI.HI.df$storm.ID)
+CARI.HI.boot <- do.call(rbind.data.frame,
+                        lapply(storm.list, function(i){
+                          dat = subset(CARI.HI.df, storm.ID == i)
+                          median_cl_boot(dat$HI)
+                        }))
+CARI.HI.boot$storm.ID = storm.list
+
 
 # join data #
 
@@ -14330,10 +14345,11 @@ MOOS.HI.boot$site.ID = "MOOS"
 POKE.HI.boot$site.ID = "POKE"
 STRT.HI.boot$site.ID = "STRT"
 VAUL.HI.boot$site.ID = "VAUL"
+CARI.HI.boot$site.ID = "CARI"
 
-HI = rbind(FRCH.HI.boot, MOOS.HI.boot, POKE.HI.boot, STRT.HI.boot, VAUL.HI.boot)
+HI = rbind(FRCH.HI.boot, MOOS.HI.boot, POKE.HI.boot, STRT.HI.boot, VAUL.HI.boot, CARI.HI.boot)
 
-all.FI.diff.results = read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results.csv", header = T, row.names = 1)
+all.FI.diff.results = read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/all.FI.diff.results_2019.csv", header = T, row.names = 1)
 
 FI = subset(all.FI.diff.results, select=c("Flushing_index", "percCI_2.5", "percCI_97.5", "ID"))
 FI$ID = as.character(FI$ID)
@@ -14345,7 +14361,7 @@ HI = separate(HI, storm.ID, into=c("site.ID", "storm.ID", "month", "day", "respo
 names(HI) = c("Hyst_index", "HI_ymin", "HI_ymax","site.ID", "storm.ID", "month", "day", "response_var")
 
 HI_FI = left_join(HI, FI, by=c("site.ID", "storm.ID", "response_var"))
-write.csv(HI_FI, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+write.csv(HI_FI, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results_2019.csv")
 
 
 # plot #
@@ -15078,14 +15094,15 @@ POKE_storm19_08_27_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Docu
 POKE_storm20_09_01_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm20_09_01_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm20_09_01_turb`)#length
 POKE_storm21_09_03_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm21_09_03_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm21_09_03_turb`)
 POKE_storm22a_09_07_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm22a_09_07_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm22a_09_07_turb`)
+
 # STRT # 
 #NO3 #
-#STRT_storm1a_06_18_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_06_18_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_06_18_NO3`)
+STRT_storm1a_06_18_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_06_18_Q`, STRT_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_06_18_NO3`) # missing value where TRUE/FALSE needed
 #STRT_storm1b_06_20_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_06_20_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_06_20_NO3`)
 #STRT_storm1c_06_21_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1c_06_21_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1c_06_21_NO3`)
 #STRT_storm1d_06_23_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1d_06_23_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1d_06_23_NO3`)
 #STRT_storm1e_06_24_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1e_06_24_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1e_06_24_NO3`)
-STRT_storm2_07_09_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_Q`,STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_NO3`)
+STRT_storm2_07_09_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_Q`,STRT_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_NO3`)
 STRT_storm3_07_20_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_07_20_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_07_20_NO3`)
 STRT_storm4a_08_01_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_NO3`)
 STRT_storm4b_08_03_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4b_08_03_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4b_08_03_NO3`)
@@ -15105,9 +15122,9 @@ STRT_storm10_09_23_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Docum
 #STRT_storm1c_06_21_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1c_06_21_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1c_06_21_fDOM`)
 #STRT_storm1d_06_23_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1d_06_23_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1d_06_23_fDOM`)
 #STRT_storm1e_06_24_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1e_06_24_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1e_06_24_fDOM`)
-STRT_storm2_07_09_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_fDOM`)
+STRT_storm2_07_09_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_Q`, STRT_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2_07_09_fDOM`)
 STRT_storm3_07_20_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_07_20_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_07_20_fDOM`)
-STRT_storm4a_08_01_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_fDOM`)
+STRT_storm4a_08_01_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_Q`, STRT_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4a_08_01_fDOM`)
 STRT_storm4b_08_03_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4b_08_03_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm4b_08_03_fDOM`)
 STRT_storm5_08_09_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_09_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm5_08_09_fDOM`)
 STRT_storm6_08_12_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_08_12_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm6_08_12_fDOM`)
@@ -15235,61 +15252,64 @@ VAUL_storm13_09_03_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Docu
 
 # CARI # 
 # NO3 #
-#CARI_storm1_06_15_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_NO3`)
-#CARI_storm2a_06_19_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_NO3`)
-#CARI_storm2b_06_20_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_NO3`)
-#CARI_storm2c_06_21_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_NO3`)
+#CARI_storm1_06_15_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_NO3`) # empty
+#CARI_storm2a_06_19_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_NO3`) # w is infinite
+#CARI_storm2b_06_20_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_NO3`)# w is infinite
+CARI_storm2c_06_21_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_NO3`) #0.0270270270270265
 #CARI_storm3_06_23_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_NO3`)
-#CARI_storm4_07_09_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_NO3`)
-#CARI_storm5_07_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_NO3`)
-#CARI_storm6_07_24_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_NO3`)
-#CARI_storm7_07_27_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_NO3`)
-#CARI_storm8a_08_02_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_NO3`)
-#CARI_storm8b_08_03_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_NO3`)
-#CARI_storm9_09_07_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_NO3`)
+#CARI_storm4_07_09_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_NO3`)# w is infinite
+#CARI_storm5_07_13_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_NO3`)# w is infinite
+#CARI_storm6_07_24_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_NO3`)# w is infinite
+#CARI_storm7_07_27_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_NO3`)# w is infinite
+#CARI_storm8a_08_02_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_NO3`)# w is infinite
+#CARI_storm8b_08_03_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_NO3`)# w is infinite
+#CARI_storm9_09_07_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_NO3`)# w is infinite
 
 
 # fDOM #
 #CARI_storm1_06_15_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_fDOM`)
-CARI_storm2a_06_19_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_fDOM`)#0.565511538750658
-CARI_storm2b_06_20_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_fDOM`) #0.452654516640253
+CARI_storm2a_06_19_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_fDOM`)#0.569285283474065
+CARI_storm2b_06_20_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_fDOM`) #0.517439556084027
 #CARI_storm2c_06_21_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_fDOM`)
 #CARI_storm3_06_23_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_fDOM`)
-CARI_storm4_07_09_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_fDOM`) # 0.345221510169964
-CARI_storm5_07_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_fDOM`) # 0.450704225352113
-CARI_storm6_07_24_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_fDOM`) # 0.380103694102398
-CARI_storm7_07_27_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_fDOM`) # 0.22313885299672
-CARI_storm8a_08_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_fDOM`) # 0.359982638888889
+CARI_storm4_07_09_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_fDOM`) # 0.808900523560209
+CARI_storm5_07_13_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_fDOM`) # 0.73235166738848
+CARI_storm6_07_24_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_fDOM`) # 0.769557307459066
+CARI_storm7_07_27_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_fDOM`) # 0.239651162790698
+CARI_storm8a_08_02_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_fDOM`) # 0.386284419658418
 #CARI_storm8b_08_03_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_fDOM`)
-CARI_storm9_09_07_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_fDOM`)
+CARI_storm9_09_07_fDOM_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_fDOM_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_fDOM`) # 0.82413967611336
 
 # SPC #
-#CARI_storm1_06_15_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_SPC`)
-#CARI_storm2a_06_19_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_SPC`)
-#CARI_storm2b_06_20_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_SPC`)
-CARI_storm2c_06_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_SPC`) # 0.101387406616863
-#CARI_storm3_06_23_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_SPC`)
-CARI_storm4_07_09_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_SPC`)
-CARI_storm5_07_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_SPC`)
-CARI_storm6_07_24_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_SPC`)
-CARI_storm7_07_27_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_SPC`)
-CARI_storm8a_08_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_SPC`)
+#CARI_storm1_06_15_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_SPC`) # empty
+CARI_storm2a_06_19_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_SPC`) # w is infinite
+CARI_storm2b_06_20_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_SPC`) # w is infinite
+CARI_storm2c_06_21_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_SPC`) # 0.0986984815618218
+CARI_storm3_06_23_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_SPC`) # missing value where TRUE/FALSE needed
+CARI_storm4_07_09_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_SPC`)# w is infinite
+CARI_storm5_07_13_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_SPC`)# w is infinite
+CARI_storm6_07_24_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_SPC`)# w is infinite
+CARI_storm7_07_27_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_SPC`)# w is infinite
+CARI_storm8a_08_02_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_SPC`)# w is infinite
 #CARI_storm8b_08_03_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_SPC`)
-CARI_storm9_09_07_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_SPC`)
+CARI_storm9_09_07_SPC_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_SpCond_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_SPC`)# w is infinite
+
+
 
 # turb #
-#CARI_storm1_06_15_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Turb`)
-CARI_storm2a_06_19_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Turb`)
-#CARI_storm2b_06_20_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Turb`)
-#CARI_storm2c_06_21_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Turb`)
-#CARI_storm3_06_23_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Turb`)
-CARI_storm4_07_09_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Turb`)
-CARI_storm5_07_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Turb`)
-CARI_storm6_07_24_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Turb`)
-CARI_storm7_07_27_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Turb`)
-CARI_storm8a_08_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Turb`)
-CARI_storm8b_08_03_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Turb`)
-CARI_storm9_09_07_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Turb`)
+#CARI_storm1_06_15_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_06_15_Turb`) # empty
+CARI_storm2a_06_19_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2a_06_19_Turb`) #0.775252525252525
+CARI_storm2b_06_20_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2b_06_20_Turb`) #0.462225274725275
+#CARI_storm2c_06_21_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2c_06_21_Turb`) # w is infinite
+#CARI_storm3_06_23_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_23_Turb`) # missing value where T/F needed
+CARI_storm4_07_09_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_09_Turb`) #0.0216606498194948
+CARI_storm5_07_13_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_13_Turb`) # 0.843853820598007
+CARI_storm6_07_24_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm6_07_24_Turb`) #0.453608247422681
+#CARI_storm7_07_27_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm7_07_27_Turb`)
+CARI_storm8a_08_02_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8a_08_02_Turb`) # 0.569053708439898
+#CARI_storm8b_08_03_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm8b_08_03_Turb`) # missing value where TRUE/FALSE needed
+CARI_storm9_09_07_turb_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Q`, CARI_turb_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2020/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm9_09_07_Turb`) # 0.213592233009709
+
 
 # gather results and save ##
 
@@ -15475,7 +15495,7 @@ FI_results = rbind(
   c("POKE_storm4b_06_20_SPC_FI",POKE_storm4b_06_20_SPC_FI[[2]]),
   c("POKE_storm4c_06_21_SPC_FI",POKE_storm4c_06_21_SPC_FI[[2]]),
   c("POKE_storm5_06_22_SPC_FI",NA,NA,NA),
-  c("POKE_storm6_06_29_SPC_FI",.181818181818,0,0),
+  c("POKE_storm6_06_29_SPC_FI",.181818181818,NA,NA),
   c("POKE_storm7_07_04_SPC_FI",POKE_storm7_07_04_SPC_FI[[2]]),
   c("POKE_storm8_07_09_SPC_FI",POKE_storm8_07_09_SPC_FI[[2]]),
   c("POKE_storm9_07_12_SPC_FI",POKE_storm9_07_12_SPC_FI[[2]]),
@@ -15670,7 +15690,7 @@ FI_results = rbind(
   c("CARI_storm1_06_15_NO3_FI",NA, NA, NA),
   c("CARI_storm2a_06_19_NO3_FI",NA, NA, NA),
   c("CARI_storm2b_06_20_NO3_FI",NA, NA, NA),
-  c("CARI_storm2c_06_21_NO3_FI",NA, NA, NA),
+  c("CARI_storm2c_06_21_NO3_FI",0.0270270270270265, NA, NA),
   c("CARI_storm3_06_23_NO3_FI",NA, NA, NA),
   c("CARI_storm4_07_09_NO3_FI",NA, NA, NA),
   c("CARI_storm5_07_13_NO3_FI",NA, NA, NA),
@@ -15681,44 +15701,46 @@ FI_results = rbind(
   c("CARI_storm9_09_07_NO3_FI",NA, NA, NA),
   
   c("CARI_storm1_06_15_fDOM_FI",NA, NA, NA),
-  c("CARI_storm2a_06_19_fDOM_FI",0.565511538750658,0,0),
-  c("CARI_storm2b_06_20_fDOM_FI",0.452654516640253,0,0),
+  c("CARI_storm2a_06_19_fDOM_FI",0.569285283474065,0,0),
+  c("CARI_storm2b_06_20_fDOM_FI",0.517439556084027,0,0),
   c("CARI_storm2c_06_21_fDOM_FI",NA, NA, NA),
   c("CARI_storm3_06_23_fDOM_FI",NA,NA,NA),
-  c("CARI_storm4_07_09_fDOM_FI",0.345221510169964,0,0),
-  c("CARI_storm5_07_13_fDOM_FI",0.450704225352113,0,0),
-  c("CARI_storm6_07_24_fDOM_FI",0.380103694102398,0,0),
-  c("CARI_storm7_07_27_fDOM_FI",0.22313885299672,0,0),
-  c("CARI_storm8a_08_02_fDOM_FI",0.359982638888889,0,0),
+  c("CARI_storm4_07_09_fDOM_FI",0.808900523560209,0,0),
+  c("CARI_storm5_07_13_fDOM_FI",0.73235166738848,0,0),
+  c("CARI_storm6_07_24_fDOM_FI",0.769557307459066,0,0),
+  c("CARI_storm7_07_27_fDOM_FI",0.239651162790698,0,0),
+  c("CARI_storm8a_08_02_fDOM_FI",0.386284419658418,0,0),
   c("CARI_storm8b_08_03_fDOM_FI",NA, NA, NA),
-  c("CARI_storm9_09_07_fDOM_FI",0.671793599603076,0,0),
+  c("CARI_storm9_09_07_fDOM_FI",0.82413967611336,0,0),
   
   c("CARI_storm1_06_15_SPC_FI",NA, NA, NA),
   c("CARI_storm2a_06_19_SPC_FI",NA,NA,NA),
   c("CARI_storm2b_06_20_SPC_FI",NA, NA, NA),
-  c("CARI_storm2c_06_21_SPC_FI",NA, NA, NA),
-  c("CARI_storm3_06_23_SPC_FI",VAUL_storm3_07_09_NO3_FI[[2]]),
-  c("CARI_storm4_07_09_SPC_FI",CARI_storm4_07_09_SPC_FI[[2]]),
-  c("CARI_storm5_07_13_SPC_FI",CARI_storm5_07_13_SPC_FI[[2]]),
-  c("CARI_storm6_07_24_SPC_FI",CARI_storm6_07_24_SPC_FI[[2]]),
-  c("CARI_storm7_07_27_SPC_FI",CARI_storm7_07_27_SPC_FI[[2]]),
-  c("CARI_storm8a_08_02_SPC_FI",CARI_storm8a_08_02_SPC_FI[[2]]),
+  c("CARI_storm2c_06_21_SPC_FI",0.0986984815618218, NA, NA),
+  c("CARI_storm3_06_23_SPC_FI",NA, NA, NA),
+  c("CARI_storm4_07_09_SPC_FI",NA, NA, NA),
+  c("CARI_storm5_07_13_SPC_FI",NA, NA, NA),
+  c("CARI_storm6_07_24_SPC_FI",NA, NA, NA),
+  c("CARI_storm7_07_27_SPC_FI",NA, NA, NA),
+  c("CARI_storm8a_08_02_SPC_FI",NA, NA, NA),
   c("CARI_storm8b_08_03_SPC_FI",NA, NA, NA),
-  c("CARI_storm9_09_07_SPC_FI",CARI_storm9_09_07_SPC_FI[[2]]),
+  c("CARI_storm9_09_07_SPC_FI",NA, NA, NA),
   
   c("CARI_storm1_06_15_turb_FI",NA, NA, NA),
-  c("CARI_storm2a_06_19_turb_FI",CARI_storm2a_06_19_turb_FI[[2]]),
-  c("CARI_storm2b_06_20_turb_FI",NA, NA, NA),
+  c("CARI_storm2a_06_19_turb_FI",0.775252525252525,NA,NA),
+  c("CARI_storm2b_06_20_turb_FI",0.462225274725275, NA, NA),
   c("CARI_storm2c_06_21_turb_FI",NA, NA, NA),
   c("CARI_storm3_06_23_turb_FI",NA, NA, NA),
-  c("CARI_storm4_07_09_turb_FI",CARI_storm4_07_09_turb_FI[[2]]),
-  c("CARI_storm5_07_13_turb_FI",CARI_storm5_07_13_turb_FI[[2]]),
-  c("CARI_storm6_07_24_turb_FI",CARI_storm6_07_24_turb_FI[[2]]),
-  c("CARI_storm7_07_27_turb_FI",CARI_storm7_07_27_turb_FI[[2]]),
-  c("CARI_storm8a_08_02_turb_FI",CARI_storm8a_08_02_turb_FI[[2]]),
+  c("CARI_storm4_07_09_turb_FI",0.0216606498194948, NA,NA),
+  c("CARI_storm5_07_13_turb_FI",0.843853820598007,NA,NA),
+  c("CARI_storm6_07_24_turb_FI",0.453608247422681,NA,NA),
+  c("CARI_storm7_07_27_turb_FI",NA,NA,NA),
+  c("CARI_storm8a_08_02_turb_FI",0.569053708439898,NA,NA),
   c("CARI_storm8b_08_03_turb_FI",NA, NA, NA),
-  c("CARI_storm9_09_07_turb_FI",CARI_storm9_09_07_turb_FI[[2]]))
+  c("CARI_storm9_09_07_turb_FI",0.213592233009709,NA,NA))
 
+  
+  
 
 FI_results = rbind(
   c("FRCH_storm1_06_13_NO3_FI",FRCH_storm1_06_13_NO3_FI[[2]]),
@@ -16365,13 +16387,18 @@ for(i in 1:length(CARI_storm_list)){
                                                   "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 }
 
-CARI_Q_storm_list = CARI_storm_list[c(grep("Q", names(CARI_storm_list)))]
+CARI_NO3_storm_list = CARI_storm_list[c(grep("NO3", names(CARI_storm_list)))]
+CARI_fDOM_storm_list = CARI_storm_list[c(grep("fDOM", names(CARI_storm_list)))]
+CARI_SpCond_storm_list = CARI_storm_list[c(grep("SPC", names(CARI_storm_list)))]
+CARI_turb_storm_list = CARI_storm_list[c(grep("Turb", names(CARI_storm_list)))]
+
+
 FRCH_Q_storm_list = FRCH_storm_list[c(grep("Q", names(FRCH_storm_list)))]
 
-for(i in 1:length(FRCH_Q_storm_list)){
-  FRCH_Q_storm_list[[i]][["valuedatetime"]] = mdy_hm(FRCH_Q_storm_list[[i]][["valuedatetime"]])
-  
-} 
+for(i in 1:length(FRCH_storm_list)){
+  FRCH_storm_list[[i]][["valuedatetime"]] = as.POSIXct(FRCH_storm_list[[i]][["valuedatetime"]],
+                                                       "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+}
 
 for(i in 1:length(MOOS_storm_list)){
   MOOS_storm_list[[i]][["valuedatetime"]] = as.POSIXct(MOOS_storm_list[[i]][["valuedatetime"]],
@@ -16387,9 +16414,9 @@ POKE_Q_storm_list = POKE_storm_list[c(grep("Q", names(POKE_storm_list)))]
 STRT_Q_storm_list = STRT_storm_list[c(grep("Q", names(STRT_storm_list)))]
 
 for(i in 1:length(STRT_Q_storm_list)){
-  STRT_Q_storm_list[[i]][["valuedatetime"]] = mdy_hm(STRT_Q_storm_list[[i]][["valuedatetime"]])
-  
-} 
+  STRT_Q_storm_list[[i]][["valuedatetime"]] = as.POSIXct(STRT_Q_storm_list[[i]][["valuedatetime"]],
+                                                         "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
+}
 
 for(i in 1:length(VAUL_storm_list)){
   VAUL_storm_list[[i]][["valuedatetime"]] = as.POSIXct(VAUL_storm_list[[i]][["valuedatetime"]],
@@ -16604,7 +16631,11 @@ for(i in 1:length(VAUL_turb_storm_list)){
 ### normalize burst data ###
 
 #NO3
-
+for(i in 1:length(CARI_NO3_storm_list)){
+  CARI_NO3_storm_list[[i]][["datavalue.norm"]] = 
+    (CARI_NO3_storm_list[[i]][["datavalue"]]-min(CARI_NO3_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_NO3_storm_list[[i]][["datavalue"]], na.rm=T)-min(CARI_NO3_storm_list[[i]][["datavalue"]], na.rm=T))
+}
 
 for(i in 1:length(FRCH_NO3_storm_list)){
   FRCH_NO3_storm_list[[i]][["datavalue.norm"]] = 
@@ -16638,6 +16669,12 @@ for(i in 1:length(VAUL_NO3_storm_list)){
 
 
 #fDOM
+for(i in 1:length(CARI_fDOM_storm_list)){
+  CARI_fDOM_storm_list[[i]][["datavalue.norm"]] = 
+    (CARI_fDOM_storm_list[[i]][["datavalue"]]-min(CARI_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_fDOM_storm_list[[i]][["datavalue"]], na.rm=T)-min(CARI_fDOM_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
 for(i in 1:length(FRCH_fDOM_storm_list)){
   FRCH_fDOM_storm_list[[i]][["datavalue"]] = as.numeric(FRCH_fDOM_storm_list[[i]][["datavalue"]])
 } 
@@ -16686,6 +16723,12 @@ for(i in 1:length(VAUL_fDOM_storm_list)){
 }
 
 #SPC
+for(i in 1:length(CARI_SpCond_storm_list)){
+  CARI_SpCond_storm_list[[i]][["datavalue.norm"]] = 
+    (CARI_SpCond_storm_list[[i]][["datavalue"]]-min(CARI_SpCond_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_SpCond_storm_list[[i]][["datavalue"]], na.rm=T)-min(CARI_SpCond_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
 for(i in 1:length(FRCH_SpCond_storm_list)){
   FRCH_SpCond_storm_list[[i]][["datavalue"]] = as.numeric(FRCH_SpCond_storm_list[[i]][["datavalue"]])
 } 
@@ -16734,6 +16777,12 @@ for(i in 1:length(VAUL_SpCond_storm_list)){
 }
 
 #turb
+for(i in 1:length(CARI_turb_storm_list)){
+  CARI_turb_storm_list[[i]][["datavalue.norm"]] = 
+    (CARI_turb_storm_list[[i]][["datavalue"]]-min(CARI_turb_storm_list[[i]][["datavalue"]], na.rm=T))/
+    (max(CARI_turb_storm_list[[i]][["datavalue"]], na.rm=T)-min(CARI_turb_storm_list[[i]][["datavalue"]], na.rm=T))
+}
+
 for(i in 1:length(FRCH_turb_storm_list)){
   FRCH_turb_storm_list[[i]][["datavalue"]] = as.numeric(FRCH_turb_storm_list[[i]][["datavalue"]])
 }
@@ -16821,128 +16870,132 @@ FI_diff = function(dat_Q, dat_response) {
 # calculate FI by difference and bootstrap CIs #
 # FRCH # 
 #NO3 #
-FRCH_storm1_07_23_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_NO3`)
-#FRCH_storm2_07_27_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_NO3`) # length
-#FRCH_storm3_08_05_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_NO3`)
-#FRCH_storm4_08_08_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_NO3`)
-#FRCH_storm5a_08_15_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_NO3`)
-#FRCH_storm5b_08_17_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_NO3`)
-#FRCH_storm6a_08_19_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_NO3`)
-#FRCH_storm6b_08_20_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_NO3`)
+#FRCH_storm1_07_23_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_NO3`) # empty
+FRCH_storm2_07_27_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_NO3`) 
+FRCH_storm3_08_05_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_NO3`)
+FRCH_storm4_08_08_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_NO3`)
+FRCH_storm5a_08_15_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_NO3`)
+FRCH_storm5b_08_17_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_NO3`)
+FRCH_storm6a_08_19_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_NO3`)
+#FRCH_storm6b_08_20_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_NO3`) # length
 FRCH_storm7_08_25_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_NO3`)
-#FRCH_storm8_08_27_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_NO3`)
+FRCH_storm8_08_27_NO3_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_NO3`)
+
 #fDOM #
 #FRCH_storm1_07_23_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_fDOM`)
-#FRCH_storm2_07_27_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_fDOM`)
-#FRCH_storm3_08_05_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_fDOM`)
-#FRCH_storm4_08_08_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_fDOM`)
-#FRCH_storm5a_08_15_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_fDOM`)
-#FRCH_storm5b_08_17_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_fDOM`)
-#FRCH_storm6a_08_19_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_fDOM`)
-#FRCH_storm6b_08_20_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_fDOM`)
+FRCH_storm2_07_27_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_fDOM`)
+FRCH_storm3_08_05_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_fDOM`)
+FRCH_storm4_08_08_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_fDOM`)
+#FRCH_storm5a_08_15_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_fDOM`) # empty
+#FRCH_storm5b_08_17_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_fDOM`) # empty
+#FRCH_storm6a_08_19_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_fDOM`) # empty
+#FRCH_storm6b_08_20_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_fDOM`) # empty
 FRCH_storm7_08_25_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_fDOM`)
-#FRCH_storm8_08_27_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_fDOM`)
+FRCH_storm8_08_27_fDOM_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_fDOM`)
 # SPC #
 #FRCH_storm1_07_23_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_SPC`) # empty
-#FRCH_storm2_07_27_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_SPC`)
-#FRCH_storm3_08_05_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_SPC`)
-#FRCH_storm4_08_08_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_SPC`)
+FRCH_storm2_07_27_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_SPC`)
+FRCH_storm3_08_05_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_SPC`)
+FRCH_storm4_08_08_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_SPC`)
 #FRCH_storm5a_08_15_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_SPC`)
 #FRCH_storm5b_08_17_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_SPC`)
 #FRCH_storm6a_08_19_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_SPC`)
 #FRCH_storm6b_08_20_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_SPC`)
 FRCH_storm7_08_25_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_SPC`)
-#FRCH_storm8_08_27_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_SPC`)
+FRCH_storm8_08_27_SPC_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_SPC`)
 #turb #
-FRCH_storm1_07_23_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Turb`)
+#FRCH_storm1_07_23_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm1_07_23_Turb`)
 FRCH_storm2_07_27_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm2_07_27_Turb`)
 FRCH_storm3_08_05_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm3_08_05_Turb`)
 FRCH_storm4_08_08_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm4_08_08_Turb`)
-FRCH_storm5a_08_15_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Turb`)
-FRCH_storm5b_08_17_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Turb`)
-FRCH_storm6a_08_19_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Turb`)
-FRCH_storm6b_08_20_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Turb`)
+#FRCH_storm5a_08_15_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5a_08_15_Turb`)
+#FRCH_storm5b_08_17_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm5b_08_17_Turb`)
+#FRCH_storm6a_08_19_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6a_08_19_Turb`)
+#FRCH_storm6b_08_20_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm6b_08_20_Turb`)
 FRCH_storm7_08_25_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm7_08_25_Turb`)
 FRCH_storm8_08_27_turb_FI = FI_diff(FRCH_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Q`, FRCH_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//FRCH_storm8_08_27_Turb`)
 
 # MOOS # 
 #fDOM #
-#MOOS_storm1_07_23_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_fDOM`)
-#MOOS_storm2_07_27_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_fDOM`)
-#MOOS_storm3a_08_06_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_fDOM`)
+#MOOS_storm1_07_23_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_fDOM`) # length 
+MOOS_storm2_07_27_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_fDOM`)
+MOOS_storm3a_08_06_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_fDOM`)
 MOOS_storm3b_08_08_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_fDOM`)
-#MOOS_storm4a_08_15_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_fDOM`)
-#MOOS_storm4b_08_17_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_fDOM`)
-#MOOS_storm5a_08_19_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_fDOM`)
-#MOOS_storm5b_08_21_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_fDOM`)
-#MOOS_storm6_08_25_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_fDOM`)
+MOOS_storm4a_08_15_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_fDOM`)
+MOOS_storm4b_08_17_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_fDOM`)
+MOOS_storm5a_08_19_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_fDOM`)
+MOOS_storm5b_08_21_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_fDOM`)
+MOOS_storm6_08_25_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_fDOM`)
 MOOS_storm7_08_27_fDOM_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_Q`, MOOS_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_fDOM`)
+
 #SPC #
-#MOOS_storm1_07_23_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_SPC`)
-#MOOS_storm2_07_27_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_SPC`)
-#MOOS_storm3a_08_06_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_SPC`)
+#MOOS_storm1_07_23_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_SPC`) # w is infinite
+#MOOS_storm2_07_27_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_SPC`) # w is infinite
+#MOOS_storm3a_08_06_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_SPC`)# w is infinite
 MOOS_storm3b_08_08_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_SPC`)
-#MOOS_storm4a_08_15_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_SPC`)
-##MOOS_storm4b_08_17_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_SPC`)
-#MOOS_storm5a_08_19_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_SPC`)
-#MOOS_storm5b_08_21_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_SPC`)
-#MOOS_storm6_08_25_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_SPC`)
+MOOS_storm4a_08_15_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_SPC`)
+MOOS_storm4b_08_17_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_SPC`)
+MOOS_storm5a_08_19_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_SPC`)
+MOOS_storm5b_08_21_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_SPC`)
+MOOS_storm6_08_25_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_SPC`) # extreme order stats 
 MOOS_storm7_08_27_SPC_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_Q`, MOOS_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_SPC`)
+
 # turb #
-#MOOS_storm1_07_23_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Turb`)
-#MOOS_storm2_07_27_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Turb`)
-#MOOS_storm3a_08_06_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Turb`)
+#MOOS_storm1_07_23_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm1_07_23_Turb`) # length
+MOOS_storm2_07_27_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm2_07_27_Turb`)
+MOOS_storm3a_08_06_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3a_08_06_Turb`)
 MOOS_storm3b_08_08_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm3b_08_08_Turb`)
-#MOOS_storm4a_08_15_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Turb`)
-#MOOS_storm4b_08_17_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Turb`)
-#MOOS_storm5a_08_19_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Turb`)
-#MOOS_storm5b_08_21_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Turb`)
-#MOOS_storm6_08_25_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Turb`)
+MOOS_storm4a_08_15_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4a_08_15_Turb`)
+MOOS_storm4b_08_17_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm4b_08_17_Turb`)
+MOOS_storm5a_08_19_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5a_08_19_Turb`)
+MOOS_storm5b_08_21_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm5b_08_21_Turb`)
+MOOS_storm6_08_25_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm6_08_25_Turb`)
 MOOS_storm7_08_27_turb_FI = FI_diff(MOOS_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_Q`, MOOS_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//MOOS_storm7_08_27_Turb`)
+
 
 # POKE # 
 #NO3 #
-#POKE_storm1_05_16_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_NO3`)
+#POKE_storm1_05_16_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_NO3`) # empty
 POKE_storm2_06_01_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_NO3`)
-POKE_storm3_06_19_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_NO3`)
-#POKE_storm4_07_23_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_NO3`)
-#POKE_storm5_07_27_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_NO3`)
+#POKE_storm3_06_19_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_NO3`) # returning -Inf
+#POKE_storm4_07_23_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_NO3`) # returning -Inf
+POKE_storm5_07_27_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_NO3`)
 POKE_storm6_08_08_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_NO3`)
 #POKE_storm7a_08_14_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_NO3`)
-POKE_storm7b_08_19_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_NO3`)
-POKE_storm7c_08_23_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_NO3`)
+#POKE_storm7b_08_19_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_NO3`)
+#POKE_storm7c_08_23_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_NO3`)
 #POKE_storm7d_08_27_NO3_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_Q`, POKE_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_NO3`)
 
 #fDOM #
-POKE_storm1_05_16_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_fDOM`)
-POKE_storm2_06_01_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`,POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_fDOM`)
+#POKE_storm1_05_16_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_fDOM`)
+#POKE_storm2_06_01_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`,POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_fDOM`)
 #POKE_storm3_06_19_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_fDOM`)
 #POKE_stor4_07_23_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_fDOM`)
 #POKE_storm5_07_27_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_fDOM`)
-POKE_storm6_08_08_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_fDOM`)
+#POKE_storm6_08_08_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_fDOM`)
 #POKE_storm7a_08_14_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_fDOM`)
 #POKE_storm7b_08_19_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_fDOM`)
 #POKE_storm7c_08_23_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_fDOM`)
 #POKE_storm7d_08_27_fDOM_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_Q`, POKE_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_fDOM`)
 
 #SPC #
-POKE_storm1_05_16_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_SPC`)
-POKE_storm2_06_01_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_SPC`)
+#POKE_storm1_05_16_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_SPC`)
+#POKE_storm2_06_01_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_SPC`)
 #POKE_storm3_06_19_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_SPC`)
 #POKE_storm4_07_23_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_SPC`)
 #POKE_storm5_07_27_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_SPC`)
-POKE_storm6_08_08_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_SPC`)
+#POKE_storm6_08_08_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_SPC`)
 #POKE_storm7a_08_14_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_SPC`)
 #POKE_storm7b_08_19_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_SPC`)
 #POKE_storm7c_08_23_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_SPC`)
 #POKE_storm7d_08_27_SPC_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_Q`, POKE_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7d_08_26_SPC`)
 #turb #
-POKE_storm1_05_16_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Turb`)
-POKE_storm2_06_01_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Turb`)
+#POKE_storm1_05_16_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm1_05_16_Turb`)
+#POKE_storm2_06_01_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm2_06_01_Turb`)
 #POKE_storm3_06_19_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm3_06_19_Turb`)
 #POKE_storm4_07_23_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm4_07_23_Turb`)
 #POKE_storm5_07_27_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm5_07_27_Turb`)
-POKE_storm6_08_08_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Turb`)
+#POKE_storm6_08_08_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm6_08_08_Turb`)
 #POKE_storm7a_08_14_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7a_08_14_Turb`)
 #POKE_storm7b_08_19_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7b_08_19_Turb`)
 #POKE_storm7c_08_23_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Q`, POKE_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//POKE_storm7c_08_23_Turb`)
@@ -16951,72 +17004,86 @@ POKE_storm6_08_08_turb_FI = FI_diff(POKE_Q_storm_list$`/Users/jakecavaiani/Docum
 # STRT # 
 #NO3 #
 STRT_storm1a_08_15_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_NO3`)
-#STRT_storm1b_08_17_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_NO3`)
-#STRT_storm2a_08_19_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_NO3`)
-#STRT_storm2b_08_20_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_NO3`)
+STRT_storm1b_08_17_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_NO3`)
+#STRT_storm2a_08_19_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_NO3`) # w is infinite
+STRT_storm2b_08_20_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_NO3`)
 STRT_storm3_08_25_NO3_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_Q`, STRT_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_NO3`)
 # fDOM #
 STRT_storm1a_08_15_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_fDOM`)
-#STRT_storm1b_08_17_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_fDOM`)
-#STRT_storm2a_08_19_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_fDOM`)
-#STRT_storm2b_08_20_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_fDOM`)
+STRT_storm1b_08_17_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_fDOM`)
+#STRT_storm2a_08_19_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_fDOM`)# w is infinite
+STRT_storm2b_08_20_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_fDOM`)
 STRT_storm3_08_25_fDOM_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_Q`, STRT_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_fDOM`)
 # SPC #
 STRT_storm1a_08_15_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_SPC`)
-#STRT_storm1b_08_17_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_SPC`)
-#STRT_storm2a_08_19_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_SPC`)
-#STRT_storm2b_08_20_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_SPC`)
+STRT_storm1b_08_17_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_SPC`)
+#STRT_storm2a_08_19_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_SPC`)# w is infinite
+STRT_storm2b_08_20_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_SPC`)
 STRT_storm3_08_25_SPC_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_Q`, STRT_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_SPC`)
 # Turb #
 STRT_storm1a_08_15_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1a_08_15_Turb`)
-#STRT_storm1b_08_17_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Turb`)
-#STRT_storm2a_08_19_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Turb`)
-#STRT_storm2b_08_20_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Turb`)
+STRT_storm1b_08_17_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm1b_08_17_Turb`)
+#STRT_storm2a_08_19_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2a_08_19_Turb`)# w is infinite
+STRT_storm2b_08_20_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm2b_08_20_Turb`)
 STRT_storm3_08_25_turb_FI = FI_diff(STRT_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_Q`, STRT_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//STRT_storm3_08_25_Turb`)
 
 # VAUL # 
 #NO3 #
-#VAUL_storm1a_07_23_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_NO3`)
-#VAUL_storm1b_07_27_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_NO3`)
-#VAUL_storm2_08_05_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`,VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_NO3`)
+VAUL_storm1a_07_23_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_NO3`)
+VAUL_storm1b_07_27_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_NO3`)
+VAUL_storm2_08_05_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`,VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_NO3`)
 VAUL_storm3_08_08_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_NO3`)
 VAUL_storm4a_08_15_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_NO3`)
-#VAUL_storm4b_08_20_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_NO3`)
-#VAUL_storm5a_08_23_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_NO3`)
-#VAUL_storm5b_08_26_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_NO3`)
+#VAUL_storm4b_08_20_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_NO3`) # w is infinite
+#VAUL_storm5a_08_23_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_NO3`)# w is infinite
+#VAUL_storm5b_08_26_NO3_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_NO3`)# w is infinite
+
 
 #fDOM #
-#VAUL_storm1a_07_23_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_fDOM`)
-#VAUL_storm1b_07_27_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_fDOM`)
-#VAUL_storm2_08_05_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_fDOM`)
+VAUL_storm1a_07_23_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_fDOM`)
+#VAUL_storm1b_07_27_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_fDOM`) # length
+#VAUL_storm2_08_05_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_fDOM`) # length 
 VAUL_storm3_08_08_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_Q`,VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_fDOM`)
 VAUL_storm4a_08_15_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_fDOM`)
-#VAUL_storm4b_08_20_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_fDOM`)
-#VAUL_storm5a_08_23_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`,VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_fDOM`)
-#VAUL_storm5b_08_26_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_fDOM`)
+VAUL_storm4b_08_20_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_fDOM`)
+#VAUL_storm5a_08_23_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`,VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_fDOM`) # length
+VAUL_storm5b_08_26_fDOM_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_fDOM_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_fDOM`)
+
+
 #SPC #
-#VAUL_storm1a_07_23_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_SPC`)
+VAUL_storm1a_07_23_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_SPC`)
 #VAUL_storm1b_07_27_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_SPC`)
 #VAUL_storm2_08_05_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_SPC`)
 VAUL_storm3_08_08_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_SPC`)
 VAUL_storm4a_08_15_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_SPC`)
-#VAUL_storm4b_08_20_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_SPC`)
+VAUL_storm4b_08_20_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_SPC`)
 #VAUL_storm5a_08_23_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_SPC`)
-#VAUL_storm5b_08_26_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_SPC`)
+VAUL_storm5b_08_26_SPC_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_SpCond_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_SPC`)
 #turb #
-#VAUL_storm1a_07_23_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Turb`)
+VAUL_storm1a_07_23_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1a_07_23_Turb`)
 #VAUL_storm1b_07_27_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm1b_07_27_Turb`)
 #VAUL_storm2_08_05_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm2_08_05_Turb`)
 VAUL_storm3_08_08_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm3_08_08_Turb`)
 VAUL_storm4a_08_15_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4a_08_15_Turb`)
-#VAUL_storm4b_08_20_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Turb`)
+VAUL_storm4b_08_20_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm4b_08_20_Turb`)
 #VAUL_storm5a_08_23_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5a_08_23_Turb`)
-#VAUL_storm5b_08_26_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Turb`)
+VAUL_storm5b_08_26_turb_FI = FI_diff(VAUL_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Q`, VAUL_turb_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//VAUL_storm5b_08_26_Turb`)
+
+
 
 # CARI # 
 #NO3 #
-#CARI_storm1_05_16_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_NO3`)
-#CARI_storm2_06_01_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_NO3`)
+CARI_NO3_storm_list <- lapply(CARI_NO3_storm_list, na.omit) # remove NAs
+for(i in 1:length(CARI_Q_storm_list)){
+  CARI_Q_storm_list[[i]][["valuedatetime"]] = round_date(CARI_Q_storm_list[[i]][["valuedatetime"]], "15 minutes"
+                                                       )
+}
+CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_Q` <- CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_Q`[!duplicated(CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_Q`$valuedatetime), ]
+CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_Q` <- CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_Q`[!duplicated(CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_Q`$valuedatetime), ]
+
+
+CARI_storm1_05_16_NO3_FI = FI_diff(CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_Q`, CARI_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm1_05_16_NO3`)
+CARI_storm2_06_01_NO3_FI = FI_diff(CARI_Q_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_Q`, CARI_NO3_storm_list$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm2_06_01_NO3`)
 #CARI_storm3_06_19_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_19_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm3_06_19_NO3`)
 #CARI_storm4_07_24_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_24_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm4_07_24_NO3`)
 #CARI_storm5_07_27_NO3_FI = FI_diff(CARI_Q_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_27_Q`, CARI_NO3_storm_list_beta$`/Users/jakecavaiani/Documents/Storms/Storm_Events/2021/FRCH_MOOS_VAUL_POKE_STRT_CARI//CARI_storm5_07_27_NO3`)
@@ -17097,186 +17164,186 @@ FI_results = rbind(c("FRCH_storm1_07_23_NO3_FI",FRCH_storm1_07_23_NO3_FI[[2]]),
 
 
 FI_results = rbind(
-  c("FRCH_storm1_07_23_NO3_FI",FRCH_storm1_07_23_NO3_FI[[2]]),
-  c("FRCH_storm2_07_27_NO3_FI",NA,NA,NA),
-  c("FRCH_storm3_08_05_NO3_FI",NA,NA,NA),
-  c("FRCH_storm4_08_08_NO3_FI",NA,NA,NA),
-  c("FRCH_storm5a_08_15_NO3_FI",NA,NA,NA),
-  c("FRCH_storm5b_08_17_NO3_FI",NA,NA,NA),
-  c("FRCH_storm6a_08_19_NO3_FI",NA,NA,NA),
+  c("FRCH_storm1_07_23_NO3_FI",-0.6313, -0.6534, -0.6088),
+  c("FRCH_storm2_07_27_NO3_FI",FRCH_storm2_07_27_NO3_FI[[2]]),
+  c("FRCH_storm3_08_05_NO3_FI",FRCH_storm3_08_05_NO3_FI[[2]]),
+  c("FRCH_storm4_08_08_NO3_FI",FRCH_storm4_08_08_NO3_FI[[2]]),
+  c("FRCH_storm5a_08_15_NO3_FI",FRCH_storm5a_08_15_NO3_FI[[2]]),
+  c("FRCH_storm5b_08_17_NO3_FI",FRCH_storm5b_08_17_NO3_FI[[2]]),
+  c("FRCH_storm6a_08_19_NO3_FI",FRCH_storm6a_08_19_NO3_FI[[2]]),
   c("FRCH_storm6b_08_20_NO3_FI",NA,NA,NA),
   c("FRCH_storm7_08_25_NO3_FI",FRCH_storm7_08_25_NO3_FI[[2]]),
-  c("FRCH_storm8_08_27_NO3_FI",NA,NA,NA),
+  c("FRCH_storm8_08_27_NO3_FI",FRCH_storm8_08_27_NO3_FI[[2]]),
   
   c("FRCH_storm1_07_23_fDOM_FI",NA,NA,NA),
-  c("FRCH_storm2_07_27_fDOM_FI",NA,NA,NA),
-  c("FRCH_storm3_08_05_fDOM_FI",NA,NA,NA),
-  c("FRCH_storm4_08_08_fDOM_FI",NA,NA,NA),
+  c("FRCH_storm2_07_27_fDOM_FI",FRCH_storm2_07_27_fDOM_FI[[2]]),
+  c("FRCH_storm3_08_05_fDOM_FI",FRCH_storm3_08_05_fDOM_FI[[2]]),
+  c("FRCH_storm4_08_08_fDOM_FI",FRCH_storm4_08_08_fDOM_FI[[2]]),
   c("FRCH_storm5a_08_15_fDOM_FI", NA, NA, NA),
   c("FRCH_storm5b_08_17_fDOM_FI",NA,NA,NA),
   c("FRCH_storm6a_08_19_fDOM_FI",NA,NA,NA),
   c("FRCH_storm6b_08_20_fDOM_FI",NA,NA,NA),
   c("FRCH_storm7_08_25_fDOM_FI",FRCH_storm7_08_25_fDOM_FI[[2]]),
-  c("FRCH_storm8_08_27_fDOM_FI",NA,NA,NA),
+  c("FRCH_storm8_08_27_fDOM_FI",FRCH_storm8_08_27_fDOM_FI[[2]]),
  
   c("FRCH_storm1_07_23_SPC_FI",NA,NA,NA),
-  c("FRCH_storm2_07_27_SPC_FI",NA,NA,NA),
-  c("FRCH_storm3_08_05_SPC_FI",NA,NA,NA),
-  c("FRCH_storm4_08_08_SPC_FI",NA,NA,NA),
+  c("FRCH_storm2_07_27_SPC_FI",FRCH_storm2_07_27_SPC_FI[[2]]),
+  c("FRCH_storm3_08_05_SPC_FI",FRCH_storm3_08_05_SPC_FI[[2]]),
+  c("FRCH_storm4_08_08_SPC_FI",FRCH_storm4_08_08_SPC_FI[[2]]),
   c("FRCH_storm5a_08_15_SPC_FI",NA,NA,NA),
   c("FRCH_storm5b_08_17_SPC_FI",NA,NA,NA),
   c("FRCH_storm6a_08_19_SPC_FI",NA,NA,NA),
   c("FRCH_storm6b_08_20_SPC_FI",NA,NA,NA),
   c("FRCH_storm7_08_25_SPC_FI",FRCH_storm7_08_25_SPC_FI[[2]]),
-  c("FRCH_storm8_08_27_SPC_FI",NA,NA,NA),
+  c("FRCH_storm8_08_27_SPC_FI",FRCH_storm8_08_27_SPC_FI[[2]]),
   
   c("FRCH_storm1_07_23_turb_FI",NA,NA,NA),
-  c("FRCH_storm2_07_27_turb_FI",NA,NA,NA),
-  c("FRCH_storm3_08_05_turb_FI",NA,NA,NA),
-  c("FRCH_storm4_08_08_turb_FI",NA,NA,NA),
+  c("FRCH_storm2_07_27_turb_FI",FRCH_storm2_07_27_turb_FI[[2]]),
+  c("FRCH_storm3_08_05_turb_FI",FRCH_storm3_08_05_turb_FI[[2]]),
+  c("FRCH_storm4_08_08_turb_FI",FRCH_storm4_08_08_turb_FI[[2]]),
   c("FRCH_storm5a_08_15_turb_FI",NA,NA,NA),
   c("FRCH_storm5b_08_17_turb_FI",NA,NA,NA),
   c("FRCH_storm6a_08_19_turb_FI",NA,NA,NA),
   c("FRCH_storm6b_08_20_turb_FI",NA,NA,NA),
   c("FRCH_storm7_08_25_turb_FI",FRCH_storm7_08_25_turb_FI[[2]]),
-  c("FRCH_storm8_08_27_turb_FI",NA,NA,NA),
+  c("FRCH_storm8_08_27_turb_FI",FRCH_storm8_08_27_turb_FI[[2]]),
   
   c("MOOS_storm1_07_23_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm2_07_27_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm3a_08_06_fDOM_FI",NA,NA,NA),
+  c("MOOS_storm2_07_27_fDOM_FI",MOOS_storm2_07_27_fDOM_FI[[2]]),
+  c("MOOS_storm3a_08_06_fDOM_FI",MOOS_storm3a_08_06_fDOM_FI[[2]]),
   c("MOOS_storm3b_08_08_fDOM_FI",MOOS_storm3b_08_08_fDOM_FI[[2]]),
-  c("MOOS_storm4a_08_15_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm4b_08_17_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm5a_08_19_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm5b_08_21_fDOM_FI",NA,NA,NA),
-  c("MOOS_storm6_08_25_fDOM_FI",NA,NA,NA),
+  c("MOOS_storm4a_08_15_fDOM_FI",MOOS_storm4a_08_15_fDOM_FI[[2]]),
+  c("MOOS_storm4b_08_17_fDOM_FI",MOOS_storm4b_08_17_fDOM_FI[[2]]),
+  c("MOOS_storm5a_08_19_fDOM_FI",MOOS_storm5a_08_19_fDOM_FI[[2]]),
+  c("MOOS_storm5b_08_21_fDOM_FI",MOOS_storm5b_08_21_fDOM_FI[[2]]),
+  c("MOOS_storm6_08_25_fDOM_FI",MOOS_storm6_08_25_fDOM_FI[[2]]),
   c("MOOS_storm7_08_27_fDOM_FI",MOOS_storm7_08_27_fDOM_FI[[2]]),
   
   c("MOOS_storm1_07_23_SPC_FI",NA,NA,NA),
   c("MOOS_storm2_07_27_SPC_FI",NA,NA,NA),
   c("MOOS_storm3a_08_06_SPC_FI",NA,NA,NA),
   c("MOOS_storm3b_08_08_SPC_FI",MOOS_storm3b_08_08_SPC_FI[[2]]),
-  c("MOOS_storm4a_08_15_SPC_FI",NA,NA,NA),
-  c("MOOS_storm4b_08_17_SPC_FI",NA,NA,NA),
-  c("MOOS_storm5a_08_19_SPC_FI",NA,NA,NA),
-  c("MOOS_storm5b_08_21_SPC_FI",NA,NA,NA),
-  c("MOOS_storm6_08_25_SPC_FI",NA,NA,NA),
+  c("MOOS_storm4a_08_15_SPC_FI",MOOS_storm4a_08_15_SPC_FI[[2]]),
+  c("MOOS_storm4b_08_17_SPC_FI",MOOS_storm4b_08_17_SPC_FI[[2]]),
+  c("MOOS_storm5a_08_19_SPC_FI",MOOS_storm5a_08_19_SPC_FI[[2]]),
+  c("MOOS_storm5b_08_21_SPC_FI",MOOS_storm5b_08_21_SPC_FI[[2]]),
+  c("MOOS_storm6_08_25_SPC_FI",MOOS_storm6_08_25_SPC_FI[[2]]),
   c("MOOS_storm7_08_27_SPC_FI",MOOS_storm7_08_27_SPC_FI[[2]]),
   
   c("MOOS_storm1_07_23_turb_FI",NA,NA,NA),
-  c("MOOS_storm2_07_27_turb_FI",NA,NA,NA),
-  c("MOOS_storm3a_08_06_turb_FI",NA,NA,NA),
+  c("MOOS_storm2_07_27_turb_FI",MOOS_storm2_07_27_turb_FI[[2]]),
+  c("MOOS_storm3a_08_06_turb_FI",MOOS_storm3a_08_06_turb_FI[[2]]),
   c("MOOS_storm3b_08_08_turb_FI",MOOS_storm3b_08_08_turb_FI[[2]]),
-  c("MOOS_storm4a_08_15_turb_FI",NA,NA,NA),
-  c("MOOS_storm4b_08_17_turb_FI",NA,NA,NA),
-  c("MOOS_storm5a_08_19_turb_FI",NA,NA,NA),
-  c("MOOS_storm5b_08_21_turb_FI",NA,NA,NA),
-  c("MOOS_storm6_08_25_turb_FI",NA,NA,NA),
+  c("MOOS_storm4a_08_15_turb_FI",MOOS_storm4a_08_15_turb_FI[[2]]),
+  c("MOOS_storm4b_08_17_turb_FI",MOOS_storm4b_08_17_turb_FI[[2]]),
+  c("MOOS_storm5a_08_19_turb_FI",MOOS_storm5a_08_19_turb_FI[[2]]),
+  c("MOOS_storm5b_08_21_turb_FI",MOOS_storm5b_08_21_turb_FI[[2]]),
+  c("MOOS_storm6_08_25_turb_FI",MOOS_storm6_08_25_turb_FI[[2]]),
   c("MOOS_storm7_08_27_turb_FI",MOOS_storm7_08_27_turb_FI[[2]]),
   
   c("POKE_storm1_05_16_NO3_FI",NA,NA,NA),
   c("POKE_storm2_06_01_NO3_FI",POKE_storm2_06_01_NO3_FI[[2]]),
-  c("POKE_storm3_06_19_NO3_FI",POKE_storm3_06_19_NO3_FI[[2]]),
+  c("POKE_storm3_06_19_NO3_FI",-0.8407,-0.8538, -0.827),
   c("POKE_storm4_07_23_NO3_FI",NA,NA,NA),
   c("POKE_storm5_07_27_NO3_FI",NA,NA,NA),
   c("POKE_storm6_08_08_NO3_FI",POKE_storm6_08_08_NO3_FI[[2]]),
   c("POKE_storm7a_08_14_NO3_FI",NA,NA,NA),
-  c("POKE_storm7b_08_19_NO3_FI",POKE_storm7b_08_19_NO3_FI[[2]]),
-  c("POKE_storm7c_08_23_NO3_FI",POKE_storm7c_08_23_NO3_FI[[2]]),
+  c("POKE_storm7b_08_19_NO3_FI",-0.3425, -0.3487,-0.3359),
+  c("POKE_storm7c_08_23_NO3_FI",0.5333,-0.5495,-0.5156),
   c("POKE_storm7d_08_27_NO3_FI",NA,NA,NA),
   
-  c("POKE_storm1_05_16_fDOM_FI",POKE_storm1_05_16_fDOM_FI[[2]]),
-  c("POKE_storm2_06_01_fDOM_FI",POKE_storm2_06_01_fDOM_FI[[2]]),
+  c("POKE_storm1_05_16_fDOM_FI",0.4472,0.4455,0.4488),
+  c("POKE_storm2_06_01_fDOM_FI",0.1953,0.1950,0.1956),
   c("POKE_storm3_06_19_fDOM_FI",NA,NA,NA),
   c("POKE_storm4_07_23_fDOM_FI",NA,NA,NA),
   c("POKE_storm5_07_27_fDOM_FI",NA,NA,NA),
-  c("POKE_storm6_08_08_fDOM_FI",POKE_storm6_08_08_fDOM_FI[[2]]),
+  c("POKE_storm6_08_08_fDOM_FI",0.5954,0.5945,0.5963),
   c("POKE_storm7a_08_14_fDOM_FI",NA,NA,NA),
   c("POKE_storm7b_08_19_fDOM_FI",NA,NA,NA),
   c("POKE_storm7c_08_23_fDOM_FI",NA,NA,NA),
   c("POKE_storm7d_08_27_fDOM_FI",NA,NA,NA),
   
-  c("POKE_storm1_05_16_SPC_FI",POKE_storm1_05_16_SPC_FI[[2]]),
-  c("POKE_storm2_06_01_SPC_FI",POKE_storm2_06_01_SPC_FI[[2]]),
+  c("POKE_storm1_05_16_SPC_FI",NA,NA,NA),
+  c("POKE_storm2_06_01_SPC_FI",NA,NA,NA),
   c("POKE_storm3_06_19_SPC_FI",NA,NA,NA),
   c("POKE_storm4_07_23_SPC_FI",NA,NA,NA),
   c("POKE_storm5_07_27_SPC_FI",NA,NA,NA),
-  c("POKE_storm6_08_08_SPC_FI",POKE_storm6_08_08_SPC_FI[[2]]),
+  c("POKE_storm6_08_08_SPC_FI",NA,NA,NA),
   c("POKE_storm7a_08_14_SPC_FI",NA,NA,NA),
   c("POKE_storm7b_08_19_SPC_FI",NA,NA,NA),
   c("POKE_storm7c_08_23_SPC_FI",NA,NA,NA),
   c("POKE_storm7d_08_27_SPC_FI",NA,NA,NA),
   
-  c("POKE_storm1_05_16_turb_FI",POKE_storm1_05_16_turb_FI[[2]]),
-  c("POKE_storm2_06_01_turb_FI",POKE_storm2_06_01_turb_FI[[2]]),
+  c("POKE_storm1_05_16_turb_FI",NA,NA,NA),
+  c("POKE_storm2_06_01_turb_FI",NA,NA,NA),
   c("POKE_storm3_06_19_turb_FI",NA,NA,NA),
   c("POKE_storm4_07_23_turb_FI",NA,NA,NA),
   c("POKE_storm5_07_27_turb_FI",NA,NA,NA),
-  c("POKE_storm6_08_08_turb_FI",POKE_storm6_08_08_turb_FI[[2]]),
+  c("POKE_storm6_08_08_turb_FI",NA,NA,NA),
   c("POKE_storm7a_08_14_turb_FI",NA,NA,NA),
   c("POKE_storm7b_08_19_turb_FI",NA,NA,NA),
   c("POKE_storm7c_08_23_turb_FI",NA,NA,NA),
   c("POKE_storm7d_08_27_turb_FI",NA,NA,NA),
   
   c("STRT_storm1a_08_15_NO3_FI",STRT_storm1a_08_15_NO3_FI[[2]]),
-  c("STRT_storm1b_08_17_NO3_FI",NA,NA,NA),
+  c("STRT_storm1b_08_17_NO3_FI",STRT_storm1b_08_17_NO3_FI[[2]]),
   c("STRT_storm2a_08_19_NO3_FI",NA,NA,NA),
-  c("STRT_storm2b_08_20_NO3_FI",NA,NA,NA),
+  c("STRT_storm2b_08_20_NO3_FI",STRT_storm2b_08_20_NO3_FI[[2]]),
   c("STRT_storm3_08_25_NO3_FI",STRT_storm3_08_25_NO3_FI[[2]]),
   
   c("STRT_storm1a_08_15_fDOM_FI",STRT_storm1a_08_15_fDOM_FI[[2]]),
-  c("STRT_storm1b_08_17_fDOM_FI",NA,NA,NA),
+  c("STRT_storm1b_08_17_fDOM_FI",STRT_storm1b_08_17_fDOM_FI[[2]]),
   c("STRT_storm2a_08_19_fDOM_FI",NA,NA,NA),
-  c("STRT_storm2b_08_20_fDOM_FI",NA,NA,NA),
+  c("STRT_storm2b_08_20_fDOM_FI",STRT_storm2b_08_20_fDOM_FI[[2]]),
   c("STRT_storm3_08_25_fDOM_FI",STRT_storm3_08_25_fDOM_FI[[2]]),
   
   c("STRT_storm1a_08_15_SPC_FI",STRT_storm1a_08_15_SPC_FI[[2]]),
-  c("STRT_storm1b_08_17_SPC_FI",NA,NA,NA),
+  c("STRT_storm1b_08_17_SPC_FI",STRT_storm1b_08_17_SPC_FI[[2]]),
   c("STRT_storm2a_08_19_SPC_FI",NA,NA,NA),
-  c("STRT_storm2b_08_20_SPC_FI",NA,NA,NA),
+  c("STRT_storm2b_08_20_SPC_FI",STRT_storm2b_08_20_SPC_FI[[2]]),
   c("STRT_storm3_08_25_SPC_FI",STRT_storm3_08_25_SPC_FI[[2]]),
   
   c("STRT_storm1a_08_15_turb_FI",STRT_storm1a_08_15_turb_FI[[2]]),
-  c("STRT_storm1b_08_17_turb_FI",NA,NA,NA),
+  c("STRT_storm1b_08_17_turb_FI",STRT_storm1b_08_17_turb_FI[[2]]),
   c("STRT_storm2a_08_19_turb_FI",NA,NA,NA),
-  c("STRT_storm2b_08_20_turb_FI",NA,NA,NA),
+  c("STRT_storm2b_08_20_turb_FI",STRT_storm2b_08_20_turb_FI[[2]]),
   c("STRT_storm3_08_25_turb_FI",STRT_storm3_08_25_turb_FI[[2]]),
   
-  c("VAUL_storm1a_07_23_NO3_FI",NA,NA,NA),
-  c("VAUL_storm1b_07_27_NO3_FI",NA,NA,NA),
-  c("VAUL_storm2_08_05_NO3_FI",NA,NA,NA),
+  c("VAUL_storm1a_07_23_NO3_FI",VAUL_storm1a_07_23_NO3_FI[[2]]),
+  c("VAUL_storm1b_07_27_NO3_FI",VAUL_storm1b_07_27_NO3_FI[[2]]),
+  c("VAUL_storm2_08_05_NO3_FI",VAUL_storm2_08_05_NO3_FI[[2]]),
   c("VAUL_storm3_08_08_NO3_FI",VAUL_storm3_08_08_NO3_FI[[2]]),
   c("VAUL_storm4a_08_15_NO3_FI",VAUL_storm4a_08_15_NO3_FI[[2]]),
   c("VAUL_storm4b_08_20_NO3_FI",NA,NA,NA),
   c("VAUL_storm5a_08_23_NO3_FI",NA,NA,NA),
   c("VAUL_storm5b_08_26_NO3_FI",NA,NA,NA),
   
-  c("VAUL_storm1a_07_23_fDOM_FI",NA,NA,NA),
+  c("VAUL_storm1a_07_23_fDOM_FI",VAUL_storm1a_07_23_fDOM_FI[[2]]),
   c("VAUL_storm1b_07_27_fDOM_FI",NA,NA,NA),
   c("VAUL_storm2_08_05_fDOM_FI",NA,NA,NA),
   c("VAUL_storm3_08_08_fDOM_FI",VAUL_storm3_08_08_fDOM_FI[[2]]),
   c("VAUL_storm4a_08_15_fDOM_FI",VAUL_storm4a_08_15_fDOM_FI[[2]]),
-  c("VAUL_storm4b_08_20_fDOM_FI",NA,NA,NA),
+  c("VAUL_storm4b_08_20_fDOM_FI",VAUL_storm4b_08_20_fDOM_FI[[2]]),
   c("VAUL_storm5a_08_23_fDOM_FI",NA,NA,NA),
-  c("VAUL_storm5b_08_26_fDOM_FI",NA,NA,NA),
+  c("VAUL_storm5b_08_26_fDOM_FI",VAUL_storm5b_08_26_fDOM_FI[[2]]),
   
-  c("VAUL_storm1a_07_23_SPC_FI",NA,NA,NA),
+  c("VAUL_storm1a_07_23_SPC_FI",VAUL_storm1a_07_23_SPC_FI[[2]]),
   c("VAUL_storm1b_07_27_SPC_FI",NA,NA,NA),
   c("VAUL_storm2_08_05_SPC_FI",NA,NA,NA),
   c("VAUL_storm3_08_08_SPC_FI",VAUL_storm3_08_08_SPC_FI[[2]]),
   c("VAUL_storm4a_08_15_SPC_FI",VAUL_storm4a_08_15_SPC_FI[[2]]),
-  c("VAUL_storm4b_08_20_SPC_FI",NA,NA,NA),
+  c("VAUL_storm4b_08_20_SPC_FI",VAUL_storm4b_08_20_SPC_FI[[2]]),
   c("VAUL_storm5a_08_23_SPC_FI",NA,NA,NA),
-  c("VAUL_storm5b_08_26_SPC_FI",NA,NA,NA),
+  c("VAUL_storm5b_08_26_SPC_FI",VAUL_storm5b_08_26_SPC_FI[[2]]),
   
-  c("VAUL_storm1a_07_23_turb_FI",NA,NA,NA),
+  c("VAUL_storm1a_07_23_turb_FI",VAUL_storm1a_07_23_turb_FI[[2]]),
   c("VAUL_storm1b_07_27_turb_FI",NA,NA,NA),
   c("VAUL_storm2_08_05_turb_FI",NA,NA,NA),
   c("VAUL_storm3_08_08_turb_FI",VAUL_storm3_08_08_turb_FI[[2]]),
   c("VAUL_storm4a_08_15_turb_FI",VAUL_storm4a_08_15_turb_FI[[2]]),
-  c("VAUL_storm4b_08_20_turb_FI",NA,NA,NA),
+  c("VAUL_storm4b_08_20_turb_FI",VAUL_storm4b_08_20_turb_FI[[2]]),
   c("VAUL_storm5a_08_23_turb_FI",NA,NA,NA),
-  c("VAUL_storm5b_08_26_turb_FI",NA,NA,NA),
+  c("VAUL_storm5b_08_26_turb_FI",VAUL_storm5b_08_26_turb_FI[[2]]),
   
   c("CARI_storm1_05_16_NO3_FI",NA,NA,NA),
   c("CARI_storm2_06_01_NO3_FI",NA,NA,NA),
@@ -17506,6 +17573,7 @@ grid.arrange(HI_FI_NO3.p,HI_FI_fDOM.p,HI_FI_SPC.p,HI_FI_turb.p)
 
 
 
+
 ##############################################################################################################
 #######################################  Beta Test  ###########################################################
 ##############################################################################################################
@@ -17535,9 +17603,9 @@ for(i in 1:length(storm_list_beta)){
 
 
 #  organize storm data by site and solute # 5 for each storm 
-CARI_storm_list_beta = storm_list_beta[c(1:80)] #80
-FRCH_storm_list_beta = storm_list_beta[c(81:155)] #75
-MOOS_storm_list_beta = storm_list_beta[c(156:235)] #80
+CARI_storm_list_beta = storm_list_beta[c(1:65)] #65
+FRCH_storm_list_beta = storm_list_beta[c(66:140)] #75
+MOOS_storm_list_beta = storm_list_beta[c(141:220)] #80
 
 CARI_NO3_storm_list_beta = CARI_storm_list_beta[c(grep("NO3", names(CARI_storm_list_beta)))]
 CARI_fDOM_storm_list_beta = CARI_storm_list_beta[c(grep("fDOM", names(CARI_storm_list_beta)))]
@@ -17580,8 +17648,6 @@ for(i in 1:length(CARI_Q_storm_list_beta)){
 }
 
 # normalize solute data 
-CARI_NO3_storm_list_beta <- lapply(CARI_NO3_storm_list_beta, na.omit)
-
 #
 #NO3
 for(i in 1:length(FRCH_NO3_storm_list_beta)){
@@ -17746,27 +17812,27 @@ beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.ID) %>
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_NO3_storm$storm.ID = c(rep("storm1", 4769),
-                            rep("storm10", 3739),
-                            rep("storm11", 2879),
-                            rep("storm12a", 6299),
-                            rep("storm12b", 7762),
-                            rep("storm2", 2729),
-                            rep("storm3", 1776),
-                            rep("storm4a", 1229),
-                            rep("storm4b", 2729),
-                            rep("storm5a", 1169),
-                            rep("storm5b", 1829),
-                            rep("storm5c", 8639),
-                            rep("storm6", 9684),
-                            rep("storm7", 2519),
-                            rep("storm8", 2879),
-                            rep("storm9", 5399))
+CARI_NO3_storm$storm.ID = c(rep("storm10", 248),
+                            rep("storm11", 191),
+                            rep("storm12a", 418),
+                            rep("storm12b", 517),
+                            rep("storm2", 181),
+                            rep("storm3", 24),
+                            rep("storm5a", 77),
+                            rep("storm5b", 121),
+                            rep("storm5c", 575),
+                            rep("storm6", 644),
+                            rep("storm7", 167),
+                            rep("storm8", 191),
+                            rep("storm9", 359))
 
 names(CARI_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
 CARI_NO3_storm$site.ID <- "CARI"
 
 CARI_NO3_storm[cols] <- log(CARI_NO3_storm[cols]) # making concentrations and Q log transformed
+
+CARI_NO3_storm <- CARI_NO3_storm[is.finite(CARI_NO3_storm$Q.norm),] # removing +- inf
+CARI_NO3_storm <- CARI_NO3_storm[is.finite(CARI_NO3_storm$NO3.norm),]# removing +- inf
 
 slope <- function(x, y){
   mean_x <- mean(x)
@@ -17776,6 +17842,7 @@ slope <- function(x, y){
   m <- nom / denom
   return(m)
 }
+
 CARI_NO3_storm <- CARI_NO3_storm %>% group_by(storm.ID) %>% 
   mutate(limb = ifelse(DateTime < DateTime[which.max(Q.norm)], "ascending", "descending"))
 
@@ -17882,22 +17949,19 @@ beta.all.fDOM.moos.with.all <- MOOS_fDOM_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_fDOM_storm$storm.ID = c(rep("storm1", 4769),
-                            rep("storm10", 3739),
-                            rep("storm11", 2879),
-                            rep("storm12a", 6299),
-                            rep("storm12b", 7762),
-                            rep("storm2", 2729),
-                            rep("storm3", 1776),
-                            rep("storm4a", 1229),
-                            rep("storm4b", 2729),
-                            rep("storm5a", 1169),
-                            rep("storm5b", 1829),
-                            rep("storm5c", 8639),
-                            rep("storm6", 9684),
-                            rep("storm7", 2519),
-                            rep("storm8", 2879),
-                            rep("storm9", 5399))
+CARI_fDOM_storm$storm.ID = c(rep("storm10", 248),
+                             rep("storm11", 191),
+                             rep("storm12a", 418),
+                             rep("storm12b", 517),
+                             rep("storm2", 181),
+                             rep("storm3", 24),
+                             rep("storm5a", 77),
+                             rep("storm5b", 121),
+                             rep("storm5c", 575),
+                             rep("storm6", 644),
+                             rep("storm7", 167),
+                             rep("storm8", 191),
+                             rep("storm9", 359))
 
 names(CARI_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 CARI_fDOM_storm$site.ID <- "CARI"
@@ -18017,22 +18081,19 @@ beta.all.SPC.moos.with.all <- MOOS_SPC_storm_ascending %>% group_by(storm.ID) %>
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_SPC_storm$storm.ID = c(rep("storm1", 4769),
-                             rep("storm10", 3739),
-                             rep("storm11", 2879),
-                             rep("storm12a", 6299),
-                             rep("storm12b", 7762),
-                             rep("storm2", 2729),
-                             rep("storm3", 1776),
-                             rep("storm4a", 1229),
-                             rep("storm4b", 2729),
-                             rep("storm5a", 1169),
-                             rep("storm5b", 1829),
-                             rep("storm5c", 8639),
-                             rep("storm6", 9684),
-                             rep("storm7", 2519),
-                             rep("storm8", 2879),
-                             rep("storm9", 5399))
+CARI_SPC_storm$storm.ID = c(rep("storm10", 248),
+                            rep("storm11", 191),
+                            rep("storm12a", 418),
+                            rep("storm12b", 517),
+                            rep("storm2", 181),
+                            rep("storm3", 24),
+                            rep("storm5a", 77),
+                            rep("storm5b", 121),
+                            rep("storm5c", 575),
+                            rep("storm6", 644),
+                            rep("storm7", 167),
+                            rep("storm8", 191),
+                            rep("storm9", 359))
 
 names(CARI_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 CARI_SPC_storm$site.ID <- "CARI"
@@ -18153,22 +18214,19 @@ beta.all.turb.moos.with.all <- MOOS_turb_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_turb_storm$storm.ID = c(rep("storm1", 4769),
-                             rep("storm10", 3739),
-                             rep("storm11", 2879),
-                             rep("storm12a", 6299),
-                             rep("storm12b", 7762),
-                             rep("storm2", 2729),
-                             rep("storm3", 1776),
-                             rep("storm4a", 1229),
-                             rep("storm4b", 2729),
-                             rep("storm5a", 1169),
-                             rep("storm5b", 1829),
-                             rep("storm5c", 8639),
-                             rep("storm6", 9684),
-                             rep("storm7", 2519),
-                             rep("storm8", 2879),
-                             rep("storm9", 5399))
+CARI_turb_storm$storm.ID = c(rep("storm10", 248),
+                             rep("storm11", 191),
+                             rep("storm12a", 418),
+                             rep("storm12b", 517),
+                             rep("storm2", 181),
+                             rep("storm3", 24),
+                             rep("storm5a", 77),
+                             rep("storm5b", 121),
+                             rep("storm5c", 575),
+                             rep("storm6", 644),
+                             rep("storm7", 167),
+                             rep("storm8", 191),
+                             rep("storm9", 359))
 
 names(CARI_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 CARI_turb_storm$site.ID <- "CARI"
@@ -18391,6 +18449,8 @@ grid.arrange(FI_beta_comp_NO3, FI_beta_comp_fDOM, FI_beta_comp_SPC, FI_beta_comp
 
 
 
+
+
 ########################################## 2019 ##########################################################
 storm_file_list_beta <- list.files(path="~/Documents/Storms/Storm_Events/2019/FRCH_MOOS_VAUL_POKE_STRT_CARI/", 
                               recursive=F, 
@@ -18413,12 +18473,12 @@ for(i in 1:length(storm_list_beta)){
                                                             "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
 }
 #  organize storm data by site and solute # 5 for each storm 
-CARI_storm_list_beta = storm_list_beta[c(1:60)] #60
-FRCH_storm_list_beta = storm_list_beta[c(61:165)] #105
-MOOS_storm_list_beta = storm_list_beta[c(166:230)] #60
-POKE_storm_list_beta = storm_list_beta[c(231:295)]# 65
-STRT_storm_list_beta = storm_list_beta[c(296:350)] #55
-VAUL_storm_list_beta = storm_list_beta[c(351:410)] #65
+CARI_storm_list_beta = storm_list_beta[c(1:55)] #60
+FRCH_storm_list_beta = storm_list_beta[c(56:160)] #105
+MOOS_storm_list_beta = storm_list_beta[c(161:225)] #60
+POKE_storm_list_beta = storm_list_beta[c(226:290)]# 65
+STRT_storm_list_beta = storm_list_beta[c(291:345)] #55
+VAUL_storm_list_beta = storm_list_beta[c(346:405)] #65
 
 
 CARI_NO3_storm_list_beta = CARI_storm_list_beta[c(grep("NO3", names(CARI_storm_list_beta)))]
@@ -18662,7 +18722,6 @@ STRT_NO3_storm <- map2_df(STRT_Q_storm_list_beta, STRT_NO3_storm_list_beta, inne
 VAUL_NO3_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_NO3_storm_list_beta, inner_join, by = "valuedatetime")
 CARI_NO3_storm <- map2_df(CARI_Q_storm_list_beta, CARI_NO3_storm_list_beta, inner_join, by = "valuedatetime")
 
-
 FRCH_NO3_storm$storm.ID = c(rep("storm1", 993),
                    rep("storm10a", 121),
                    rep("storm10b", 95),
@@ -18857,9 +18916,6 @@ beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_NO3_storm <- CARI_NO3_storm[!duplicated(CARI_NO3_storm$valuedatetime), ] # duplicated values when imported 
-
-
 CARI_NO3_storm$storm.ID = c(rep("storm1", 371),
                             rep("storm2", 143),
                             rep("storm3", 72),
@@ -19115,20 +19171,19 @@ beta.all.fDOM.vaul <- VAUL_fDOM_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_fDOM_storm <- CARI_fDOM_storm[!duplicated(CARI_fDOM_storm$valuedatetime), ] # duplicated values when imported 
+CARI_fDOM_storm$storm.ID = c(rep("storm1", 371),
+                             rep("storm2", 143),
+                             rep("storm3", 72),
+                             rep("storm4", 0),
+                             rep("storm5", 135),
+                             rep("storm6a", 83),
+                             rep("storm6b", 235),
+                             rep("storm6c", 426),
+                             rep("storm6d", 135),
+                             rep("storm7a", 51),
+                             rep("storm7b", 217),
+                             rep("storm8", 267))
 
-CARI_fDOM_storm$storm.ID = c(rep("storm1", 5579),
-                            rep("storm2", 2159),
-                            rep("storm3", 1089),
-                            rep("storm4",2219),
-                            rep("storm5", 2039),
-                            rep("storm6a", 1259),
-                            rep("storm6b", 3540),
-                            rep("storm6c", 6404),
-                            rep("storm6d", 2039),
-                            rep("storm7a", 779),
-                            rep("storm7b", 3299),
-                            rep("storm8", 4018))
 
 names(CARI_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 CARI_fDOM_storm$site.ID <- "CARI"
@@ -19372,20 +19427,19 @@ beta.all.SPC.vaul <- VAUL_SPC_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # CARI #
-CARI_SPC_storm <- CARI_SPC_storm[!duplicated(CARI_SPC_storm$valuedatetime), ] # duplicated values when imported 
+CARI_SPC_storm$storm.ID = c(rep("storm1", 371),
+                            rep("storm2", 143),
+                            rep("storm3", 72),
+                            rep("storm4", 0),
+                            rep("storm5", 135),
+                            rep("storm6a", 83),
+                            rep("storm6b", 235),
+                            rep("storm6c", 426),
+                            rep("storm6d", 135),
+                            rep("storm7a", 51),
+                            rep("storm7b", 217),
+                            rep("storm8", 267))
 
-CARI_SPC_storm$storm.ID = c(rep("storm1", 5579),
-                             rep("storm2", 2159),
-                             rep("storm3", 1086),
-                             rep("storm4",2219),
-                             rep("storm5", 2038),
-                             rep("storm6a", 1259),
-                             rep("storm6b", 3540),
-                             rep("storm6c", 6438),
-                             rep("storm6d", 2039),
-                             rep("storm7a", 779),
-                             rep("storm7b", 3299),
-                             rep("storm8", 4058))
 
 names(CARI_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 CARI_SPC_storm$site.ID <- "CARI"
@@ -19629,20 +19683,19 @@ beta.all.turb.vaul <- VAUL_turb_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # CARI #
-CARI_turb_storm <- CARI_turb_storm[!duplicated(CARI_turb_storm$valuedatetime), ] # duplicated values when imported 
+CARI_turb_storm$storm.ID = c(rep("storm1", 371),
+                             rep("storm2", 143),
+                             rep("storm3", 72),
+                             rep("storm4", 0),
+                             rep("storm5", 135),
+                             rep("storm6a", 83),
+                             rep("storm6b", 235),
+                             rep("storm6c", 426),
+                             rep("storm6d", 135),
+                             rep("storm7a", 51),
+                             rep("storm7b", 217),
+                             rep("storm8", 267))
 
-CARI_turb_storm$storm.ID = c(rep("storm1", 5579),
-                            rep("storm2", 2159),
-                            rep("storm3", 1086),
-                            rep("storm4",2219),
-                            rep("storm5", 2038),
-                            rep("storm6a", 1259),
-                            rep("storm6b", 3540),
-                            rep("storm6c", 6438),
-                            rep("storm6d", 2039),
-                            rep("storm7a", 779),
-                            rep("storm7b", 3299),
-                            rep("storm8", 4058))
 
 names(CARI_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 CARI_turb_storm$site.ID <- "CARI"
@@ -20353,19 +20406,18 @@ beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_NO3_storm <- CARI_NO3_storm[!duplicated(CARI_NO3_storm$valuedatetime), ]
-CARI_NO3_storm$storm.ID = c(rep("storm1", 2505),
-                            rep("storm2a", 1559),
-                            rep("storm2b", 1439),
-                            rep("storm2c", 2339),
-                            rep("storm3", 4199),
-                            rep("storm4", 2339),
-                            rep("storm5", 3299),
-                            rep("storm6", 2759),
-                            rep("storm7", 4619),
-                            rep("storm8a", 1679),
-                            rep("storm8b", 7199),
-                            rep("storm9", 1499))
+CARI_NO3_storm$storm.ID = c(rep("storm1", 0),
+                            rep("storm2a", 103),
+                            rep("storm2b", 95),
+                            rep("storm2c", 155),
+                            rep("storm3", 262),
+                            rep("storm4", 155),
+                            rep("storm5", 219),
+                            rep("storm6", 183),
+                            rep("storm7", 307),
+                            rep("storm8a", 111),
+                            rep("storm8b", 473),
+                            rep("storm9", 99))
 
 names(CARI_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
 CARI_NO3_storm$site.ID <- "CARI"
@@ -20626,19 +20678,18 @@ beta.all.fDOM.vaul <- VAUL_fDOM_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_fDOM_storm <- CARI_fDOM_storm[!duplicated(CARI_fDOM_storm$valuedatetime), ]
-CARI_fDOM_storm$storm.ID = c(rep("storm1", 2505),
-                            rep("storm2a", 1559),
-                            rep("storm2b", 1439),
-                            rep("storm2c", 2339),
-                            rep("storm3", 4199),
-                            rep("storm4", 2339),
-                            rep("storm5", 3299),
-                            rep("storm6", 2759),
-                            rep("storm7", 4619),
-                            rep("storm8a", 1679),
-                            rep("storm8b", 7199),
-                            rep("storm9", 1499))
+CARI_fDOM_storm$storm.ID = c(rep("storm1", 0),
+                             rep("storm2a", 103),
+                             rep("storm2b", 95),
+                             rep("storm2c", 155),
+                             rep("storm3", 262),
+                             rep("storm4", 155),
+                             rep("storm5", 219),
+                             rep("storm6", 183),
+                             rep("storm7", 307),
+                             rep("storm8a", 111),
+                             rep("storm8b", 473),
+                             rep("storm9", 99))
 
 names(CARI_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 CARI_fDOM_storm$site.ID <- "CARI"
@@ -20896,19 +20947,18 @@ beta.all.SPC.vaul <- VAUL_SPC_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_SPC_storm <- CARI_SPC_storm[!duplicated(CARI_SPC_storm$valuedatetime), ]
-CARI_SPC_storm$storm.ID = c(rep("storm1", 2505),
-                            rep("storm2a", 1559),
-                            rep("storm2b", 1439),
-                            rep("storm2c", 2339),
-                            rep("storm3", 4199),
-                            rep("storm4", 2339),
-                            rep("storm5", 3299),
-                            rep("storm6", 2759),
-                            rep("storm7", 4619),
-                            rep("storm8a", 1679),
-                            rep("storm8b", 7199),
-                            rep("storm9", 1499))
+CARI_SPC_storm$storm.ID = c(rep("storm1", 0),
+                            rep("storm2a", 103),
+                            rep("storm2b", 95),
+                            rep("storm2c", 155),
+                            rep("storm3", 262),
+                            rep("storm4", 155),
+                            rep("storm5", 219),
+                            rep("storm6", 183),
+                            rep("storm7", 307),
+                            rep("storm8a", 111),
+                            rep("storm8b", 473),
+                            rep("storm9", 99))
 
 names(CARI_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 CARI_SPC_storm$site.ID <- "CARI"
@@ -21169,19 +21219,18 @@ beta.all.turb.vaul <- VAUL_turb_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_turb_storm <- CARI_turb_storm[!duplicated(CARI_turb_storm$valuedatetime), ]
-CARI_turb_storm$storm.ID = c(rep("storm1", 2505),
-                            rep("storm2a", 1559),
-                            rep("storm2b", 1439),
-                            rep("storm2c", 2339),
-                            rep("storm3", 4199),
-                            rep("storm4", 2339),
-                            rep("storm5", 3299),
-                            rep("storm6", 2759),
-                            rep("storm7", 4619),
-                            rep("storm8a", 1679),
-                            rep("storm8b", 7199),
-                            rep("storm9", 1499))
+CARI_turb_storm$storm.ID = c(rep("storm1", 0),
+                             rep("storm2a", 103),
+                             rep("storm2b", 95),
+                             rep("storm2c", 155),
+                             rep("storm3", 262),
+                             rep("storm4", 155),
+                             rep("storm5", 219),
+                             rep("storm6", 183),
+                             rep("storm7", 307),
+                             rep("storm8a", 111),
+                             rep("storm8b", 473),
+                             rep("storm9", 99))
 
 names(CARI_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 CARI_turb_storm$site.ID <- "CARI"
@@ -21427,12 +21476,12 @@ names(storm_list_beta) = storm_file_list_beta
 
 
 #  organize storm data by site and solute # 5 for each storm 
-CARI_storm_list_beta = storm_list_beta[c(1:50)] #50
-FRCH_storm_list_beta = storm_list_beta[c(51:100)] #50
-MOOS_storm_list_beta = storm_list_beta[c(101:150)] #50
-POKE_storm_list_beta = storm_list_beta[c(151:200)]# 50
-STRT_storm_list_beta = storm_list_beta[c(201:225)] #25
-VAUL_storm_list_beta = storm_list_beta[c(226:265)] #40
+CARI_storm_list_beta = storm_list_beta[c(1:55)] #50
+FRCH_storm_list_beta = storm_list_beta[c(56:105)] #50
+MOOS_storm_list_beta = storm_list_beta[c(106:155)] #50
+POKE_storm_list_beta = storm_list_beta[c(156:205)]# 50
+STRT_storm_list_beta = storm_list_beta[c(206:230)] #25
+VAUL_storm_list_beta = storm_list_beta[c(231:270)] #40
 
 for(i in 1:length(CARI_storm_list_beta)){
   CARI_storm_list_beta[[i]][["valuedatetime"]] = as.POSIXct(CARI_storm_list_beta[[i]][["valuedatetime"]],
