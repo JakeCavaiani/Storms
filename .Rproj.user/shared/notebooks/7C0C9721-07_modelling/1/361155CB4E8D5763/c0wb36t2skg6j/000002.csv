@@ -1,0 +1,8 @@
+"0","# all together"
+"0","ggplot(HI_FI_NO3, aes(Flush_index, beta)) + geom_point(aes(colour=factor(site.ID)), size = 4) +"
+"0","  ylim(-1.5, 1.5) + xlim(-1.5, 1.5) +"
+"0","  geom_smooth(method = ""lm"", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + "
+"0","  stat_poly_eq(formula = y~x,"
+"0","               label.y = ""top"", label.x = ""right"","
+"0","               aes(label = paste(..eq.label.., ..rr.label.., sep = ""~~~"")), "
+"0","               parse = TRUE)"
