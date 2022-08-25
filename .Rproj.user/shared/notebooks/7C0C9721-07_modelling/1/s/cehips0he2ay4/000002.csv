@@ -1,0 +1,4 @@
+"0","M12.SPC.beta <- lmer(f12.SPC_beta, data = SPC_data_beta)
+"
+"2","boundary (singular) fit: see ?isSingular
+"

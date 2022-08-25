@@ -1,0 +1,4 @@
+"0","f12.NO3_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))"
+"0",""
+"0","M12.NO3.beta <- lmer(f12.NO3_beta, data = NO3_data_beta)"
+"0",""

@@ -1,0 +1,5 @@
+"0",""
+"0","f10.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (0 + PrecipWeek|site.ID) + (1|site.ID))"
+"0",""
+"0","M10.fDOM <- lmer(f10.fDOM, data = fDOM_data)"
+"0",""

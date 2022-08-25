@@ -1,0 +1,12 @@
+"0","f0 <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))"
+"0",""
+"0","Moose.model <- lmer(f0, REML = TRUE, data = NO3_data_MOOS)"
+"0","French.model <- lmer(f0, REML = TRUE, data = NO3_data_FRCH)"
+"0","Caribou.model <- lmer(f0, REML = TRUE, data = NO3_data_CARI)"
+"0","Poker.model <- lmer(f0, REML = TRUE, data = NO3_data_POKE)"
+"2","boundary (singular) fit: see ?isSingular
+"
+"0","Vault.model <- lmer(f0, REML = TRUE, data = NO3_data_VAUL)"
+"0","Stuart.model <- lmer(f0, REML = TRUE, data = NO3_data_STRT)"
+"2","boundary (singular) fit: see ?isSingular
+"

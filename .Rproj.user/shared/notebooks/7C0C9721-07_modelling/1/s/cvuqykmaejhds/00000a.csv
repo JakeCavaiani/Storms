@@ -1,0 +1,2 @@
+"0","pr.no3 <- ggpredict(M3, terms = c(""PrecipWeek""))"
+"0","plot(pr.no3, add.data = TRUE)"

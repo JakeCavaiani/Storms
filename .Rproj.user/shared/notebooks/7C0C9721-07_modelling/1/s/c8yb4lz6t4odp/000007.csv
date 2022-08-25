@@ -1,0 +1,3 @@
+"0","pr <- ggpredict(M10.NO3.beta, terms = c(""PrecipWeek""))"
+"0","plot(pr, add.data = TRUE)"
+"0",""

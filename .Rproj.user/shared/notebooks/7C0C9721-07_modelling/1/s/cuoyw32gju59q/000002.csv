@@ -1,0 +1,5 @@
+"0","f11.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))"
+"0",""
+"0","M11.fDOM.beta <- lmer(f11.fDOM_beta, data = fDOM_data_beta)"
+"2","boundary (singular) fit: see ?isSingular
+"

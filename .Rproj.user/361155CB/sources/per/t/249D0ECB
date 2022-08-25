@@ -1,0 +1,27 @@
+{
+    "id": "249D0ECB",
+    "path": "~/Documents/Storms/R_Scripts/08_Results.R",
+    "project_path": "R_Scripts/08_Results.R",
+    "type": "r_source",
+    "hash": "2089980044",
+    "contents": "",
+    "dirty": false,
+    "created": 1659731195624.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "tempName": "Untitled2",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "1138,0",
+        "scrollLine": "1120"
+    },
+    "folds": "24|51|157|0|\n158|14|661|0|\n663|43|724|0|\n727|108|727|108|\n728|11|815|0|\n816|28|866|34|\n1255|10|1617|0|\n1618|10|2289|0|\n2290|10|2971|0|\n2972|10|3594|0|\n3598|10|3724|0|\n3725|10|3923|0|\n3924|10|4075|0|\n4076|10|4225|0|\n4228|17|4515|0|\n4516|13|4535|0|\n4536|31|5479|0|\n6021|48|6092|0|\n6093|48|6163|0|\n6164|48|6230|0|\n6231|17|6258|0|\n6259|23|6295|0|\n6297|15|6308|0|\n6309|31|6423|0|\n6424|30|6490|0|\n6491|35|6640|0|\n6641|31|6710|0|\n6711|14|6823|0|\n6824|30|6975|0|\n6976|31|7048|0|\n7051|105|7447|0|\n7448|5|7452|0|\n",
+    "lastKnownWriteTime": 1660612705,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1660612705747,
+    "read_only": false,
+    "read_only_alternatives": []
+}

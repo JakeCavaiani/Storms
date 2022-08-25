@@ -1,0 +1,5 @@
+"0","f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))"
+"0",""
+"0","M11.SPC <- lmer(f11, data = SPC_data)"
+"0",""
+"0",""

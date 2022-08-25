@@ -1,0 +1,5 @@
+"0","f12.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))"
+"0",""
+"0","M12.turb.beta <- lmer(f12.turb_beta, data = turb_data_beta)"
+"2","boundary (singular) fit: see ?isSingular
+"

@@ -1,0 +1,7 @@
+"0","HI_FI_SPC_MOOS <- subset(HI_FI_SPC, site.ID == ""MOOS"")"
+"0","HI_FI_SPC_FRCH <- subset(HI_FI_SPC, site.ID == ""FRCH"")"
+"0","HI_FI_SPC_CARI <- subset(HI_FI_SPC, site.ID == ""CARI"")"
+"0","HI_FI_SPC_POKE <- subset(HI_FI_SPC, site.ID == ""POKE"")"
+"0","HI_FI_SPC_VAUL <- subset(HI_FI_SPC, site.ID == ""VAUL"")"
+"0","HI_FI_SPC_STRT <- subset(HI_FI_SPC, site.ID == ""STRT"")"
+"0",""

@@ -1,0 +1,8 @@
+"0","Moose.model <- lmer(f0, REML = TRUE, data = turb_data_MOOS)"
+"0","French.model <- lmer(f0, REML = TRUE, data = turb_data_FRCH)"
+"0","Caribou.model <- lmer(f0, REML = TRUE, data = turb_data_CARI)"
+"2","boundary (singular) fit: see ?isSingular
+"
+"0","Poker.model <- lmer(f0, REML = TRUE, data = turb_data_POKE)"
+"0","Vault.model <- lmer(f0, REML = TRUE, data = turb_data_VAUL)"
+"0","Stuart.model <- lmer(f0, REML = TRUE, data = turb_data_STRT)"

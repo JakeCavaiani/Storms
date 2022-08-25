@@ -1,0 +1,3 @@
+"0","turb_data.3 <- HI_FI_turb[,c(""Hyst_index"",""PrecipMonth"")]"
+"0",""
+"0","pairs(turb_data.3)"
