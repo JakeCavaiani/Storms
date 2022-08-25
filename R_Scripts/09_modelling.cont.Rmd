@@ -1,0 +1,4454 @@
+---
+title: "09_modelling_cont."
+author: "Jake Cavaiani"
+date: "3/24/2022"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r load-packages, include=FALSE}
+library(magrittr)
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+library(data.table)
+library(scales)
+library(lme4)
+library(nlme)
+library(datasets)
+library(arm)
+library(AICcmodavg)
+library(gridExtra)
+library(grid)
+library(ggpmisc)
+library(boot)
+library(here)
+library(broom)
+library(viridis)
+library(car)
+library(MuMIn)
+library(ggeffects)
+library(dotwhisker)
+```
+
+```{r}
+# Read in data # 
+antecedent_HI_FI_1_0 <- read_csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/antecedent_HI_FI_1.0.csv") # read in data 
+# antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[,-c(1:2,14:15,17,19)] # cleaning up columns that are unnecessary 
+
+antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[,-c(1:2,14:15,17,27)] # cleaning up columns that are unnecessary 
+
+# colNames <- c("Hyst_index", "HI_ymin", "HI_ymax", "site.ID", "storm.ID", "month", "day", "response_var", "Flush_index", "FI_ymin", "FI_ymax", "year", "beta", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Duration", "Intensity", "doy", "burn", "pf", "date", "TimeSinceChena")
+
+colNames <- c("Hyst_index", "HI_ymin", "HI_ymax", "site.ID", "storm.ID", "month", "day", "response_var", "Flush_index", "FI_ymin", "FI_ymax", "year", "Parameter", "Beta_index", "SE", "CI", "Beta_ymin", "Beta_ymax", "t", "df_error", "p", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Duration", "Intensity", "doy", "burn", "pf", "date", "TimeSinceChena")
+
+names(antecedent_HI_FI_1_0)<- colNames # renaming columns 
+
+# filling in holes that the automated script did not do correctly 
+# Duration is 28
+# Intensity is 29
+antecedent_HI_FI_1_0[c(306:310), 28] <- 68.75
+antecedent_HI_FI_1_0[c(306:310), 29] <- 0.01454545
+
+antecedent_HI_FI_1_0[c(313:315), 28] <- 68.75
+antecedent_HI_FI_1_0[c(313:315), 29] <- 0.01454545
+
+antecedent_HI_FI_1_0[c(327:330), 28] <- 61.25
+antecedent_HI_FI_1_0[c(327:330), 29] <- 0.07183673
+
+antecedent_HI_FI_1_0[c(628:631), 28] <- 21.25
+antecedent_HI_FI_1_0[c(628:631), 29] <- 0.09411765
+
+antecedent_HI_FI_1_0[c(650:652), 28] <- 30.25
+antecedent_HI_FI_1_0[c(650:652), 29] <- 0.2181818
+
+antecedent_HI_FI_1_0[c(656:657), 28] <- 23.5
+antecedent_HI_FI_1_0[c(656:657), 29] <- 0.03404255
+
+antecedent_HI_FI_1_0[c(810:813), 28] <- 30.5
+antecedent_HI_FI_1_0[c(810:813), 29] <- 0.1901639
+
+antecedent_HI_FI_1_0[c(848:850), 28] <- 58.5
+antecedent_HI_FI_1_0[c(848:850), 29] <- 0.1628205
+
+antecedent_HI_FI_1_0[c(885:888), 28] <- 31.5
+antecedent_HI_FI_1_0[c(885:888), 29] <- 0.1777778
+
+# column 22 is SP
+antecedent_HI_FI_1_0[c(86), 22] <- 6.604
+antecedent_HI_FI_1_0[c(86), 23] <- 13.560411
+antecedent_HI_FI_1_0[c(86), 24] <- 9.779
+antecedent_HI_FI_1_0[c(86), 25] <- 79.756
+antecedent_HI_FI_1_0[c(86), 26] <- 79.756
+antecedent_HI_FI_1_0[c(86), 27] <- 6.389494
+antecedent_HI_FI_1_0[c(86), 28] <- 32.46667
+antecedent_HI_FI_1_0[c(86), 29] <- 0.203408624
+antecedent_HI_FI_1_0[c(86), 30] <- 179.2299
+antecedent_HI_FI_1_0[c(86), 31] <- "burned"
+antecedent_HI_FI_1_0[c(86), 32] <- "medium"
+
+antecedent_HI_FI_1_0[c(86), 34] <- 38.22986
+
+antecedent_HI_FI_1_0[c(110), 22] <- 2.667
+antecedent_HI_FI_1_0[c(110), 23] <- 7.809827
+antecedent_HI_FI_1_0[c(110), 24] <- 8.255
+antecedent_HI_FI_1_0[c(110), 25] <- 109.474000
+antecedent_HI_FI_1_0[c(110), 26] <- 175.641000
+antecedent_HI_FI_1_0[c(110), 27] <- 9.680474
+antecedent_HI_FI_1_0[c(110), 28] <- 47.96667
+antecedent_HI_FI_1_0[c(110), 29] <- 0.055601112
+antecedent_HI_FI_1_0[c(110), 30] <- 235.4590
+antecedent_HI_FI_1_0[c(110), 31] <- "burned"
+antecedent_HI_FI_1_0[c(110), 32] <- "medium"
+#antecedent_HI_FI_1_0[c(110), 25] <- "2018-06-29"
+antecedent_HI_FI_1_0[c(110), 34] <- 94.45903
+
+antecedent_HI_FI_1_0[c(126:127), 22] <- 40.640
+antecedent_HI_FI_1_0[c(126:127), 23] <- 4.928689
+antecedent_HI_FI_1_0[c(126:127), 24] <- 21.082
+antecedent_HI_FI_1_0[c(126:127), 25] <- 26.543
+antecedent_HI_FI_1_0[c(126:127), 26] <- 26.543
+antecedent_HI_FI_1_0[c(126:127), 27] <- 5.977116
+antecedent_HI_FI_1_0[c(126:127), 28] <- 104.96667
+antecedent_HI_FI_1_0[c(126:127), 29] <- 0.387170530
+antecedent_HI_FI_1_0[c(126:127), 30] <- 262.9174
+antecedent_HI_FI_1_0[c(126:127), 31] <- "burned"
+antecedent_HI_FI_1_0[c(126:127), 32] <- "medium"
+#antecedent_HI_FI_1_0[c(126:127), 25] <- "2018-06-29"
+antecedent_HI_FI_1_0[c(126:127),34] <- 121.91736
+
+antecedent_HI_FI_1_0[c(130), 22] <- 4.572
+antecedent_HI_FI_1_0[c(130), 23] <- 4.103419
+antecedent_HI_FI_1_0[c(130), 24] <- 48.133
+antecedent_HI_FI_1_0[c(130), 25] <- 67.183
+antecedent_HI_FI_1_0[c(130), 26] <- 67.183
+antecedent_HI_FI_1_0[c(130), 27] <- 5.676306
+antecedent_HI_FI_1_0[c(130), 28] <- 130.96667
+antecedent_HI_FI_1_0[c(130), 29] <- 0.034909646
+antecedent_HI_FI_1_0[c(130), 30] <- 267.3340
+antecedent_HI_FI_1_0[c(130), 31] <- "burned"
+antecedent_HI_FI_1_0[c(130), 32] <- "medium"
+#antecedent_HI_FI_1_0[c(130), 25] <- "2018-06-29"
+antecedent_HI_FI_1_0[c(130), 26] <- 126.33403
+
+antecedent_HI_FI_1_0[c(305), 31] <- "burned"
+antecedent_HI_FI_1_0[c(305), 32] <- "high"
+
+antecedent_HI_FI_1_0[c(313), 22] <- 37.600
+antecedent_HI_FI_1_0[c(313), 23] <- 12.7643333
+antecedent_HI_FI_1_0[c(313), 24] <- 54.800
+antecedent_HI_FI_1_0[c(313), 25] <- 106.600
+antecedent_HI_FI_1_0[c(313), 26] <- 229.000
+antecedent_HI_FI_1_0[c(313), 27] <- 12.263147
+antecedent_HI_FI_1_0[c(313), 28] <- 68.75
+antecedent_HI_FI_1_0[c(313), 29] <- 0.014545450
+antecedent_HI_FI_1_0[c(313), 30] <- 216.6042
+antecedent_HI_FI_1_0[c(313), 31] <- "burned"
+antecedent_HI_FI_1_0[c(313), 32] <- "high"
+#antecedent_HI_FI_1_0[c(313), 25] <- "2018-06-29"
+#antecedent_HI_FI_1_0[c(313), 26] <- 79.60417
+
+antecedent_HI_FI_1_0[c(339:342), 31] <- "burned"
+antecedent_HI_FI_1_0[c(339:342), 32] <- "high"
+
+antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[-658,]
+
+antecedent_HI_FI_1_0[c(750), 31] <- "burned"
+antecedent_HI_FI_1_0[c(750), 32] <- "medium"
+
+which(antecedent_HI_FI_1_0$site.ID == "MOOS")
+# i have a discrepency with is MOOS is burned or not....2018/2019 are listed as burned and 2020/2021 are listed as unburned....MOOS is catergorized as BURNED
+
+antecedent_HI_FI_1_0[c(503:532, 817:846), 31] <- "burned"
+
+antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[-c(1:4,9,35:41,43,82:85,106:109, 
+                                                153:156, 158:160,162:164,166:168,170:172,221:226,265:279,298:301,343:354,370:373,387:402,
+                                                459:462,530,533:540,561:564,574:575,593:596,674:677,695:698,711:718,
+                                                786,850,893:896,918:921,946:949), ] # removing storms that do not have a Q response
+
+antecedent_HI_FI_1_0[c(251,285,363,408,515,583,615,699), 14] <- NA # removing errant Beta values that are close to 25-50ish 
+
+##subsetting by solute 
+# NO3 #
+HI_FI_NO3 = subset(antecedent_HI_FI_1_0, response_var == "NO3")
+# fDOM #
+HI_FI_fDOM = subset(antecedent_HI_FI_1_0, response_var == "fDOM")
+# SPC #
+HI_FI_SPC = subset(antecedent_HI_FI_1_0, response_var == "SPC")
+# turb #
+HI_FI_turb = subset(antecedent_HI_FI_1_0, response_var == "turb")
+
+```
+
+#########################################################################################################
+##################################### HI vs. FI #########################################################
+#########################################################################################################
+``` {r}
+
+HI_FI_NO3.p = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = pf), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  ylab("HI") +
+  xlab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p
+```
+Doesnt look like there is too much of a pattern here....slightly more (+) HI and slightly more (-) FI
+
+
+### HI vs. FI ### PF
+``` {r}
+
+HI_FI_fDOM$site.ID <- factor(HI_FI_fDOM$site.ID, levels = c('FRCH','MOOS','CARI','POKE','STRT', 'VAUL'))
+
+HI_FI_fDOM.p = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = pf), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_fDOM.p
+```
+Looks like there is a clear pattern with VAUL and MOOS as it usually dilutes during a storm meanwhile CARI and the other sites flush more frequently
+
+
+### HI vs. FI
+``` {r}
+HI_FI_SPC$site.ID <- factor(HI_FI_SPC$site.ID, levels = c('FRCH','MOOS','CARI','POKE','STRT', 'VAUL'))
+
+HI_FI_SPC.p = 
+  ggplot(HI_FI_SPC, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = pf), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+
+  xlab("FI") + 
+  ylab("HI") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_SPC.p
+```
+Mostly a dilution and clockwise effect for SPC 
+
+### HI vs. FI
+``` {r}
+HI_FI_turb$site.ID <- factor(HI_FI_turb$site.ID, levels = c('FRCH','MOOS','POKE','STRT','VAUL', 'CARI'))
+
+HI_FI_turb.p = 
+  ggplot(HI_FI_turb, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = pf), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) Turb")+ 
+  xlab("FI") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_turb.p
+
+```
+This seems like we would expect...a mostly flushing effect during storms
+
+
+
+``` {r}
+library(ggpubr)
+ggarrange(HI_FI_NO3.p, HI_FI_fDOM.p, HI_FI_SPC.p, HI_FI_turb.p, ncol=2, nrow=2, common.legend = TRUE, legend="right")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI_FI_permafrost.pdf", width = 10, height = 10, device = "pdf")
+```
+
+### HI vs. FI ### FIRE
+``` {r}
+
+HI_FI_NO3.p.fire = 
+  ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = burn), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("a) NO3-")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_NO3.p.fire
+```
+
+
+``` {r}
+
+HI_FI_fDOM.p.fire = 
+  ggplot(HI_FI_fDOM, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = burn), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_fDOM.p.fire
+```
+
+``` {r}
+HI_FI_SPC.p.fire = 
+  ggplot(HI_FI_SPC, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = burn), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("c) SPC")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_SPC.p.fire
+```
+
+``` {r}
+HI_FI_turb.p.fire = 
+  ggplot(HI_FI_turb, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = burn), size = 4)+
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("d) Turb")+ 
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+HI_FI_turb.p.fire
+
+```
+``` {r}
+
+ggarrange(HI_FI_NO3.p.fire, HI_FI_fDOM.p.fire, HI_FI_SPC.p.fire, HI_FI_turb.p.fire, ncol=2, nrow=2, common.legend = TRUE, legend="right")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI_FI_fire.pdf", width = 10, height = 10, device = "pdf")
+```
+
+
+``` {r}
+ggplot() + 
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "MOOS",], 
+               aes(x=Hyst_index), fill="#6A3D9A",alpha=0.5) +
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "FRCH",], 
+               aes(x=Hyst_index), fill="#2D004B", alpha=0.5) +
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "CARI",], 
+               aes(x=Hyst_index), fill="#FF7F00", alpha=0.5) +
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "POKE",], 
+               aes(x=Hyst_index), fill="#3288BD", alpha=0.5) +
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "VAUL",], 
+               aes(x=Hyst_index), fill="#ABDDA4", alpha=0.5) +
+  geom_density(data=HI_FI_NO3[HI_FI_NO3$site.ID == "STRT",], 
+               aes(x=Hyst_index), fill="#66C2A5", alpha=0.5) +
+  ylab("Density") +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", hjust = 0.5, size =18),
+        panel.grid = element_blank(),
+        panel.border = element_rect(color = "black", size = 2),
+        axis.text = element_text(size = 18),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        plot.margin = margin(.5,2,.5,.5, "cm"))
+
+ggplot() + 
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "MOOS",], 
+               aes(x=Hyst_index), fill="#6A3D9A",alpha=0.5) +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "FRCH",], 
+               aes(x=Hyst_index), fill="#2D004B", alpha=0.5) +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "CARI",], 
+               aes(x=Hyst_index), fill="#FF7F00", alpha=0.5) +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "POKE",], 
+               aes(x=Hyst_index), fill="#3288BD", alpha=0.5) +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "VAUL",], 
+               aes(x=Hyst_index), fill="#ABDDA4", alpha=0.5) +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "STRT",], 
+               aes(x=Hyst_index), fill="#66C2A5", alpha=0.5) +
+  ylab("Density") +
+  theme_bw() +
+  theme(legend.position = "none",
+        plot.title = element_text(face = "bold", hjust = 0.5, size =18),
+        panel.grid = element_blank(),
+        panel.border = element_rect(color = "black", size = 2),
+        axis.text = element_text(size = 18),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        plot.margin = margin(.5,2,.5,.5, "cm"))
+
+```
+
+``` {r} 
+ggplot() + 
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "MOOS",], 
+               aes(x=Hyst_index), fill="#6A3D9A",alpha=0.5) +
+  xlim(-1,1) +
+  theme_classic()
+
+HI_FI_fDOM %>% filter(site.ID == "MOOS") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = pf), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#6A3D9A", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+HI_FI_fDOM %>% filter(site.ID == "MOOS") %>%
+  ggplot(aes(doy, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = as.factor(year)), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  scale_color_manual(values = "#6A3D9A", "Catchment")+
+  theme_bw() +
+  ylim(-1.5, 1.5) +
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+library(ggExtra)
+
+
+```
+
+``` {r} 
+
+ggplot()+
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "VAUL",], 
+               aes(x=Hyst_index), fill="#ABDDA4", alpha=0.5) + 
+               xlim(-1,1) + 
+  theme_classic()
+HI_FI_fDOM %>% filter(site.ID == "VAUL") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = pf), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#ABDDA4", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+
+
+```
+
+``` {r} 
+ggplot() +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "POKE",], 
+               aes(x=Hyst_index), fill="#3288BD", alpha=0.5) +
+  xlim(-1,1) +
+  theme_classic()
+
+HI_FI_fDOM %>% filter(site.ID == "POKE") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = pf), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#3288BD", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+```
+
+``` {r} 
+ggplot() +
+geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "CARI",], 
+               aes(x=Hyst_index), fill="#FF7F00", alpha=0.5) +
+  xlim(-1,1) +
+  theme_classic()
+
+HI_FI_fDOM %>% filter(site.ID == "CARI") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = pf), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#FF7F00", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+```
+
+``` {r} 
+ggplot() +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "STRT",], 
+               aes(x=Hyst_index), fill="#66C2A5", alpha=0.5) +
+  xlim(-1,1) +
+  theme_classic()
+
+HI_FI_fDOM %>% filter(site.ID == "STRT") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = as.factor(year)), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#66C2A5", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+```
+
+``` {r} 
+ggplot() +
+  geom_density(data=HI_FI_fDOM[HI_FI_fDOM$site.ID == "FRCH",], 
+               aes(x=Hyst_index), fill="#2D004B", alpha=0.5) +
+  xlim(-1,1) +
+  theme_classic()
+
+HI_FI_fDOM %>% filter(site.ID == "FRCH") %>%
+  ggplot(aes(beta, Hyst_index)) +
+  geom_point(aes(color = factor(site.ID), shape = as.factor(year)), size = 4) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_hline(yintercept = 0) + geom_vline(xintercept = 0)+
+  geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
+  scale_color_manual(values = "#2D004B", "Catchment")+theme_bw() +
+  ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
+  ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
+  theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
+
+```
+
+### SCALING 
+```{r, echo=FALSE}
+
+is.na(antecedent_HI_FI_1_0) <- sapply(antecedent_HI_FI_1_0, is.na) # removing any NAs
+
+# scaling data # 
+#scaling # 
+antecedent_HI_FI_1_0[c("StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena")] <- lapply(antecedent_HI_FI_1_0[c("StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena")], function(x) c(scale(x)))
+
+HI_FI_NO3 = subset(antecedent_HI_FI_1_0, response_var == "NO3")
+# fDOM #
+HI_FI_fDOM = subset(antecedent_HI_FI_1_0, response_var == "fDOM")
+# SPC #
+HI_FI_SPC = subset(antecedent_HI_FI_1_0, response_var == "SPC")
+# turb #
+HI_FI_turb = subset(antecedent_HI_FI_1_0, response_var == "turb")
+
+```
+
+### Scatter plot matrix ####
+
+
+``` {r}
+NO3_data.1 <- HI_FI_NO3[,c("Hyst_index","StormPrecip")]
+
+pairs(NO3_data.1)
+
+HI_FI_NO3 %>% ggplot(aes(x = StormPrecip, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormPrecip")
+
+```
+
+
+``` {r}
+NO3_data.2 <- HI_FI_NO3[,c("Hyst_index","PrecipWeek")]
+
+pairs(NO3_data.2)
+
+HI_FI_NO3 %>% ggplot(aes(x = PrecipWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipWeek")
+
+
+
+
+```
+
+``` {r}
+NO3_data.3 <- HI_FI_NO3[,c("Hyst_index","PrecipMonth")]
+
+pairs(NO3_data.3)
+
+HI_FI_NO3 %>% ggplot(aes(x = PrecipMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipMonth")
+
+```
+
+``` {r}
+NO3_data.4 <- HI_FI_NO3[,c("Hyst_index","ThreeMonth")]
+
+pairs(NO3_data.4)
+HI_FI_NO3_CARI <- filter(HI_FI_NO3, site.ID == "CARI")
+HI_FI_NO3_FRCH <- filter(HI_FI_NO3, site.ID == "FRCH")
+HI_FI_NO3_MOOS <- filter(HI_FI_NO3, site.ID == "MOOS")
+HI_FI_NO3_POKE <- filter(HI_FI_NO3, site.ID == "POKE")
+HI_FI_NO3_VAUL <- filter(HI_FI_NO3, site.ID == "VAUL")
+HI_FI_NO3_STRT <- filter(HI_FI_NO3, site.ID == "STRT")
+
+HI_FI_NO3_CARI %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+HI_FI_NO3_FRCH %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+HI_FI_NO3_MOOS %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+HI_FI_NO3_POKE %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+HI_FI_NO3_VAUL %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+HI_FI_NO3_STRT %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) +
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = year), size = 2)
+
+
+ 
+HI_FI_NO3 %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. ThreeMonth")
+
+```
+Caribou potentially not right 
+``` {r}
+NO3_data.5 <- HI_FI_NO3[,c("Hyst_index","Intensity")]
+
+HI_FI_NO3 %>% ggplot(aes(x = Intensity, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. Intensity")
+
+pairs(NO3_data.5)
+
+```
+
+
+``` {r}
+NO3_data.6 <- HI_FI_NO3[,c("Hyst_index","StormTemp")]
+
+pairs(NO3_data.6)
+
+HI_FI_NO3 %>% ggplot(aes(x = StormTemp, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormTemp")
+
+```
+
+``` {r}
+NO3_data.7 <- HI_FI_NO3[,c("Hyst_index","TempWeek")]
+
+pairs(NO3_data.7)
+
+HI_FI_NO3 %>% ggplot(aes(x = TempWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormTemp")
+```
+
+
+``` {r}
+NO3_data.8 <- HI_FI_NO3[,c("Hyst_index","TimeSinceChena")]
+
+pairs(NO3_data.8)
+
+HI_FI_NO3 %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha = 0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID, shape = as.factor(year)), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. StormTemp")
+
+
+
+```
+
+#### Correlation 
+``` {r}
+NO3_data <- HI_FI_NO3[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data <- na.omit(NO3_data) # 236 to 223 rows 
+cor(NO3_data[,c(1,3:10)])
+
+```
+1) Storm temperature is heavily correlated with temperature a week leading up to a storm (0.794) but storm temperature is slightly more correlated with HI (-0.173 vs. -0.164)
+
+2) Storm temperature is also correlated with time since chena (-0.735) but time since chena is more correlated with HI (0.251 vs. -0.173) so this makes me want to keep Time since Chena and temperature a week before considering that is a more marginal comparison with HI and the temperature predictors. 
+
+3)Precip week is correlated with precip month (0.511) but precip week is more correlated with HI than precip month (-0.242 vs. 0.048)
+
+4)Precip month is correlated with three month precip (0.591) but three month precip is more correlated with HI (0.220 vs. 0.048)
+
+5) Three month is correlated with Time since Chena (0.619) but time since chena is more correlated with HI (0.251 vs. 0.220)
+
+* to sum up this makes me want to drop storm temperature and three month precipitation.....but lets run the model with all of the candidate predictors first and go from there 
+
+```{r, echo=FALSE}
+f0 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M0 <- lmer(f0, REML = TRUE, data = NO3_data)
+
+summary(M0)
+
+```
+1) Scaled residulas look pretty good as our median is close to 0 and our quartiles are roughly the same
+
+2) This shows us that the site explains 0 of our variance which doesn't make complete sence
+
+3) This makes it seem that precip week and storm precip are the most significant in HI which doesnt make sense when we have time since chena as the highest cor factor with HI
+
+```{r, echo=FALSE}
+plot(M0)
+```
+1) Ideally the residual plot will show no fitted pattern. The red line should be horizontal at 0.
+
+This residual are spread equally along the ranges of predictors. It is good to see a horizontal line with equal spread points
+
+```{r, echo=FALSE}
+qqnorm(resid(M0))
+```
+1) Ideally the QQ plot should be a straight line to visually check the normality assumptions. If it is not a straight line we can try log transforming the response variable but this looks pretty good.
+
+
+```{r}
+vif(M0)
+``` 
+Anything above a 2 indicates a high correlation and should be removed....lets take StormTemp out and ThreeMonth
+
+```{r}
+f1 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID))
+
+M1 <- lmer(f1, data = NO3_data)
+summary(M1)
+vif(M1)
+```
+1) Our scaled residuals look good
+
+2) Site still not accounting for any variance
+
+3) This makes it seem like precip week leading up to the storm affects HI the most with precip month also significant 
+
+4) all VIFs are below 2 which is good!
+
+5) TimeSinceChena and TempWeek are correlated with each other at 0.61 which breaks our rule of not including anything >0.5. Should I keep it as is or get rid of TempWeek
+
+```{r, echo=FALSE}
+plot(M1)
+```
+
+### Partial residuals ###
+Plot partial residual for the interesting predictor – PrecipWeek
+
+```{r}
+pr <- ggpredict(M1, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/partial.residuals.pdf")
+```
+Visually look at the effect of PrecipWeek on HI and we would expect these to look like a nice regression model 
+```{r, echo=FALSE}
+qqnorm(resid(M1))
+```
+
+```{r}
+vif(M1)
+```
+TimeSinceChena and TempWeek are correlated (0.61) so lets try and remove TempWeek 
+
+```{r}
+f2 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TimeSinceChena + (1|site.ID))
+
+M2 <- lmer(f2, REML = TRUE, data = NO3_data)
+summary(M2)
+
+```
+
+```{r}
+pr <- ggpredict(M2, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+vif(M2)
+```
+
+```{r}
+f3 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (PrecipWeek|site.ID))
+
+M3 <- lmer(f3, REML = TRUE, data = NO3_data)
+summary(M3)
+
+```
+alter structure between random slopes and random intercepts
+
+```{r}
+pr.no3 <- ggpredict(M3, terms = c("PrecipWeek"))
+plot(pr.no3, add.data = TRUE)
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/partial.residuals.png", device = "png")
+```
+
+
+```{r}
+f10 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID))
+
+M10 <- lmer(f10, REML = TRUE, data = NO3_data)
+summary(M10)
+
+```
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11 <- lmer(f11, data = NO3_data)
+summary(M11)
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12 <- lmer(f12, data = NO3_data)
+
+
+```
+
+```{r}
+aictab(list(M0,M1,M2,M3,M10,M11,M12))
+```
+Mod3: Model without TempWeek, ThreeMonth, or StormTemp with a random intercept structure 
+Mod2: Model without ThreeMonth or StormTemp with a random intercept structure
+Mod5: Reduced model with random slopes and intercepts uncorrelated 
+Mod6: Reduced model with random effect of year and site 
+Mod7: Reduced model with random effect of year with uncorrelated structure 
+Mod4: Model without ThreeMonth or StormTemp with a random slope structure with (PrecipWeek|site.ID)
+Mod1: full model with all candidate predictors and random intercept structure
+
+This shows us that the random intercept structure is a better fit model 
+
+### Dot and Whisker plot ###
+
+```{r}
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = NO3_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+#ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/coefficient.png")
+
+```
+CI overlapping 0 are nonsignificant 
+
+
+```{r}
+summary(M1)
+anova(M0, M1, test = "Chi") 
+
+plot(M1, site.ID ~ resid(.), abline = 0 ) # generate diagnostic plots
+```
+Looking for equal variance -testing assumptions of the model 
+
+
+This plot shows us that there are some outliers in POKE and  that the variability within FRCH is greater than in other sites we therefore examine the sites in isolation standardized residuals versus fitted values
+
+```{r}
+plot(M1, resid(., type = "pearson") ~ fitted(.) | site.ID, id = 0.05, 
+     adj = -0.3, pch = 20, col = "gray40")
+```
+The plot shows the standardized residuals (or Pearson’s residuals) versus fitted values and suggests that there are outliers in the data (the names elements in the plots). To check if these outliers are a cause for concern, we will now use a Levene’s test to check if the variance is distributed homogeneously (homoscedasticity) or whether the assumption of variance homogeneity is violated (due to the outliers).
+
+
+### Mixed effect model is a pseudo r^2  ###
+```{r}
+sjPlot::tab_model(M1)
+```
+
+The R2 values of the summary table are incorrect (as indicated by the missing conditional R2 value). The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
+
+
+The marginal R2 (marginal coefficient of determination) represents the variance explained by the fixed effects while the conditional R2 is interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+```{r}
+r.squaredGLMM(M1)
+
+```
+random effect isnt explaining only explaining 15 % of the model....maybe dont need a random effect in the model at all if it is 0 
+```{r}
+sjPlot::plot_model(M1, type = "pred", terms = c("PrecipWeek")) +
+  # show uncentered date rather than centered date
+  scale_x_continuous(name = "PrecipWeek", 
+                     breaks = seq(-500, 300, 100), 
+                     labels = seq(1150, 1950, 100))
+
+```
+While we have already shown that the effect of PrecipWeek is significant, it is small which means that the HI does not correlate very strongly with PrecipWeek. This suggests that other factors that are not included in the model also influence HI (and probably more meaningfully, too).
+
+Before turning to the diagnostics, we will use the fitted (or predicted) and the observed values with a regression line for the predicted values. This will not only show how good the model fit the data but also the direction and magnitude of the effect.
+
+### Interactions ###
+### Permafrost ###
+```{r}
+f4 <- formula(Hyst_index ~ StormPrecip*pf + PrecipWeek*pf + PrecipMonth*pf + Intensity*pf  + TempWeek*pf + TimeSinceChena*pf + (1|site.ID))
+
+M4 <- lmer(f4, data = NO3_data)
+summary(M4)
+
+```
+This shows us if there is an interaction with any of our candidate predictors and permafrost extent and it doesnt seem like there is any
+
+### burn ###
+```{r}
+f5 <- formula(Hyst_index ~ StormPrecip*burn + PrecipWeek*burn + PrecipMonth*burn + Intensity*burn  + TempWeek*burn + TimeSinceChena*pf  + (1|site.ID))
+
+M5 <- lmer(f5, data = NO3_data)
+summary(M5)
+
+```
+This shows us if there is an interaction with any of our candidate predictors and burn vs. unburned catchments and it doesnt seem like there are any
+
+
+#########################################################################################################
+####################################### fDOM ############################################################
+#########################################################################################################
+
+#### Scatter plot matrix ####
+``` {r}
+
+HI_FI_fDOM_CARI <- filter(HI_FI_fDOM, site.ID == "CARI")
+HI_FI_fDOM_FRCH <- filter(HI_FI_fDOM, site.ID == "FRCH")
+HI_FI_fDOM_MOOS <- filter(HI_FI_fDOM, site.ID == "MOOS")
+HI_FI_fDOM_POKE <- filter(HI_FI_fDOM, site.ID == "POKE")
+HI_FI_fDOM_VAUL <- filter(HI_FI_fDOM, site.ID == "VAUL")
+HI_FI_fDOM_STRT <- filter(HI_FI_fDOM, site.ID == "STRT")
+
+fDOM_data.1 <- HI_FI_fDOM[,c("Hyst_index","StormPrecip")]
+
+pairs(fDOM_data.1)
+
+HI_FI_fDOM %>% ggplot(aes(x = StormPrecip, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. StormPrecip")
+
+
+
+
+```
+Big storms in FRCH but why not every where else 
+``` {r}
+fDOM_data.2 <- HI_FI_fDOM[,c("Hyst_index","PrecipWeek")]
+
+pairs(fDOM_data.2)
+
+HI_FI_fDOM %>% ggplot(aes(x = PrecipWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. PrecipWeek")
+
+```
+
+``` {r}
+fDOM_data.3 <- HI_FI_fDOM[,c("Hyst_index","PrecipMonth")]
+
+pairs(fDOM_data.3)
+
+HI_FI_fDOM %>% ggplot(aes(x = PrecipMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. PrecipMonth")
+
+```
+
+``` {r}
+fDOM_data.4 <- HI_FI_fDOM[,c("Hyst_index","ThreeMonth")]
+
+pairs(fDOM_data.4)
+
+HI_FI_fDOM %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. ThreeMonth")
+
+```
+
+
+``` {r}
+fDOM_data.5 <- HI_FI_fDOM[,c("Hyst_index","Intensity")]
+
+pairs(fDOM_data.5)
+
+HI_FI_fDOM %>% ggplot(aes(x = Intensity, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. Intensity")
+
+```
+
+
+``` {r}
+fDOM_data.6 <- HI_FI_fDOM[,c("Hyst_index","StormTemp")]
+
+pairs(fDOM_data.6)
+
+HI_FI_fDOM %>% ggplot(aes(x = StormTemp, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. StormTemp")
+
+```
+
+
+``` {r}
+fDOM_data.7 <- HI_FI_fDOM[,c("Hyst_index","TempWeek")]
+
+pairs(fDOM_data.7)
+
+HI_FI_fDOM %>% ggplot(aes(x = TempWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. TempWeek")
+
+```
+
+``` {r}
+fDOM_data.8 <- HI_FI_fDOM[,c("Hyst_index","TimeSinceChena")]
+
+pairs(fDOM_data.8)
+
+HI_FI_fDOM %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+   ggtitle("HI vs. TimeSinceChena")
+
+```
+It appears that fDOM has slightly more site variation. It seems like there is a clearer distinction between sites and fDOM responses. Lets see if that shows in the model...
+
+``` {r}
+fDOM_data <- HI_FI_fDOM[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
+
+fDOM_data <- na.omit(fDOM_data) # 241 to 237
+cor(fDOM_data[, c(1,3:10)])
+
+```
+1) Storm temperature is heavily correlated with temp week (0.798) but temp week is more correlated with HI (0.0892 vs. -0.0032)
+
+2) Precip week is correlated with precip month (0.546) but precip month is more correlated with HI (0.281 vs. 0.190)
+
+3) Precip month is correlated with three month (0.627) but precip month is more correlated with HI (0.281 vs. 0.224)
+
+4) Three month is correlated with Time since Chena (0.567) but three month is more correlated with HI ( 0.224 vs. 0.0603)
+
+* this makes me want to drop time since chena and three month 
+
+```{r, echo=FALSE}
+f0.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M0.fDOM <- lmer(f0.fDOM, data = fDOM_data)
+
+summary(M0.fDOM)
+
+```
+1) Scaled residuals look appropriate
+
+2) The site accounts for slightly more variation 
+
+3)Precip month is the most significant 
+
+``` {r}
+vif(M0.fDOM)
+
+```
+Any values over 2 indicate heavy correlation...lets remove ThreeMonth and StormTemp as this is what we did for NO3-
+
+```{r, echo=FALSE}
+f1.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M1.fDOM <- lmer(f1.fDOM, data = fDOM_data)
+
+summary(M1.fDOM)
+
+```
+
+``` {r}
+vif(M1.fDOM)
+
+```
+None of our VIFs are over 2 which is good!
+however as was true with NO3 PrecipWeek and PrecipMonth are correlated (0.54) and TimeSinceChena and TempWeek are correlated (-0.58)
+
+```{r, echo=FALSE}
+plot(M1.fDOM)
+```
+Potentially some funneling of the residuals from left to right
+
+
+```{r, echo=FALSE}
+qqnorm(resid(M1.fDOM))
+```
+
+```{r}
+pr <- ggpredict(M1.fDOM, terms = c("PrecipMonth"))
+plot(pr, add.data = TRUE)
+
+```
+
+### Altnerative slopes ###
+```{r, echo=FALSE}
+
+f2.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (PrecipWeek|site.ID))
+
+M2.fDOM <- lmer(f2.fDOM, data = fDOM_data)
+
+summary(M2.fDOM)
+
+```
+
+### Altnerative slopes ###
+```{r, echo=FALSE}
+
+f10.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (0 + PrecipWeek|site.ID) + (1|site.ID))
+
+M10.fDOM <- lmer(f10.fDOM, data = fDOM_data)
+
+```
+
+```{r}
+pr <- ggpredict(M2.fDOM, terms = c("PrecipMonth"))
+plot(pr, add.data = TRUE)
+
+```
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.fDOM <- lmer(f11, data = fDOM_data)
+
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.fDOM <- lmer(f12, data = fDOM_data)
+
+
+```
+
+
+```{r}
+aictab(list(M0.fDOM, M1.fDOM, M2.fDOM, M10.fDOM,M11.fDOM,M12.fDOM))
+
+```
+Mod6: Reduced model with uncorrelated random intercept and slope with random effect of year 
+Mod5: Reduced model with random intercept with year and site as random effects 
+Mod4: Reduced model with uncorrelated random intercept and random slope strucuture 
+Mod3: Reduced model (no StormTemp or ThreeMonth precip) and random intercept structure
+Mod2: Reduced model ('') with random slopes structure
+Mod1: Full model with random intercept structure 
+
+Mod2 with random intercept structure is the better model.
+
+```{r}
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = fDOM_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/fDOM/coefficient.png")
+
+```
+CI overlapping 0 are nonsignificant...This shows us that the only predictor that is significant is PrecipMonth precip  
+
+
+```{r}
+plot(M1.fDOM, site.ID ~ resid(.), abline = 0 ) # generate diagnostic plots
+```
+This plot shows us that there are some outliers in POKE, STRT, and CARI and that the variability within MOOS is greater than in other sites we therefore examine the sites in isolation standardized residuals versus fitted values
+
+```{r}
+plot(M1.fDOM, resid(., type = "pearson") ~ fitted(.) | site.ID, id = 0.05, 
+     adj = -0.3, pch = 20, col = "gray40")
+```
+The plot shows the standardized residuals (or Pearson’s residuals) versus fitted values and suggests that there are outliers in the data (the names elements in the plots). To check if these outliers are a cause for concern, we will now use a Levene’s test to check if the variance is distributed homogeneously (homoscedasticity) or whether the assumption of variance homogeneity is violated (due to the outliers).
+
+### Mixed effect model is a pseudo r^2  ###
+```{r}
+sjPlot::tab_model(M12.fDOM)
+r.squaredGLMM(M12.fDOM)
+
+sjPlot::tab_model(M1.fDOM)
+r.squaredGLMM(M1.fDOM)
+```
+
+The R2 values of the summary table are correct as Marginal and conditional are both there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
+
+
+The marginal R2 (marginal coefficient of determination) represents the variance explained by the fixed effects while the conditional R2 is interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+```{r}
+sjPlot::tab_model(M2.fDOM)
+r.squaredGLMM(M2.fDOM)
+
+```
+
+This tells us that 31% of the variance can be explained...when I did the Levens test and added weights to the model it was closer to 42% but we talked about how that is a bad test and any transformation of the data would be more appropriate so let me quickly log transform this model and see if that helps with anything
+
+```{r, echo=FALSE}
+flog.fDOM <- formula(log(Hyst_index + 1) ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (1|site.ID))
+
+Mlog.fDOM <- lmer(flog.fDOM, data = fDOM_data)
+
+summary(Mlog.fDOM)
+
+```
+1) The scaled residuals look worse
+```{r}
+
+plot(Mlog.fDOM)
+
+```
+
+
+```{r}
+qqnorm(resid(Mlog.fDOM))
+```
+
+```{r}
+r.squaredGLMM(Mlog.fDOM)
+```
+Worse so lets stick with the original model 
+
+```{r}
+sjPlot::plot_model(M1.fDOM, type = "pred", terms = c("PrecipMonth")) +
+  # show uncentered date rather than centered date
+  scale_x_continuous(name = "PrecipMonth", 
+                     breaks = seq(-500, 300, 100), 
+                     labels = seq(1150, 1950, 100))
+
+```
+
+### Permafrost ###
+```{r}
+f4.fDOM <- formula(Hyst_index ~ StormPrecip*pf + PrecipWeek*pf + PrecipMonth*pf + Intensity*pf  + TempWeek*pf +  TimeSinceChena*pf + (1|site.ID))
+
+M4.fDOM <- lmer(f4.fDOM, data = fDOM_data)
+summary(M4.fDOM)
+
+```
+This does not show us that pf has really an effect on on predictors 
+
+### burn ###
+```{r}
+f5.fDOM <- formula(Hyst_index ~ StormPrecip*burn + PrecipWeek*burn + PrecipMonth*burn + Intensity*burn  + TempWeek*burn +  TimeSinceChena*burn + (1|site.ID))
+
+M5.fDOM <- lmer(f5.fDOM, data = fDOM_data)
+summary(M5.fDOM)
+
+```
+Burn also doesnt have any significance here 
+
+#########################################################################################################
+#########################################################################################################
+##################################### SPC ##############################################################
+#########################################################################################################
+#########################################################################################################
+
+
+#### Scatter plot matrix ####
+``` {r}
+HI_FI_SPC_CARI <- filter(HI_FI_SPC, site.ID == "CARI")
+HI_FI_SPC_FRCH <- filter(HI_FI_SPC, site.ID == "FRCH")
+HI_FI_SPC_MOOS <- filter(HI_FI_SPC, site.ID == "MOOS")
+HI_FI_SPC_POKE <- filter(HI_FI_SPC, site.ID == "POKE")
+HI_FI_SPC_VAUL <- filter(HI_FI_SPC, site.ID == "VAUL")
+HI_FI_SPC_STRT <- filter(HI_FI_SPC, site.ID == "STRT")
+
+
+SPC_data.1 <- HI_FI_SPC[,c("Hyst_index","StormPrecip")]
+
+pairs(SPC_data.1)
+
+HI_FI_SPC %>% ggplot(aes(x = StormPrecip, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormPrecip")
+
+```
+
+``` {r}
+SPC_data.2 <- HI_FI_SPC[,c("Hyst_index","PrecipWeek")]
+
+pairs(SPC_data.2)
+
+HI_FI_SPC %>% ggplot(aes(x = PrecipWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipWeek")
+
+```
+
+``` {r}
+SPC_data.3 <- HI_FI_SPC[,c("Hyst_index","PrecipMonth")]
+
+pairs(SPC_data.3)
+
+HI_FI_SPC %>% ggplot(aes(x = PrecipMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipMonth")
+
+
+
+```
+
+``` {r}
+SPC_data.4 <- HI_FI_SPC[,c("Hyst_index","ThreeMonth")]
+
+pairs(SPC_data.4)
+
+HI_FI_SPC %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. ThreeMonth")
+
+```
+
+
+``` {r}
+SPC_data.5 <- HI_FI_SPC[,c("Hyst_index","Intensity")]
+
+pairs(SPC_data.5)
+
+HI_FI_SPC %>% ggplot(aes(x = Intensity, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. Intensity")
+
+```
+
+
+``` {r}
+SPC_data.6 <- HI_FI_SPC[,c("Hyst_index","StormTemp")]
+
+pairs(SPC_data.6)
+
+HI_FI_SPC %>% ggplot(aes(x = StormTemp, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormTemp")
+```
+
+
+``` {r}
+SPC_data.7 <- HI_FI_SPC[,c("Hyst_index","TempWeek")]
+
+pairs(SPC_data.7)
+
+HI_FI_SPC %>% ggplot(aes(x = TempWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. TempWeek")
+
+```
+
+``` {r}
+SPC_data.8 <- HI_FI_SPC[,c("Hyst_index","TimeSinceChena")]
+
+pairs(SPC_data.8)
+
+HI_FI_SPC %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. TimeSinceChena")
+
+```
+
+
+``` {r}
+SPC_data <- HI_FI_SPC[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
+
+SPC_data <- na.omit(SPC_data) # 232-228
+cor(SPC_data[,c(1,3:10)])
+
+```
+1) StormTemp is heavily correlated with TempWeek (0.794) but TempWeek is more correlated with HI (0.024 vs. 0.01)
+
+2) StormTemp is also correlated with TimeSinceChena (-0.722) but TimeSinceChena is more correlated with HI (0.033 vs. -0.01)
+
+3) PrecipWeek is correlated with PrecipMonth (0.552) but PrecipWeek is more correlated with HI (-0.314 vs. -0.246)
+
+4) PrecipMonth is correlated with ThreeMonth (0.631) but PrecipMonth is more correlated with HI (-0.246 vs. -0.114)
+
+5) ThreeMonth is correlated with TimeSinceChena (0.563) but ThreeMonth is more correlated with HI ( -0.114 vs. 0.033)
+
+* this makes me want to drop time since chena and three month 
+
+```{r, echo=FALSE}
+
+f0.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M0.SPC <- lmer(f0.SPC, data = SPC_data)
+
+summary(M0.SPC)
+
+```
+1) Scaled residuals do not look as normal as they should
+
+2) The site accounts for none of the variation 
+
+3) Precip week is the most significant 
+
+```{r, echo=FALSE}
+plot(M0.SPC)
+```
+Looks good
+
+
+```{r, echo=FALSE}
+qqnorm(resid(M0.SPC))
+```
+A little bent 
+``` {r}
+vif(M0.SPC)
+
+```
+Any VIF>2 indicates high correlation....StormTemp and TimeSinceChena are above three...lets remove StormTemp and ThreeMonth
+
+```{r, echo=FALSE}
+
+f1.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M1.SPC <- lmer(f1.SPC, data = SPC_data)
+
+vif(M1.SPC)
+
+```
+1) all VIFs are below 2 which is good!
+
+2) PrecipWeek and PrecipMonth (0.55)
+
+3) TimeSinceChena and TempWeek (-0.59)
+
+```{r, echo=FALSE}
+plot(M1.SPC)
+```
+
+```{r, echo=FALSE}
+qqnorm(resid(M1.SPC))
+```
+
+```{r}
+pr <- ggpredict(M1.SPC, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+```
+
+### alternative slope ### 
+
+```{r, echo=FALSE}
+
+f2.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek +  TimeSinceChena + (PrecipWeek|site.ID))
+
+M2.SPC <- lmer(f2.SPC, data = SPC_data)
+
+
+```
+
+
+```{r, echo=FALSE}
+
+f10.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID))
+
+M10.SPC <- lmer(f10.SPC, data = SPC_data)
+
+
+```
+
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.SPC <- lmer(f11, data = SPC_data)
+
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.SPC <- lmer(f12, data = SPC_data)
+
+
+```
+
+```{r}
+aictab(list(M0.SPC, M1.SPC, M2.SPC, M10.SPC,M11.SPC,M12.SPC))
+
+```
+Mod5: Reduced model with random intercept structure with random year and site effect 
+Mod2: Reduced model (no StormTemp or ThreeMonth Precip) with random intercept structure
+Mod6: Reduced model with unncorelated structure with random year and site effect
+Mod4: Reduced model ('') with uncorrelated random slopes and intercept 
+Mod3: Reduced model ('') with random slope structure
+Mod1: Full model with random intercept structure
+
+
+
+```{r}
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = SPC_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/SPC/coefficient.png")
+
+```
+CI overlapping 0 are nonsignificant. PrecipWeek and maybe PrecipMonth are significant
+
+
+```{r}
+plot(M1.SPC, site.ID ~ resid(.), abline = 0 ) # generate diagnostic plots
+```
+This plot shows us that there are some outliers in VAUL, POKE, and MOOS and that the variability within VAUL is greater than in other sites we therefore examine the sites in isolation standardized residuals versus fitted values
+
+```{r}
+plot(M1.SPC, resid(., type = "pearson") ~ fitted(.) | site.ID, id = 0.05, 
+     adj = -0.3, pch = 20, col = "gray40")
+```
+The plot shows the standardized residuals (or Pearson’s residuals) versus fitted values and suggests that there are outliers in the data (the names elements in the plots). To check if these outliers are a cause for concern, we will now use a Levene’s test to check if the variance is distributed homogeneously (homoscedasticity) or whether the assumption of variance homogeneity is violated (due to the outliers).
+
+### Mixed effect model is a pseudo r^2  ###
+```{r}
+sjPlot::tab_model(M11.SPC)
+r.squaredGLMM(M11.SPC)
+```
+
+The R2 values of the summary table are correct as Marginal and conditional are bothe there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
+
+
+The marginal R2 (marginal coefficient of determination) represents the variance explained by the fixed effects while the conditional R2 is interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+```{r}
+r.squaredGLMM(M1.SPC)
+
+```
+Only ~14% of the variance is explained in this model...ouch
+
+
+```{r}
+sjPlot::plot_model(M1.SPC, type = "pred", terms = c("PrecipWeek")) +
+  # show uncentered date rather than centered date
+  scale_x_continuous(name = "PrecipWeek", 
+                     breaks = seq(-500, 300, 100), 
+                     labels = seq(1150, 1950, 100))
+
+```
+
+### Permafrost ###
+```{r}
+f4.SPC <- formula(Hyst_index ~ StormPrecip*pf + PrecipWeek*pf + PrecipMonth*pf + Intensity*pf  + TempWeek*pf +  TimeSinceChena*pf + (1|site.ID))
+
+M4.SPC <- lmer(f4.SPC, data = SPC_data)
+summary(M4.SPC)
+
+```
+Nothing sticking out here 
+
+### burn ###
+```{r}
+f5.SPC <- formula(Hyst_index ~ StormPrecip*burn + PrecipWeek*burn + PrecipMonth*burn + Intensity*burn  + TempWeek*burn +  TimeSinceChena*burn + (1|site.ID))
+
+M5.SPC <- lmer(f5.SPC, data = SPC_data)
+summary(M5.SPC)
+
+```
+Nothing sticking out here 
+
+#########################################################################################################
+#########################################################################################################
+##################################### TURB ##############################################################
+#########################################################################################################
+#########################################################################################################
+
+
+#### Scatter plot matrix ####
+``` {r}
+HI_FI_turb_CARI <- filter(HI_FI_turb, site.ID == "CARI")
+HI_FI_turb_FRCH <- filter(HI_FI_turb, site.ID == "FRCH")
+HI_FI_turb_MOOS <- filter(HI_FI_turb, site.ID == "MOOS")
+HI_FI_turb_POKE <- filter(HI_FI_turb, site.ID == "POKE")
+HI_FI_turb_VAUL <- filter(HI_FI_turb, site.ID == "VAUL")
+HI_FI_turb_STRT <- filter(HI_FI_turb, site.ID == "STRT")
+
+turb_data.1 <- HI_FI_turb[,c("Hyst_index","StormPrecip")]
+
+pairs(turb_data.1)
+
+HI_FI_turb %>% ggplot(aes(x = StormPrecip, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormPrecip")
+
+```
+
+``` {r}
+turb_data.2 <- HI_FI_turb[,c("Hyst_index","PrecipWeek")]
+
+pairs(turb_data.2)
+
+HI_FI_turb %>% ggplot(aes(x = PrecipWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipWeek")
+
+```
+
+``` {r}
+turb_data.3 <- HI_FI_turb[,c("Hyst_index","PrecipMonth")]
+
+pairs(turb_data.3)
+
+HI_FI_turb %>% ggplot(aes(x = PrecipMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. PrecipMonth")
+
+
+
+```
+
+``` {r}
+turb_data.4 <- HI_FI_turb[,c("Hyst_index","ThreeMonth")]
+
+pairs(SPC_data.4)
+
+HI_FI_turb %>% ggplot(aes(x = ThreeMonth, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. ThreeMonth")
+
+```
+
+
+``` {r}
+turb_data.5 <- HI_FI_turb[,c("Hyst_index","Intensity")]
+
+pairs(turb_data.5)
+
+HI_FI_turb %>% ggplot(aes(x = Intensity, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. Intensity")
+
+```
+
+
+``` {r}
+turb_data.6 <- HI_FI_turb[,c("Hyst_index","StormTemp")]
+
+pairs(turb_data.6)
+
+HI_FI_turb %>% ggplot(aes(x = StormTemp, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. StormTemp")
+```
+
+
+``` {r}
+turb_data.7 <- HI_FI_turb[,c("Hyst_index","TempWeek")]
+
+pairs(turb_data.7)
+
+HI_FI_turb %>% ggplot(aes(x = TempWeek, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. TempWeek")
+
+```
+
+``` {r}
+turb_data.8 <- HI_FI_turb[,c("Hyst_index","TimeSinceChena")]
+
+pairs(turb_data.8)
+
+HI_FI_turb %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("Hysteresis Index") +
+  ggtitle("HI vs. TimeSinceChena")
+
+```
+
+
+``` {r}
+turb_data <- HI_FI_turb[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
+
+turb_data <- na.omit(turb_data) # 240 to 235
+cor(turb_data[,c(1,3:10)])
+
+```
+1) StormTemp is heavily correlated with TempWeek (0.797) but StormTemp is more correlated with HI (-0.07 vs. -0.06)
+
+2) StormTemp is also correlated with TimeSinceChena (-0.722) but StormTemp is more correlated with HI (-0.07 vs. -0.02)
+
+2) PrecipWeek is correlated with PrecipMonth (0.542) but PrecipWeek is more correlated with HI (0.228 vs. -0.004)
+
+3) PrecipMonth is correlated with ThreeMonth (0.628) but ThreeMonth is more correlated with HI (-0.139 vs. -0.004)
+
+4) ThreeMonth is correlated with TimeSinceChena (0.571) but ThreeMonth is more correlated with HI ( -0.139 vs. -0.028)
+
+* this makes me want to drop time since chena and three month 
+
+```{r, echo=FALSE}
+f0.turb <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (1|site.ID))
+
+M0.turb <- lmer(f0.turb, data = turb_data)
+
+summary(M0.turb)
+
+```
+1) Scaled residuals dont look ideal 
+
+2) The site accounts for slightly more variation 
+
+3)Precip week is the most significant 
+
+```{r, echo=FALSE}
+plot(M0.turb)
+```
+perhaps some funnelling 
+
+
+```{r, echo=FALSE}
+qqnorm(resid(M0.turb))
+```
+
+``` {r}
+vif(M0.turb)
+
+```
+Any VIF > 2 indicates high correlation....lets remove StormTemp and ThreeMonth
+
+
+```{r, echo=FALSE}
+f1.turb <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (1|site.ID))
+
+M1.turb <- lmer(f1.turb, data = turb_data)
+
+vif(M1.turb)
+summary(M1.turb)
+
+```
+1) VIFs are all below 2...woot
+
+2) PrecipWeek and PrecipMonth (0.54)
+
+3) TimeSinceChena (-0.588)
+```{r, echo=FALSE}
+plot(M1.turb)
+```
+
+```{r, echo=FALSE}
+qqnorm(resid(M1.turb))
+```
+
+```{r}
+pr <- ggpredict(M1.turb, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+```
+
+### Alternative slopes ### 
+```{r, echo=FALSE}
+f2.turb <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (PrecipWeek|site.ID))
+
+M2.turb <- lmer(f2.turb, data = turb_data)
+
+summary(M2.turb)
+
+```
+
+```{r, echo=FALSE}
+f10.turb <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID)+(1|site.ID))
+
+M10.turb <- lmer(f10.turb, data = turb_data)
+
+summary(M10.turb)
+
+```
+
+```{r}
+pr <- ggpredict(M10.turb, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+```
+
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.Turb <- lmer(f11, data = turb_data)
+
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.Turb <- lmer(f12, data = turb_data)
+
+
+```
+
+
+
+```{r}
+aictab(list(M0.turb, M1.turb, M2.turb, M10.turb, M11.Turb,M12.Turb))
+
+```
+Mod6: Uncorrelated random slope and random intercept with year and site as effect 
+Mod4: Reduced model with uncorrelated random slope and random intercept 
+Mod5: Reduced model with random intercept and year effect 
+Mod3: Reduced model (no StormTemp, ThreeMonth Precip) with random slope intercept structure
+Mod2: Reduced model ('') with random intercept structure
+Mod1: Full model with random intercept structure 
+
+
+```{r}
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = turb_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/Turb/coefficient.png")
+
+```
+CI overlapping 0 are nonsignificant which is almost everything besides PrecipMonth and PrecipWeek for our reduced model 
+
+
+```{r}
+plot(M1.turb, site.ID ~ resid(.), abline = 0 ) # generate diagnostic plots
+```
+This plot shows us that there are some outliers in all of our sites and that the variability within FRCH is greater than in other sites we therefore examine the sites in isolation standardized residuals versus fitted values
+
+```{r}
+plot(M1.turb, resid(., type = "pearson") ~ fitted(.) | site.ID, id = 0.05, 
+     adj = -0.3, pch = 20, col = "gray40")
+```
+The plot shows the standardized residuals (or Pearson’s residuals) versus fitted values and suggests that there are outliers in the data (the names elements in the plots). To check if these outliers are a cause for concern, we will now use a Levene’s test to check if the variance is distributed homogeneously (homoscedasticity) or whether the assumption of variance homogeneity is violated (due to the outliers).
+
+
+### Mixed effect model is a pseudo r^2  ###
+```{r}
+sjPlot::tab_model(M12.Turb)
+r.squaredGLMM(M12.Turb)
+```
+
+The R2 values of the summary table are correct as Marginal and conditional are bothe there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
+
+
+The marginal R2 (marginal coefficient of determination) represents the variance explained by the fixed effects while the conditional R2 is interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+```{r}
+r.squaredGLMM(M10.turb)
+
+```
+only 12%...ouch
+```{r}
+sjPlot::plot_model(M1.turb, type = "pred", terms = c("PrecipWeek")) +
+  # show uncentered date rather than centered date
+  scale_x_continuous(name = "PrecipWeek", 
+                     breaks = seq(-500, 300, 100), 
+                     labels = seq(1150, 1950, 100))
+
+```
+
+### Permafrost ###
+```{r}
+f4.turb <- formula(Hyst_index ~ StormPrecip*pf + PrecipWeek*pf + PrecipMonth*pf + Intensity*pf  + TempWeek*pf +  TimeSinceChena*pf + (1|site.ID))
+
+M4.turb <- lmer(f4.turb, data = turb_data)
+summary(M4.turb)
+
+```
+Permafrost does have a significant effect with PrecipMonth
+
+### burn ###
+```{r}
+f5.turb <- formula(Hyst_index ~ StormPrecip*burn + PrecipWeek*burn + PrecipMonth*burn + Intensity*burn  + TempWeek*burn +  TimeSinceChena*burn + (1|site.ID))
+
+M5.turb <- lmer(f5.turb, data = turb_data)
+summary(M5.turb)
+
+```
+Fire has significant interaction with TimeSinceChena 
+
+
+############################################################################################################################################### Catchment effects ################################################
+#########################################################################################################
+
+
+```{r}
+CV.all <- antecedent_HI_FI_1_0 %>% group_by(response_var,site.ID, year) %>%
+  summarize(meanHI = mean(Hyst_index),
+            meanFI = mean(Flush_index, na.rm = TRUE),
+            meanBETA = mean(beta, na.rm = TRUE),
+            sdHI = sd(Hyst_index),
+            sdFI = sd(Flush_index, na.rm = TRUE),
+            sdBETA = sd(beta, na.rm = TRUE),
+            CVhi = sdHI/meanHI,
+            CVfi = sdFI/meanFI,
+            CVbeta = sdBETA/meanBETA,
+            pf = paste(pf),
+            burn = paste(burn)) # calculating mean HI and CV for each year and each site
+
+CV.all <- CV.all[!duplicated(CV.all$meanHI), ] # removing duplicated rows 
+
+chem <- read_csv("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/Discharge_chem/all.chem.csv", 
+    col_types = cols(fDOM.QSU = col_double(), 
+        nitrateuM = col_double(), SpCond.uScm = col_double(), 
+        Turbidity.FNU = col_double())) # reading in all chem data 
+
+chem.mean <- chem %>% group_by(Site, year) %>% 
+  summarize(meanfDOM = mean(fDOM.QSU, na.rm = TRUE)) # generating mean fDOM concentration by site and year 
+
+names(chem.mean) <- c("site.ID", "year", "meanfDOM") # changing the names so they can be merged
+
+CV.all.model <- left_join(CV.all, chem.mean, by = c("site.ID", "year")) # merging TNDOC and CV to run for the model 
+
+
+# Have to run #### CATCHMENT CHARACTERISTICS  script in 08_results section to get the catchment characteristics csv loaded in and then can merge the CV.all.model and catchment characteristics 
+
+CV.all.model.characteristic <- left_join(CV.all.model, catchment, by = c("response_var", "site.ID", "year", "meanHI", "meanFI", "meanBETA", "sdHI", "sdFI", "sdBETA", "CVhi", "CVfi", "CVbeta", "pf", "burn", "meanfDOM")) # merging catchment characteristics with CV document so I can plot CVs against predictors which will be:
+  # mean fDOM
+  # PF extent
+  # Burn extent
+  # Slope
+  # NDVI
+
+CV.all.model.characteristic <- CV.all.model.characteristic[!duplicated(CV.all.model.characteristic$meanHI), ] # removing duplicated rows 
+
+
+# Adding CARI catchment characteristics because it didnt merge correctly for CARI for some reason 
+
+# Adding Burn Extent
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 16] <- 0.4 # CARI
+
+# Adding PF extent 
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 17] <- 0.3891 # CARI
+
+# Adding PF characteristics
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 18] <- "High" # CARI
+
+# reclassiying burns and unburned catchments
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 14] <- "unburned" # CARI
+
+# Adding SLOPE characteristics
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 28] <- 11.29 # CARI
+
+# Adding NDVI_50 characteristics
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 63] <- 0.2705 # CARI
+
+NO3.CV <- subset(CV.all.model.characteristic, CV.all.model.characteristic$response_var == "NO3")
+fDOM.CV <- subset(CV.all.model.characteristic, CV.all.model.characteristic$response_var == "fDOM")
+SPC.CV <- subset(CV.all.model.characteristic, CV.all.model.characteristic$response_var == "SPC")
+turb.CV <- subset(CV.all.model.characteristic, CV.all.model.characteristic$response_var == "turb")
+
+```
+
+#### Facet_wrap by characterics ####
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI vs. fDOM") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = BurnExtent, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI vs. Burn") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = PFExtent, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI vs. PF") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = SLOPE_MEAN, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI vs. SLOPE") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = NDVI_p50, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI vs. NDVI") +
+  facet_wrap(~response_var)
+
+```
+
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = meanfDOM, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta") +
+  ggtitle("CVbeta vs. fDOM") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = BurnExtent, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta") +
+  ggtitle("CVbeta vs. Burn") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = PFExtent, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta") +
+  ggtitle("CVbeta vs. PF") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = SLOPE_MEAN, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta") +
+  ggtitle("CVbeta vs. SLOPE") +
+  facet_wrap(~response_var)
+
+```
+
+```{r}
+CV.all.model.characteristic %>% ggplot(aes(x = NDVI_p50, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta") +
+  ggtitle("CVbeta vs. NDVI") +
+  facet_wrap(~response_var)
+
+```
+
+
+```{r}
+NO3_data.1 <- NO3.CV[,c("CVhi","meanfDOM")]
+
+NO3.CV %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI(no3-) vs. fDOM")
+
+```
+
+```{r}
+NO3_data.2 <- NO3.CV[,c("CVhi","PFExtent")]
+
+NO3.CV %>% ggplot(aes(x = PFExtent, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI(no3-) vs. PF")
+
+```
+
+```{r}
+NO3_data.3 <- NO3.CV[,c("CVhi","BurnExtent")]
+
+NO3.CV %>% ggplot(aes(x = BurnExtent, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI(no3-) vs. Burn")
+
+```
+
+```{r}
+
+NO3_data.3 <- NO3.CV[,c("CVhi","BurnExtent")]
+
+NO3.CV %>% ggplot(aes(x = BurnExtent, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("CVHI(no3-) vs. Burn")
+
+```
+
+
+
+``` {r}
+fcvno3 <- formula(CVhi ~ pf*meanfDOM + burn*meanfDOM + (1|year)) # this is the proposed model 
+
+Mcvno3 <- lmer(fcvno3, data = NO3.CV)
+summary(Mcvno3)
+
+```
+
+``` {r}
+plot(Mcvno3)
+```
+
+``` {r}
+qqnorm(resid(Mcvno3))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvno3)
+r.squaredGLMM(Mcvno3)
+```
+
+
+``` {r}
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = NO3.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+########################### fDOM ###############################################
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. fDOM")
+
+```
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = pf, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. pf")
+
+fDOM.CV$carbon <- NA
+fDOM.CV[c(9:12,19:21), 16] <- "High"
+fDOM.CV[c(1:8,13:18), 16] <- "Low"
+
+fDOM.CV %>% ggplot(aes(x = carbon, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. carbon")
+```
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = burn, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. burn")
+
+```
+
+```{r}
+
+fcvfdom <- formula(CVhi ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvfdom <- lmer(fcvfdom, data = fDOM.CV)
+summary(Mcvfdom)
+
+```
+
+
+``` {r}
+plot(Mcvfdom)
+```
+
+``` {r}
+qqnorm(resid(Mcvfdom))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvfdom)
+r.squaredGLMM(Mcvfdom)
+```
+
+
+``` {r}
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = fDOM.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+########################### SPC ###############################################
+```{r}
+SPC.CV %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. fDOM")
+
+```
+
+```{r}
+SPC.CV %>% ggplot(aes(x = pf, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. pf")
+
+SPC.CV$carbon <- NA
+SPC.CV[c(9:12,19:21), 16] <- "High"
+SPC.CV[c(1:8,13:18), 16] <- "Low"
+
+SPC.CV %>% ggplot(aes(x = carbon, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. carbon")
+```
+
+```{r}
+SPC.CV %>% ggplot(aes(x = burn, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. burn")
+
+```
+
+
+```{r}
+fcvspc <- formula(CVhi ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvspc <- lmer(fcvspc, data = SPC.CV)
+summary(Mcvspc)
+
+```
+
+
+``` {r}
+plot(Mcvspc)
+```
+
+``` {r}
+qqnorm(resid(Mcvspc))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvspc)
+r.squaredGLMM(Mcvspc)
+```
+
+
+``` {r}
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = SPC.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+########################### Turb ###############################################
+
+```{r}
+turb.CV %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. fDOM")
+
+```
+
+```{r}
+turb.CV %>% ggplot(aes(x = pf, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. pf")
+
+turb.CV$carbon <- NA
+turb.CV[c(9:12,19:21), 16] <- "High"
+turb.CV[c(1:8,13:18), 16] <- "Low"
+
+turb.CV %>% ggplot(aes(x = carbon, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. carbon")
+```
+
+```{r}
+turb.CV %>% ggplot(aes(x = burn, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. burn")
+
+```
+
+
+```{r}
+turb.CV <- turb.CV[-c(1,10),] # removing CARI 2018/MOOS 2019 due to it being an outlier 
+
+fcvturb <- formula(CVhi ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvturb <- lmer(fcvturb, data = turb.CV)
+summary(Mcvturb)
+
+```
+
+
+``` {r}
+plot(Mcvturb)
+```
+
+``` {r}
+qqnorm(resid(Mcvturb))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvturb)
+r.squaredGLMM(Mcvturb)
+```
+
+
+``` {r}
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = turb.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+##########################################################################################################################################################################################################################################################   BETA   ######################################################
+
+
+
+########################### NO3 ###############################################
+
+```{r}
+NO3.CV %>% ggplot(aes(x = meanfDOM, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. fDOM")
+
+```
+
+```{r}
+NO3.CV %>% ggplot(aes(x = pf, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. pf")
+
+NO3.CV %>% ggplot(aes(x = carbon, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. carbon")
+```
+
+```{r}
+NO3.CV %>% ggplot(aes(x = burn, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. burn")
+
+```
+
+```{r}
+
+fcvno3 <- formula(CVbeta ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvno3 <- lmer(fcvno3, data = NO3.CV)
+summary(Mcvno3)
+
+```
+
+
+``` {r}
+plot(Mcvno3)
+```
+
+``` {r}
+qqnorm(resid(Mcvno3))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvno3)
+r.squaredGLMM(Mcvno3)
+```
+
+
+``` {r}
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = NO3.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+########################### fDOM ###############################################
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = meanfDOM, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. fDOM")
+
+```
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = pf, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. pf")
+
+fDOM.CV %>% ggplot(aes(x = carbon, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. carbon")
+```
+
+```{r}
+fDOM.CV %>% ggplot(aes(x = burn, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. burn")
+
+```
+
+
+```{r}
+
+fcvfdom <- formula(CVbeta ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvfdom <- lmer(fcvfdom, data = fDOM.CV)
+summary(Mcvfdom)
+
+```
+
+
+``` {r}
+plot(Mcvfdom)
+```
+
+``` {r}
+qqnorm(resid(Mcvfdom))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvfdom)
+r.squaredGLMM(Mcvfdom)
+```
+
+
+``` {r}
+m1 <- lm(CVbeta ~ pf*meanfDOM + burn*meanfDOM, data = fDOM.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+########################### SPC ###############################################
+
+```{r}
+SPC.CV %>% ggplot(aes(x = meanfDOM, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. fDOM")
+
+```
+
+```{r}
+SPC.CV %>% ggplot(aes(x = pf, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Hysteresis Index") +
+  ggtitle("HI vs. pf")
+
+SPC.CV %>% ggplot(aes(x = carbon, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. carbon")
+```
+
+```{r}
+SPC.CV %>% ggplot(aes(x = burn, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. burn")
+
+```
+
+
+```{r}
+fcvspc <- formula(CVbeta ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvspc <- lmer(fcvspc, data = SPC.CV)
+summary(Mcvspc)
+
+```
+
+
+``` {r}
+plot(Mcvspc)
+```
+
+``` {r}
+qqnorm(resid(Mcvspc))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvspc)
+r.squaredGLMM(Mcvspc)
+```
+
+
+``` {r}
+m1 <- lm(CVbeta ~ pf*meanfDOM + burn*meanfDOM, data = SPC.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+########################### Turb ###############################################
+
+```{r}
+turb.CV %>% ggplot(aes(x = meanfDOM, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. fDOM")
+
+```
+
+```{r}
+turb.CV %>% ggplot(aes(x = pf, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. pf")
+
+turb.CV %>% ggplot(aes(x = carbon, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. carbon")
+```
+
+```{r}
+turb.CV %>% ggplot(aes(x = burn, y = CVbeta)) + 
+  geom_hline(yintercept = 0, linetype = "dotted", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+
+  theme_bw() +
+  geom_smooth(method = "lm", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = "top", label.x = "right",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) + 
+  ylab("CV Beta Index") +
+  ggtitle("Beta vs. burn")
+
+```
+
+
+```{r}
+
+turb.CV <- turb.CV[-c(1,10),] # removing CARI 2018/MOOS 2019 due to it being an outlier 
+
+fcvturb <- formula(CVbeta ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvturb <- lmer(fcvturb, data = turb.CV)
+summary(Mcvturb)
+
+```
+
+
+``` {r}
+plot(Mcvturb)
+```
+
+``` {r}
+qqnorm(resid(Mcvturb))
+```
+
+``` {r}
+sjPlot::tab_model(Mcvturb)
+r.squaredGLMM(Mcvturb)
+```
+
+
+``` {r}
+m1 <- lm(CVbeta ~ pf*meanfDOM + burn*meanfDOM, data = turb.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+```
+
+
+
+
+
+
+#########################################################################################################
+######################################### MODELS BY SITE ################################################
+#########################################################################################################
+# So we have run the models across all the sites and it doesn't seem like we can explain much of the variation across catchments. When site.ID is a random effect that is explaining most of the variation. When we do our scatterplot matrices by site we start to get a clearer picture about which catchments are really responsive vs. others. SO this part of the code is to model by catchment and see what we find 
+
+# Step 1:
+# filter out each constituent by site (i.e. HI_NO3_MOOS, HI_fDOM_MOOS)
+# Check correlation coefficients and VIFs before settling on a model
+
+#########################################################################################################
+#########################################  NO3 ##########################################################
+#########################################################################################################
+
+### Scatter plot matrix ####
+``` {r}
+HI_FI_NO3_MOOS <- subset(HI_FI_NO3, site.ID == "MOOS")
+HI_FI_NO3_FRCH <- subset(HI_FI_NO3, site.ID == "FRCH")
+HI_FI_NO3_CARI <- subset(HI_FI_NO3, site.ID == "CARI")
+HI_FI_NO3_POKE <- subset(HI_FI_NO3, site.ID == "POKE")
+HI_FI_NO3_VAUL <- subset(HI_FI_NO3, site.ID == "VAUL")
+HI_FI_NO3_STRT <- subset(HI_FI_NO3, site.ID == "STRT")
+
+NO3_data.1 <- HI_FI_NO3_MOOS[,c("Hyst_index","StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena")]
+
+pairs(NO3_data.1)
+
+
+```
+
+
+#### Correlation 
+``` {r}
+NO3_data_MOOS <- HI_FI_NO3_MOOS[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_MOOS <- na.omit(NO3_data_MOOS) # 29 to 29
+cor(NO3_data_MOOS[,c(1,3:10)])
+```
+1) StormTemp is heavily correlated with TempWeek leading up to a storm (0.900) but StormTemp is slightly more correlated with HI (-0.09 vs. -0.008)
+
+2) StormTemp is also correlated with TimeSinceChena (-0.75) but TimeSinceChena is more correlated with HI (0.258 vs. -0.09) so this makes me want to keep TimeSinceChena.
+
+3)PrecipMonth is correlated with ThreeMonth precip (0.627) but ThreeMonth precip is more correlated with HI (0.14 vs. 0.027)
+
+5) ThreeMonth is correlated with TimeSinceChena (0.815) but TimeSinceChena is more correlated with HI (0.258 vs. 0.140)
+
+* to sum up: Temperature metrics are way too correlated with TimeSinceChena so those got to go
+* ThreeMonth is heavily correlated with TimeSinceChena so thats gotta go
+* Intensity has one or two big storms a year that really throw everything off so lets take that out so from this I would say our model should be: Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year)).....lets check the VIFs
+
+
+``` {r}
+NO3_data_FRCH <- HI_FI_NO3_FRCH[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_FRCH <- na.omit(NO3_data_FRCH) # 54 to 51
+cor(NO3_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_CARI <- HI_FI_NO3_CARI[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_CARI <- na.omit(NO3_data_CARI) # 35 to 33
+cor(NO3_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+NO3_data_POKE <- HI_FI_NO3_POKE[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_POKE <- na.omit(NO3_data_POKE) # 29 to 25
+cor(NO3_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_VAUL <- HI_FI_NO3_VAUL[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_VAUL <- na.omit(NO3_data_VAUL) # 25 to 25
+cor(NO3_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_STRT <- HI_FI_NO3_STRT[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_STRT <- na.omit(NO3_data_STRT) # 30 to 26 
+cor(NO3_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+f0 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))
+
+Moose.model <- lmer(f0, REML = TRUE, data = NO3_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = NO3_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = NO3_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = NO3_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = NO3_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = NO3_data_STRT)
+```
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+1) Scaled residulas look pretty good as our median is close to 0 and our quartiles are roughly the same
+
+2) This shows us that the year explains 0 of our variance 
+
+3) This makes it seem that PrecipWeek and TimeSinceChena are the most significant
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r, echo=FALSE}
+plot(M0)
+```
+1) Ideally the residual plot will show no fitted pattern. The red line should be horizontal at 0.
+
+This residual are spread equally along the ranges of predictors. It is good to see a horizontal line with equal spread points
+
+```{r, echo=FALSE}
+qqnorm(resid(M0))
+```
+1) Ideally the QQ plot should be a straight line to visually check the normality assumptions. If it is not a straight line we can try log transforming the response variable but this looks pretty good.
+
+
+### Partial residuals ###
+Plot partial residual for the interesting predictor – PrecipWeek
+
+```{r}
+effect_plot(Moose.model, pred = PrecipWeek, 
+            interval = TRUE, plot.points = TRUE)
+
+ #ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/partial.residuals.pdf")
+```
+Visually look at the effect of PrecipWeek on HI and we would expect these to look like a nice regression model 
+
+
+### Dot and Whisker plot ###
+
+```{r}
+MOOS.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_MOOS)
+
+FRCH.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_FRCH)
+
+CARI.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_CARI)
+
+POKE.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_POKE)
+
+VAUL.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_VAUL)
+
+STRT.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_STRT)
+library(jtools)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+a <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "A)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/HI_NO3_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+
+
+```
+CI overlapping 0 are nonsignificant 
+
+
+### Mixed effect model is a pseudo r^2  ###
+```{r}
+sjPlot::tab_model(Moose.model)
+r.squaredGLMM(Moose.model)
+```
+
+```{r}
+sjPlot::tab_model(French.model)
+r.squaredGLMM(French.model)
+```
+
+```{r}
+sjPlot::tab_model(Poker.model)
+r.squaredGLMM(Poker.model)
+```
+
+```{r}
+sjPlot::tab_model(Vault.model)
+r.squaredGLMM(Vault.model)
+```
+
+```{r}
+sjPlot::tab_model(Stuart.model)
+r.squaredGLMM(Stuart.model)
+```
+
+```{r}
+sjPlot::tab_model(Caribou.model)
+r.squaredGLMM(Caribou.model)
+```
+
+The R2 values of the summary table are incorrect (as indicated by the missing conditional R2 value). The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
+
+
+The marginal R2 (marginal coefficient of determination) represents the variance explained by the fixed effects while the conditional R2 is interpreted as a variance explained by the entire model, including both fixed and random effects
+
+
+
+random effect isnt explaining only explaining 15 % of the model....maybe dont need a random effect in the model at all if it is 0 
+
+
+#########################################################################################################
+######################################### fDOM ##########################################################
+#########################################################################################################
+
+``` {r}
+HI_FI_fDOM_MOOS <- subset(HI_FI_fDOM, site.ID == "MOOS")
+HI_FI_fDOM_FRCH <- subset(HI_FI_fDOM, site.ID == "FRCH")
+HI_FI_fDOM_CARI <- subset(HI_FI_fDOM, site.ID == "CARI")
+HI_FI_fDOM_POKE <- subset(HI_FI_fDOM, site.ID == "POKE")
+HI_FI_fDOM_VAUL <- subset(HI_FI_fDOM, site.ID == "VAUL")
+HI_FI_fDOM_STRT <- subset(HI_FI_fDOM, site.ID == "STRT")
+
+```
+
+
+``` {r}
+fDOM_data_MOOS <- HI_FI_fDOM_MOOS[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_MOOS <- na.omit(fDOM_data_MOOS) # 40 to 40
+cor(fDOM_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_FRCH <- HI_FI_fDOM_FRCH[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_FRCH <- na.omit(fDOM_data_FRCH) # 49 to 49
+cor(fDOM_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_CARI <- HI_FI_fDOM_CARI[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_CARI <- na.omit(fDOM_data_CARI) # 33 to 32
+cor(fDOM_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+fDOM_data_POKE <- HI_FI_fDOM_POKE[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_POKE <- na.omit(fDOM_data_POKE) # 27 to 27
+cor(fDOM_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_VAUL <- HI_FI_fDOM_VAUL[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_VAUL <- na.omit(fDOM_data_VAUL) # 25 to 25
+cor(fDOM_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_STRT <- HI_FI_fDOM_STRT[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOMdata_STRT <- na.omit(fDOM_data_STRT) # 28 to 28
+cor(fDOM_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+Moose.model <- lmer(f0, REML = TRUE, data = fDOM_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = fDOM_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = fDOM_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = fDOM_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = fDOM_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = fDOM_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_MOOS)
+
+FRCH.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_FRCH)
+
+CARI.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_CARI)
+
+POKE.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_POKE)
+
+VAUL.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_VAUL)
+
+STRT.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+b <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "B)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/HI_fDOM_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+```
+
+```{r}
+sjPlot::tab_model(Moose.model)
+r.squaredGLMM(Moose.model)
+```
+
+```{r}
+sjPlot::tab_model(French.model)
+r.squaredGLMM(French.model)
+```
+
+```{r}
+sjPlot::tab_model(Poker.model)
+r.squaredGLMM(Poker.model)
+```
+
+```{r}
+sjPlot::tab_model(Vault.model)
+r.squaredGLMM(Vault.model)
+```
+
+```{r}
+sjPlot::tab_model(Stuart.model)
+r.squaredGLMM(Stuart.model)
+```
+
+```{r}
+sjPlot::tab_model(Caribou.model)
+r.squaredGLMM(Caribou.model)
+```
+
+
+#########################################################################################################
+######################################### SPC ##########################################################
+#########################################################################################################
+
+``` {r}
+HI_FI_SPC_MOOS <- subset(HI_FI_SPC, site.ID == "MOOS")
+HI_FI_SPC_FRCH <- subset(HI_FI_SPC, site.ID == "FRCH")
+HI_FI_SPC_CARI <- subset(HI_FI_SPC, site.ID == "CARI")
+HI_FI_SPC_POKE <- subset(HI_FI_SPC, site.ID == "POKE")
+HI_FI_SPC_VAUL <- subset(HI_FI_SPC, site.ID == "VAUL")
+HI_FI_SPC_STRT <- subset(HI_FI_SPC, site.ID == "STRT")
+
+```
+
+
+``` {r}
+SPC_data_MOOS <- HI_FI_SPC_MOOS[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_MOOS <- na.omit(SPC_data_MOOS) # 32 to 32
+cor(SPC_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_FRCH <- HI_FI_SPC_FRCH[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_FRCH <- na.omit(SPC_data_FRCH) # 49 to 49
+cor(SPC_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_CARI <- HI_FI_SPC_CARI[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_CARI <- na.omit(SPC_data_CARI) # 36 to 35
+cor(SPC_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+SPC_data_POKE <- HI_FI_SPC_POKE[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_POKE <- na.omit(SPC_data_POKE) # 27 to 27
+cor(SPC_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_VAUL <- HI_FI_SPC_VAUL[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_VAUL <- na.omit(SPC_data_VAUL) # 25 to 25
+cor(SPC_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_STRT <- HI_FI_SPC_STRT[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_STRT <- na.omit(SPC_data_STRT) # 28 to 28
+cor(SPC_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+Moose.model <- lmer(f0, REML = TRUE, data = SPC_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = SPC_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = SPC_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = SPC_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = SPC_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = SPC_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_MOOS)
+
+FRCH.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_FRCH)
+
+CARI.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_CARI)
+
+POKE.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_POKE)
+
+VAUL.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_VAUL)
+
+STRT.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+c <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "A)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/HI_SPC_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+```
+
+#########################################################################################################
+######################################### Turbidity ##########################################################
+#########################################################################################################
+
+``` {r}
+HI_FI_turb_MOOS <- subset(HI_FI_turb, site.ID == "MOOS")
+HI_FI_turb_FRCH <- subset(HI_FI_turb, site.ID == "FRCH")
+HI_FI_turb_CARI <- subset(HI_FI_turb, site.ID == "CARI")
+HI_FI_turb_POKE <- subset(HI_FI_turb, site.ID == "POKE")
+HI_FI_turb_VAUL <- subset(HI_FI_turb, site.ID == "VAUL")
+HI_FI_turb_STRT <- subset(HI_FI_turb, site.ID == "STRT")
+
+```
+
+
+``` {r}
+turb_data_MOOS <- HI_FI_turb_MOOS[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_MOOS <- na.omit(turb_data_MOOS) # 40 to 40
+cor(turb_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_FRCH <- HI_FI_turb_FRCH[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_FRCH <- na.omit(turb_data_FRCH) # 50 to 50
+cor(turb_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_CARI <- HI_FI_turb_CARI[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_CARI <- na.omit(turb_data_CARI) # 36 to 35
+cor(turb_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+turb_data_POKE <- HI_FI_turb_POKE[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_POKE <- na.omit(turb_data_POKE) # 24 to 24
+cor(turb_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_VAUL <- HI_FI_turb_VAUL[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_VAUL <- na.omit(turb_data_VAUL) # 24 to 24
+cor(turb_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_STRT <- HI_FI_turb_STRT[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_STRT <- na.omit(turb_data_STRT) # 29 to 26
+cor(turb_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+Moose.model <- lmer(f0, REML = TRUE, data = turb_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = turb_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = turb_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = turb_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = turb_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = turb_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_MOOS)
+
+FRCH.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_FRCH)
+
+CARI.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_CARI)
+
+POKE.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_POKE)
+
+VAUL.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_VAUL)
+
+STRT.model <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+d <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "B)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/HI_turb_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+```
+
+
+#########################################################################################################
+######################################### BETA ##########################################################
+#########################################################################################################
+
+
+########################################## NO3 ##########################################################
+
+``` {r}
+NO3_data_MOOS <- HI_FI_NO3_MOOS[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_MOOS <- na.omit(NO3_data_MOOS) #  to 29
+cor(NO3data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_FRCH <- HI_FI_NO3_FRCH[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_FRCH <- na.omit(NO3_data_FRCH) # 54 to 51
+cor(NO3_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_CARI <- HI_FI_NO3_CARI[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_CARI <- na.omit(NO3_data_CARI) # 33 to 33
+cor(NO3_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+NO3_data_POKE <- HI_FI_NO3_POKE[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_POKE <- na.omit(NO3_data_POKE) # 27 to 25
+cor(NO3_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_VAUL <- HI_FI_NO3_VAUL[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_VAUL <- na.omit(NO3_data_VAUL) # 25 to 23
+cor(NO3_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+NO3_data_STRT <- HI_FI_NO3_STRT[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+NO3_data_STRT <- na.omit(NO3_data_STRT) # 28 to 25
+cor(NO3_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+f0 <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))
+
+Moose.model <- lmer(f0, REML = TRUE, data = NO3_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = NO3_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = NO3_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = NO3_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = NO3_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = NO3_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_MOOS)
+
+FRCH.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_FRCH)
+
+CARI.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_CARI)
+
+POKE.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_POKE)
+
+VAUL.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_VAUL)
+
+STRT.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = NO3_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+e <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned")) +
+labs(tag = "C)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/BETA_NO3_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+
+```
+
+```{r}
+sjPlot::tab_model(Moose.model)
+r.squaredGLMM(Moose.model)
+```
+
+```{r}
+sjPlot::tab_model(French.model)
+r.squaredGLMM(French.model)
+```
+
+```{r}
+sjPlot::tab_model(Poker.model)
+r.squaredGLMM(Poker.model)
+```
+
+```{r}
+sjPlot::tab_model(Vault.model)
+r.squaredGLMM(Vault.model)
+```
+
+```{r}
+sjPlot::tab_model(Stuart.model)
+r.squaredGLMM(Stuart.model)
+```
+
+```{r}
+sjPlot::tab_model(Caribou.model)
+r.squaredGLMM(Caribou.model)
+```
+
+
+
+
+########################################## fDOM #########################################################
+
+``` {r}
+fDOM_data_MOOS <- HI_FI_fDOM_MOOS[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_MOOS <- na.omit(fDOM_data_MOOS) # 40 to 40
+cor(fDOM_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_FRCH <- HI_FI_fDOM_FRCH[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_FRCH <- na.omit(fDOM_data_FRCH) # 49 to 49
+cor(fDOM_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_CARI <- HI_FI_fDOM_CARI[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_CARI <- na.omit(fDOM_data_CARI) # 33 to 32
+cor(fDOM_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+fDOM_data_POKE <- HI_FI_fDOM_POKE[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_POKE <- na.omit(fDOM_data_POKE) # 27 to 27
+cor(fDOM_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_VAUL <- HI_FI_fDOM_VAUL[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOM_data_VAUL <- na.omit(fDOM_data_VAUL) # 25 to 23
+cor(fDOM_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+fDOM_data_STRT <- HI_FI_fDOM_STRT[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+fDOMdata_STRT <- na.omit(fDOM_data_STRT) # 28 to 28
+cor(fDOM_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+f0 <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))
+
+Moose.model <- lmer(f0, REML = TRUE, data = fDOM_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = fDOM_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = fDOM_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = fDOM_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = fDOM_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = fDOM_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_MOOS)
+
+FRCH.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_FRCH)
+
+CARI.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_CARI)
+
+POKE.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_POKE)
+
+VAUL.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_VAUL)
+
+STRT.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = fDOM_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+f <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "D)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/BETA_fDOM_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+
+```
+
+```{r}
+sjPlot::tab_model(Moose.model)
+r.squaredGLMM(Moose.model)
+```
+
+```{r}
+sjPlot::tab_model(French.model)
+r.squaredGLMM(French.model)
+```
+
+```{r}
+sjPlot::tab_model(Poker.model)
+r.squaredGLMM(Poker.model)
+```
+
+```{r}
+sjPlot::tab_model(Vault.model)
+r.squaredGLMM(Vault.model)
+```
+
+```{r}
+sjPlot::tab_model(Stuart.model)
+r.squaredGLMM(Stuart.model)
+```
+
+```{r}
+sjPlot::tab_model(Caribou.model)
+r.squaredGLMM(Caribou.model)
+```
+
+
+########################################## SPC ##########################################################
+
+``` {r}
+SPC_data_MOOS <- HI_FI_SPC_MOOS[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_MOOS <- na.omit(SPC_data_MOOS) # 32 to 31
+cor(SPC_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_FRCH <- HI_FI_SPC_FRCH[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_FRCH <- na.omit(SPC_data_FRCH) # 49 to 48
+cor(SPC_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_CARI <- HI_FI_SPC_CARI[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_CARI <- na.omit(SPC_data_CARI) # 36 to 34
+cor(SPC_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+SPC_data_POKE <- HI_FI_SPC_POKE[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_POKE <- na.omit(SPC_data_POKE) # 25 to 25
+cor(SPC_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_VAUL <- HI_FI_SPC_VAUL[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_VAUL <- na.omit(SPC_data_VAUL) # 25 to 23
+cor(SPC_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+SPC_data_STRT <- HI_FI_SPC_STRT[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+SPC_data_STRT <- na.omit(SPC_data_STRT) # 28 to 25
+cor(SPC_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+f0 <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))
+
+Moose.model <- lmer(f0, REML = TRUE, data = SPC_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = SPC_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = SPC_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = SPC_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = SPC_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = SPC_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_MOOS)
+
+FRCH.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_FRCH)
+
+CARI.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_CARI)
+
+POKE.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_POKE)
+
+VAUL.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_VAUL)
+
+STRT.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = SPC_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+g <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned"))+
+labs(tag = "C)")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/BETA_SPC_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+
+```
+
+
+########################################## Turb ##########################################################
+
+``` {r}
+turb_data_MOOS <- HI_FI_turb_MOOS[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_MOOS <- na.omit(turb_data_MOOS) # 40 to 40
+cor(SPC_data_MOOS[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_FRCH <- HI_FI_turb_FRCH[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_FRCH <- na.omit(turb_data_FRCH) # 50 to 50
+cor(turb_data_FRCH[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_CARI <- HI_FI_turb_CARI[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_CARI <- na.omit(turb_data_CARI) # 36 to 35
+cor(turb_data_CARI[,c(1,3:10)])
+```
+
+
+``` {r}
+turb_data_POKE <- HI_FI_turb_POKE[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_POKE <- na.omit(turb_data_POKE) # 24 to 24
+cor(turb_data_POKE[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_VAUL <- HI_FI_turb_VAUL[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_VAUL <- na.omit(turb_data_VAUL) # 24 to 21
+cor(turb_data_VAUL[,c(1,3:10)])
+```
+
+``` {r}
+turb_data_STRT <- HI_FI_turb_STRT[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
+turb_data_STRT <- na.omit(turb_data_STRT) # 29 to 25
+cor(turb_data_FRCH[,c(1,3:10)])
+```
+
+```{r, echo=FALSE}
+f0 <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena + (1|year))
+
+Moose.model <- lmer(f0, REML = TRUE, data = turb_data_MOOS)
+French.model <- lmer(f0, REML = TRUE, data = turb_data_FRCH)
+Caribou.model <- lmer(f0, REML = TRUE, data = turb_data_CARI)
+Poker.model <- lmer(f0, REML = TRUE, data = turb_data_POKE)
+Vault.model <- lmer(f0, REML = TRUE, data = turb_data_VAUL)
+Stuart.model <- lmer(f0, REML = TRUE, data = turb_data_STRT)
+```
+
+
+```{r, echo=FALSE}
+vif(Moose.model)
+vif(French.model)
+vif(Caribou.model)
+vif(Poker.model)
+vif(Vault.model)
+vif(Stuart.model)
+
+```
+
+```{r, echo=FALSE}
+summary(Moose.model)
+```
+
+```{r, echo=FALSE}
+summary(French.model)
+```
+
+```{r, echo=FALSE}
+summary(Caribou.model)
+```
+
+```{r, echo=FALSE}
+summary(Poker.model)
+```
+
+```{r, echo=FALSE}
+summary(Vault.model)
+```
+
+```{r, echo=FALSE}
+summary(Stuart.model)
+```
+
+```{r}
+MOOS.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_MOOS)
+
+FRCH.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_FRCH)
+
+CARI.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_CARI)
+
+POKE.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_POKE)
+
+VAUL.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_VAUL)
+
+STRT.model <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + TimeSinceChena, data = turb_data_STRT)
+
+plot_summs(MOOS.model, FRCH.model, 
+           CARI.model, POKE.model, 
+           VAUL.model, STRT.model, scale = TRUE, plot.distributions = TRUE,
+           model.names = c("MOOS", "FRCH", "CARI", "POKE", "VAUL", "STRT"))
+
+h <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c("Storm Precip" = "StormPrecip", "Precip Week" = "PrecipWeek",
+                     "Precip Month" = "PrecipMonth", "Seasonality" = "TimeSinceChena"),
+           model.names = c("POKE-Moderate PF, Burned", "CARI-Moderate PF, Unburned", "MOOS-Moderate PF, Burned", "FRCH-Moderate PF, Unurned","STRT-High PF, Burned", "VAUL-High PF, Unburned")) +
+labs(tag = "D)")
+
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/BETA_turb_Coefficient_Site.pdf", width = 6, height = 6, device = "pdf")
+
+
+```
+
+
+
+
+# final coefficient plot 
+```{r}
+ggarrange(a,b, 
+          e,f,
+          labels = c("NO3-", "fDOM"), hjust = -1,
+          ncol = 2, nrow = 2,
+          font.label = list(size = 14, color = "black", face = "bold", family = NULL),
+          common.legend = TRUE, legend = "bottom")
+
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/FINAL_Coefficient_Site_NO3_fDOM.pdf", width = 10, height = 10, device = "pdf")
+
+ggarrange(c,d, 
+          g,h,
+          labels = c("SPC", "Turb"), hjust = -1,
+          ncol = 2, nrow = 2,
+          font.label = list(size = 14, color = "black", face = "bold", family = NULL),
+          common.legend = TRUE, legend = "bottom")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/TKH_Figures_meeting/Modelling/FINAL_Coefficient_Site_SPC_Turb.pdf", width = 10, height = 10, device = "pdf")
+
+```
