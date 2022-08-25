@@ -1,0 +1,6 @@
+"0",""
+"0","f2.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek +  TimeSinceChena + (PrecipWeek|site.ID))"
+"0",""
+"0","M2.SPC <- lmer(f2.SPC, data = SPC_data)"
+"2","boundary (singular) fit: see ?isSingular
+"
