@@ -1,0 +1,166 @@
+"0","library(magrittr)"
+"2","
+Attaching package: ‘magrittr’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    set_names
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    extract
+
+"
+"0","library(knitr)"
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","library(tidyverse)"
+"0","library(lubridate)"
+"0","library(data.table)"
+"0","library(scales)"
+"0","library(lme4)"
+"2","Loading required package: Matrix
+"
+"2","
+Attaching package: ‘Matrix’
+
+"
+"2","The following objects are masked from ‘package:tidyr’:
+
+    expand, pack, unpack
+
+"
+"2","
+Attaching package: ‘lme4’
+
+"
+"2","The following object is masked from ‘package:rio’:
+
+    factorize
+
+"
+"0","library(nlme)"
+"2","
+Attaching package: ‘nlme’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    lmList
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    collapse
+
+"
+"0","library(datasets)"
+"0","library(arm)"
+"2","Loading required package: MASS
+"
+"2","
+Attaching package: ‘MASS’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    select
+
+"
+"2","
+arm (Version 1.12-2, built: 2021-10-15)
+
+"
+"2","Working directory is /Users/jakecavaiani/Documents/Storms/R_Scripts
+
+"
+"2","
+Attaching package: ‘arm’
+
+"
+"2","The following objects are masked from ‘package:psych’:
+
+    logit, rescale, sim
+
+"
+"2","The following object is masked from ‘package:scales’:
+
+    rescale
+
+"
+"2","The following object is masked from ‘package:boot’:
+
+    logit
+
+"
+"0","library(AICcmodavg)"
+"2","
+Attaching package: ‘AICcmodavg’
+
+"
+"2","The following object is masked from ‘package:lme4’:
+
+    checkConv
+
+"
+"0","library(gridExtra)"
+"0","library(grid)"
+"0","library(ggpmisc)"
+"0","library(boot)"
+"0","library(here)"
+"0","library(broom)"
+"0","library(viridis)"
+"0","library(car)"
+"2","Loading required package: carData
+"
+"2","
+Attaching package: ‘car’
+
+"
+"2","The following object is masked from ‘package:arm’:
+
+    logit
+
+"
+"2","The following object is masked from ‘package:psych’:
+
+    logit
+
+"
+"2","The following object is masked from ‘package:boot’:
+
+    logit
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    recode
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    some
+
+"
+"0","library(MuMIn)"
+"2","
+Attaching package: ‘MuMIn’
+
+"
+"2","The following objects are masked from ‘package:AICcmodavg’:
+
+    AICc, DIC, importance
+
+"
+"0","library(ggeffects)"
+"2","
+Attaching package: ‘ggeffects’
+
+"
+"2","The following object is masked from ‘package:cowplot’:
+
+    get_title
+
+"
+"0","library(dotwhisker)"

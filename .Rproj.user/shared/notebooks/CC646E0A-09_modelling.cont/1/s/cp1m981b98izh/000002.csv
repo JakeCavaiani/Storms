@@ -1,0 +1,4 @@
+"0","Vault.model <- lmer(f0, REML = TRUE, data = SPC_data_VAUL)
+"
+"2","boundary (singular) fit: see ?isSingular
+"

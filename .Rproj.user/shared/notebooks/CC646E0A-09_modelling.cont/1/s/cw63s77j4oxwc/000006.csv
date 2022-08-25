@@ -1,0 +1,6 @@
+"0","sjPlot::plot_model(M1.SPC, type = ""pred"", terms = c(""PrecipWeek"")) +"
+"0","  # show uncentered date rather than centered date"
+"0","  scale_x_continuous(name = ""PrecipWeek"", "
+"0","                     breaks = seq(-500, 300, 100), "
+"0","                     labels = seq(1150, 1950, 100))"
+"0",""

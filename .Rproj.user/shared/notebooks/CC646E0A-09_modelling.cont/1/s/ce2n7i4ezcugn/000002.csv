@@ -1,0 +1,6 @@
+"0","effect_plot(Moose.model, pred = PrecipWeek, 
+            interval = TRUE, plot.points = TRUE)
+"
+"2","Error in effect_plot(Moose.model, pred = PrecipWeek, interval = TRUE,  : 
+  could not find function ""effect_plot""
+"

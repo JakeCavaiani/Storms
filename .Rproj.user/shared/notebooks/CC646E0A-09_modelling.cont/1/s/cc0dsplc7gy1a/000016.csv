@@ -1,0 +1,19 @@
+"0","# Adding NDVI_50 characteristics
+CV.all.model.characteristic[c(1:4,22:25,42:45,63:66), 63] <- 0.2705 # CARI
+"
+"1","[1m[33mError[39m in [38;5;255m[38;5;251m[48;5;235m`stop_subscript()`[49m[38;5;255m[39m:[22m
+[33m![39m Can't assign to columns beyond the end with non-consecutive locations.
+[34mℹ[39m Input has size 60.
+[31mx[39m Subscript `j` contains non-consecutive location 63.
+Backtrace:
+[90m  1. [39m[1mbase[22m::`[<-`(`*tmp*`, c(1:4, 22:25, 42:45, 63:66), 63, value = `<dbl>`)
+[90m  4. [39m[1mtibble[22m:::`[<-.tbl_df`(...)
+[90m  5. [39mtibble:::tbl_subassign(x, i, j, value, i_arg, j_arg, substitute(value))
+[90m  6. [39mtibble:::vectbl_as_new_col_index(...)
+[90m  7. [39mtibble:::numtbl_as_col_location_assign(j, length(x), j_arg = j_arg)
+[90m 10. [39m[1mvctrs[22m::num_as_location(...)
+[90m 11. [39mvctrs `<fn>`()
+[90m 12. [39mvctrs:::stop_location_oob_non_consecutive(...)
+[90m 13. [39mvctrs:::stop_subscript_oob(...)
+[90m 14. [39mvctrs:::stop_subscript(...)
+"

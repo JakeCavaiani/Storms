@@ -1,0 +1,10 @@
+"0","Moose.model <- lmer(f0, REML = TRUE, data = fDOM_data_MOOS)"
+"2","boundary (singular) fit: see ?isSingular
+"
+"0","French.model <- lmer(f0, REML = TRUE, data = fDOM_data_FRCH)"
+"0","Caribou.model <- lmer(f0, REML = TRUE, data = fDOM_data_CARI)"
+"0","Poker.model <- lmer(f0, REML = TRUE, data = fDOM_data_POKE)"
+"0","Vault.model <- lmer(f0, REML = TRUE, data = fDOM_data_VAUL)"
+"0","Stuart.model <- lmer(f0, REML = TRUE, data = fDOM_data_STRT)"
+"2","boundary (singular) fit: see ?isSingular
+"

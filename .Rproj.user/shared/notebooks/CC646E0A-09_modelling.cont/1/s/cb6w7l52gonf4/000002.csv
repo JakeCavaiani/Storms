@@ -1,0 +1,17 @@
+"0","CV.all.model.characteristic %>% ggplot(aes(x = meanfDOM, y = CVhi)) + 
+  geom_hline(yintercept = 0, linetype = ""dotted"", size = 1) +
+  geom_point(aes(color = site.ID), size = 2) +
+  scale_color_manual(values = c(""orange red"", viridis::viridis(6)), ""Catchment"")+
+  theme_bw() +
+  geom_smooth(method = ""lm"", na.rm = TRUE, fullrange = TRUE, aes(group = 1)) + 
+  stat_poly_eq(formula = y~x,
+               label.y = ""top"", label.x = ""right"",
+               aes(label = paste(..eq.label.., ..rr.label.., sep = ""~~~"")), 
+               parse = TRUE) + 
+  ylab(""CV Hysteresis Index"") +
+  ggtitle(""CVHI vs. fDOM"") +
+  facet_wrap(~response_var)
+"
+"2","Error in ggplot(., aes(x = meanfDOM, y = CVhi)) : 
+  object 'CV.all.model.characteristic' not found
+"

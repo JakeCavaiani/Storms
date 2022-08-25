@@ -1,0 +1,1 @@
+{"frames":[],"message":"Error in effect_plot(Moose.model, pred = PrecipWeek, interval = TRUE,  : \n  could not find function \"effect_plot\"\n"}

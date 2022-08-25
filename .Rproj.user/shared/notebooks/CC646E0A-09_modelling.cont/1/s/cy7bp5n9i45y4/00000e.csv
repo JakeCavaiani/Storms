@@ -1,0 +1,56 @@
+"0","b <- plot_summs(POKE.model, CARI.model, 
+           MOOS.model, FRCH.model, 
+           STRT.model, VAUL.model, scale = TRUE,
+           coefs = c(""Storm Precip"" = ""StormPrecip"", ""Precip Week"" = ""PrecipWeek"",
+                     ""Precip Month"" = ""PrecipMonth"", ""Seasonality"" = ""TimeSinceChena""),
+           model.names = c(""POKE-Moderate PF, Burned"", ""CARI-Moderate PF, Unburned"", ""MOOS-Moderate PF, Burned"", ""FRCH-Moderate PF, Unurned"",""STRT-High PF, Burned"", ""VAUL-High PF, Unburned""))+
+labs(tag = ""B)"")
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"
+"2","Loading required namespace: broom.mixed
+"
+"2","Failed with error:  "
+"2",""
+"2","‘there is no package called ‘broom.mixed’’"
+"2",""
+"2","
+"

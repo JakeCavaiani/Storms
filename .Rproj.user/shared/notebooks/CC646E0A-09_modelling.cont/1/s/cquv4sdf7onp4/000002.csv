@@ -1,0 +1,7 @@
+"0","HI_FI_fDOM_MOOS <- subset(HI_FI_fDOM, site.ID == ""MOOS"")"
+"0","HI_FI_fDOM_FRCH <- subset(HI_FI_fDOM, site.ID == ""FRCH"")"
+"0","HI_FI_fDOM_CARI <- subset(HI_FI_fDOM, site.ID == ""CARI"")"
+"0","HI_FI_fDOM_POKE <- subset(HI_FI_fDOM, site.ID == ""POKE"")"
+"0","HI_FI_fDOM_VAUL <- subset(HI_FI_fDOM, site.ID == ""VAUL"")"
+"0","HI_FI_fDOM_STRT <- subset(HI_FI_fDOM, site.ID == ""STRT"")"
+"0",""

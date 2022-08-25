@@ -1,0 +1,5 @@
+"0","f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))"
+"0",""
+"0","M12.fDOM <- lmer(f12, data = fDOM_data)"
+"0",""
+"0",""

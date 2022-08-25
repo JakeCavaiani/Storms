@@ -1,0 +1,1 @@
+"0","plot(M1.turb, site.ID ~ resid(.), abline = 0 ) # generate diagnostic plots"
