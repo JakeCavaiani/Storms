@@ -17768,7 +17768,11 @@ FRCH_NO3_storm_ascending <- filter(FRCH_NO3_storm, limb == "ascending")
 FRCH_NO3_storm_ascending <- FRCH_NO3_storm_ascending[is.finite(FRCH_NO3_storm_ascending$Q.norm) & is.finite(FRCH_NO3_storm_ascending$NO3.norm), ]
 
 beta.all.no3 <- FRCH_NO3_storm_ascending %>% group_by(storm.ID) %>% 
-  summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+  summarize(beta = slope(NO3.norm, Q.norm)) # this works just like the beta one that is for an individual site
+
+frch.2018.ci <- FRCH_NO3_storm_ascending %>%
+  group_by(storm.ID) %>%
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
 
 # MOOS # 
 MOOS_NO3_storm$storm.ID = c(rep("storm1", 58),
@@ -17810,6 +17814,10 @@ MOOS_NO3_storm_ascending <- MOOS_NO3_storm_ascending[is.finite(MOOS_NO3_storm_as
 
 beta.all.no3.moos.with.all <- MOOS_NO3_storm_ascending %>% group_by(storm.ID) %>% 
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
+
+moos.2018.ci <- MOOS_NO3_storm_ascending %>%
+  group_by(storm.ID) %>%
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
 
 # CARI # 
 CARI_NO3_storm$storm.ID = c(rep("storm10", 248),
@@ -17861,6 +17869,17 @@ beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>%
 
 
 beta.all.no3$response_var <- "NO3"
+
+cari.2018.ci <- CARI_NO3_storm_ascending %>%
+  group_by(storm.ID) %>%
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
+
+all.2018.ci.no3 <- All_NO3_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
+
+all.2018.ci.no3$response_var <- "NO3"
+
 
 ##### fDOM #####
 FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
@@ -17995,6 +18014,13 @@ beta.all.fDOM <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.fDOM$response_var <- "fDOM"
 
+all.2018.ci.fDOM <- All_fDOM_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(fDOM.norm ~ Q.norm, data = .x)))
+
+all.2018.ci.fDOM$response_var <- "fDOM"
+
+
 ##### SPC #####
 FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
@@ -18126,6 +18152,13 @@ beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>%
 
 
 beta.all.SPC$response_var <- "SPC"
+
+all.2018.ci.SPC <- All_SPC_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(SPC.norm ~ Q.norm, data = .x)))
+
+all.2018.ci.SPC$response_var <- "SPC"
+
 
 ##### Turb #####
 FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
@@ -18260,10 +18293,19 @@ beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.turb$response_var <- "turb"
 
-beta.all.2018 <- rbind(beta.all.no3, beta.all.fDOM,
-                       beta.all.SPC, beta.all.turb)
+all.2018.ci.turb <- All_turb_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(turb.norm ~ Q.norm, data = .x)))
+
+all.2018.ci.turb$response_var <- "turb"
+
+
+beta.all.2018 <- rbind(all.2018.ci.no3, all.2018.ci.fDOM,
+                       all.2018.ci.SPC, all.2018.ci.turb)
 write.csv(beta.all.2018, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/beta/beta.2018.csv")
 
+beta.all.2018 <- beta.all.2018 %>% 
+  filter(Parameter != "(Intercept)")
 #### plot ####
 HI_2018 <- read_csv("Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/All_years/HI.2018.csv")
 names(HI_2018)[names(HI_2018) == 'storm.num'] <- 'storm.ID'
@@ -18271,11 +18313,11 @@ names(HI_2018)[names(HI_2018) == 'response'] <- 'response_var'
 
 HI_beta = left_join(HI_2018, beta.all.2018, by=c("site.ID", "storm.ID", "response_var"))
 
-HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/HI_FI.diff_results.csv")
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.2018.csv")
 
 HI_FI_beta = left_join(HI_FI, beta.all.2018, by=c("site.ID", "storm.ID", "response_var"))
 
-write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/HI_FI_beta.diff_results_2018.csv")
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results_2018.csv")
 
 # NO3 #
 #HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
@@ -18968,6 +19010,13 @@ beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.no3$response_var <- "NO3"
 
+all.2019.ci.no3 <- All_NO3_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
+
+all.2019.ci.no3$response_var <- "NO3"
+
+
 ##### fDOM #####
 FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
@@ -19225,6 +19274,13 @@ beta.all.fdom <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.fdom$response_var <- "fDOM"
 
+all.2019.ci.fDOM <- All_fDOM_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(fDOM.norm ~ Q.norm, data = .x)))
+
+all.2019.ci.fDOM$response_var <- "fDOM"
+
+
 ##### SPC #####
 FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
@@ -19481,6 +19537,13 @@ beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.SPC$response_var <- "SPC"
 
+all.2019.ci.SPC <- All_SPC_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(SPC.norm ~ Q.norm, data = .x)))
+
+all.2019.ci.SPC$response_var <- "SPC"
+
+
 ##### Turb #####
 FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, inner_join, by = "valuedatetime")
@@ -19736,9 +19799,18 @@ beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.turb$response_var <- "turb"
 
-beta.all.2019 <- rbind(beta.all.no3, beta.all.fdom,
-                       beta.all.SPC, beta.all.turb)
+all.2019.ci.turb <- All_turb_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(turb.norm ~ Q.norm, data = .x)))
+
+all.2019.ci.turb$response_var <- "turb"
+
+
+beta.all.2019 <- rbind(all.2019.ci.no3, all.2019.ci.fDOM,
+                       all.2019.ci.SPC, all.2019.ci.turb)
 write.csv(beta.all.2019, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/beta/beta.2019.csv")
+beta.all.2019 <- beta.all.2019 %>% 
+  filter(Parameter != "(Intercept)")
 #### plot ####
 HI_2019 <- read_csv("Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/All_years/HI.2019.csv")
 names(HI_2019)[names(HI_2019) == 'storm.num'] <- 'storm.ID'
@@ -19746,12 +19818,11 @@ names(HI_2019)[names(HI_2019) == 'response'] <- 'response_var'
 HI_beta = left_join(HI_2019, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
 
 
-
-HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results_2019.csv")
 
 HI_FI_beta = left_join(HI_FI, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
 
-write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results.csv")
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results_2019.csv")
 
 # NO3 #
 HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
@@ -20454,6 +20525,13 @@ beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.no3$response_var <- "NO3"
 
+all.2020.ci.no3 <- All_NO3_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
+
+all.2020.ci.no3$response_var <- "NO3"
+
+
 ##### fDOM #####
 FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
@@ -20726,6 +20804,13 @@ beta.all.fdom <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.fdom$response_var <- "fDOM"
 
+all.2020.ci.fDOM <- All_fDOM_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(fDOM.norm ~ Q.norm, data = .x)))
+
+all.2020.ci.fDOM$response_var <- "fDOM"
+
+
 ##### SPC #####
 FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
@@ -20997,6 +21082,13 @@ beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.SPC$response_var <- "SPC"
 
+all.2020.ci.SPC <- All_SPC_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(SPC.norm ~ Q.norm, data = .x)))
+
+all.2020.ci.SPC$response_var <- "SPC"
+
+
 ##### Turb #####
 FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
 MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, inner_join, by = "valuedatetime")
@@ -21267,11 +21359,20 @@ beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.turb$response_var <- "turb"
 
-beta.all.2020 <- rbind(beta.all.no3, beta.all.fdom,
-                       beta.all.SPC, beta.all.turb)
+all.2020.ci.turb <- All_turb_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(turb.norm ~ Q.norm, data = .x)))
+
+all.2020.ci.turb$response_var <- "turb"
+
+
+beta.all.2020 <- rbind(all.2020.ci.no3, all.2020.ci.fDOM,
+                       all.2020.ci.SPC, all.2020.ci.turb)
 
 write.csv(beta.all.2020, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/beta/beta.2020.csv")
 
+beta.all.2020 <- beta.all.2020 %>% 
+  filter(Parameter != "(Intercept)")
 #### plot ####
 HI_2020 <- read_csv("Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/All_years/HI.2020.csv")
 names(HI_2020)[names(HI_2020) == 'storm.num'] <- 'storm.ID'
@@ -21280,11 +21381,11 @@ names(HI_2020)[names(HI_2020) == 'response'] <- 'response_var'
 HI_beta = left_join(HI_2020, beta.all.2020, by=c("site.ID", "storm.ID", "response_var"))
 
 
-HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results_2020.csv")
 
-HI_FI_beta = left_join(HI_FI, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
+HI_FI_beta = left_join(HI_FI, beta.all.2020, by=c("site.ID", "storm.ID", "response_var"))
 
-write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results.csv")
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results_2020.csv")
 
 # NO3 #
 HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
@@ -21500,8 +21601,10 @@ FRCH_SpCond_storm_list_beta = FRCH_storm_list_beta[c(grep("SPC", names(FRCH_stor
 FRCH_turb_storm_list_beta = FRCH_storm_list_beta[c(grep("Turb", names(FRCH_storm_list_beta)))]
 FRCH_Q_storm_list_beta = FRCH_storm_list_beta[c(grep("Q", names(FRCH_storm_list_beta)))]
 
+
 for(i in 1:length(FRCH_Q_storm_list_beta)){
-  FRCH_Q_storm_list_beta[[i]][["valuedatetime"]] = mdy_hm(FRCH_Q_storm_list_beta[[i]][["valuedatetime"]])
+  FRCH_Q_storm_list_beta[[i]][["valuedatetime"]] = as.POSIXct(FRCH_Q_storm_list_beta[[i]][["valuedatetime"]],
+                                                              "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
   
 } 
 
@@ -21552,8 +21655,10 @@ STRT_SpCond_storm_list_beta = STRT_storm_list_beta[c(grep("SPC", names(STRT_stor
 STRT_turb_storm_list_beta = STRT_storm_list_beta[c(grep("Turb", names(STRT_storm_list_beta)))]
 STRT_Q_storm_list_beta = STRT_storm_list_beta[c(grep("Q", names(STRT_storm_list_beta)))]
 
+
 for(i in 1:length(STRT_Q_storm_list_beta)){
-  STRT_Q_storm_list_beta[[i]][["valuedatetime"]] = mdy_hm(STRT_Q_storm_list_beta[[i]][["valuedatetime"]])
+  STRT_Q_storm_list_beta[[i]][["valuedatetime"]] = as.POSIXct(STRT_Q_storm_list_beta[[i]][["valuedatetime"]],
+                                                              "%Y-%m-%d %H:%M:%S", tz="America/Anchorage")
   
 } 
 
@@ -21780,22 +21885,21 @@ for(i in 1:length(CARI_turb_storm_list_beta)){
     (max(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T)-min(CARI_turb_storm_list_beta[[i]][["datavalue"]], na.rm=T))
 }
 ###### NO3  #######
-FRCH_NO3_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_NO3_storm_list_beta, inner_join, by = "valuedatetime")
-POKE_NO3_storm <- map2_df(POKE_Q_storm_list_beta, POKE_NO3_storm_list_beta, inner_join, by = "valuedatetime")
-STRT_NO3_storm <- map2_df(STRT_Q_storm_list_beta, STRT_NO3_storm_list_beta, inner_join, by = "valuedatetime")
-VAUL_NO3_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_NO3_storm_list_beta, inner_join, by = "valuedatetime")
+FRCH_NO3_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_NO3_storm_list_beta, left_join, by = "valuedatetime")
+POKE_NO3_storm <- map2_df(POKE_Q_storm_list_beta, POKE_NO3_storm_list_beta, left_join, by = "valuedatetime")
+STRT_NO3_storm <- map2_df(STRT_Q_storm_list_beta, STRT_NO3_storm_list_beta, left_join, by = "valuedatetime")
+VAUL_NO3_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_NO3_storm_list_beta, left_join, by = "valuedatetime")
 CARI_NO3_storm <- map2_df(CARI_Q_storm_list_beta, CARI_NO3_storm_list_beta, inner_join, by = "valuedatetime")
 
-FRCH_NO3_storm$storm.ID = c(rep("storm1", 575),
-                            rep("storm2", 911),
-                            rep("storm3", 623),
-                            rep("storm4", 671),
-                            rep("storm5a", 551),
-                            rep("storm5b", 779),
-                            rep("storm6a", 335),
-                            rep("storm6b", 935),
-                            rep("storm7", 419),
-                            rep("storm8", 1403))
+FRCH_NO3_storm$storm.ID = c(rep("storm2", 303),
+                            rep("storm3", 207),
+                            rep("storm4", 223),
+                            rep("storm5a", 183),
+                            rep("storm5b", 259),
+                            rep("storm6a", 110),
+                            rep("storm6b", 311),
+                            rep("storm7", 139),
+                            rep("storm8", 465))
 
 names(FRCH_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
 FRCH_NO3_storm$site.ID <- "FRCH"
@@ -21823,16 +21927,22 @@ beta.all.no3 <- FRCH_NO3_storm_ascending %>% group_by(storm.ID) %>%
 
 
 # POKE # 
+# POKE_NO3_storm$storm.ID = c(rep("storm1", 235),
+#                              rep("storm2", 191),
+#                              rep("storm3", 167),
+#                              rep("storm4", 575),
+#                              rep("storm5", 1106),
+#                              rep("storm6", 479),
+#                              rep("storm7a", 1355),
+#                              rep("storm7b", 791),
+#                              rep("storm7c", 299),
+#                              rep("storm7d", 455))
+
 POKE_NO3_storm$storm.ID = c(rep("storm1", 235),
-                             rep("storm2", 191),
-                             rep("storm3", 167),
-                             rep("storm4", 575),
-                             rep("storm5", 1106),
-                             rep("storm6", 479),
-                             rep("storm7a", 1355),
-                             rep("storm7b", 791),
-                             rep("storm7c", 299),
-                             rep("storm7d", 455))
+                            rep("storm2", 191),
+                            rep("storm5", 354),
+                            rep("storm5", 152))
+                            
                              
 
 names(POKE_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
@@ -21860,11 +21970,17 @@ beta.all.no3 <- POKE_NO3_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # STRT # 
-STRT_NO3_storm$storm.ID = c(rep("storm1a", 575),
-                            rep("storm1b", 767),
-                            rep("storm2a", 287),
-                            rep("storm2b", 635),
-                            rep("storm3", 383))
+# STRT_NO3_storm$storm.ID = c(rep("storm1a", 575),
+#                             rep("storm1b", 767),
+#                             rep("storm2a", 287),
+#                             rep("storm2b", 635),
+#                             rep("storm3", 383))
+
+STRT_NO3_storm$storm.ID = c(rep("storm1a", 191),
+                            rep("storm1b", 255),
+                            rep("storm2a", 95),
+                            rep("storm2b", 211),
+                            rep("storm3", 127))
 
 names(STRT_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
 STRT_NO3_storm$site.ID <- "STRT"
@@ -21890,14 +22006,23 @@ beta.all.no3.strt <- STRT_NO3_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # VAUL # 
-VAUL_NO3_storm$storm.ID = c(rep("storm1a", 1127),
-                            rep("stor1b", 1379),
-                            rep("storm2", 203),
-                            rep("storm3", 2004),
-                            rep("storm4a", 1283),
-                            rep("storm4b", 959),
-                            rep("storm5a", 996),
-                            rep("storm5b", 1155))
+# VAUL_NO3_storm$storm.ID = c(rep("storm1a", 1127),
+#                             rep("stor1b", 1379),
+#                             rep("storm2", 203),
+#                             rep("storm3", 2004),
+#                             rep("storm4a", 1283),
+#                             rep("storm4b", 959),
+#                             rep("storm5a", 996),
+#                             rep("storm5b", 1155))
+
+VAUL_NO3_storm$storm.ID = c(rep("storm1a", 14),
+                            rep("stor1b", 459),
+                            rep("storm2", 67),
+                            rep("storm3", 663),
+                            rep("storm4a", 423),
+                            rep("storm4b", 319),
+                            rep("storm5a", 328),
+                            rep("storm5b", 387))
                             
 
 names(VAUL_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
@@ -21924,16 +22049,17 @@ beta.all.no3.vaul <- VAUL_NO3_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, NO3.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_NO3_storm$storm.ID = c(rep("storm1", 2519),
-                            rep("storm2", 3659),
-                            rep("storm3", 2099),
-                            rep("storm4", 2399),
-                            rep("storm5", 1919),
-                            rep("storm6", 5939),
-                            rep("storm7", 5916),
-                            rep("storm8", 6566),
-                            rep("storm9", 4859),
-                            rep("storm10", 1619))
+CARI_NO3_storm$storm.ID = c(rep("storm1", 167),
+                            rep("storm11", 243),
+                            rep("storm2", 139),
+                            rep("storm3", 159),
+                            rep("storm4", 159),
+                            rep("storm5", 127),
+                            rep("storm6", 395),
+                            rep("storm7", 344),
+                            rep("storm8", 437),
+                            rep("storm9", 323),
+                            rep("storm10", 107))
                             
 
 names(CARI_NO3_storm) <- c("DateTime", "Q", "Q.norm", "NO3", "NO3.norm", "storm.ID")
@@ -21971,24 +22097,40 @@ beta.all.no3 <- All_NO3_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.no3$response_var <- "NO3"
 
+all.2021.ci.no3 <- All_NO3_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(NO3.norm ~ Q.norm, data = .x)))
+
+all.2021.ci.no3$response_var <- "NO3"
+
 ##### fDOM #####
-FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
-MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
-POKE_fDOM_storm <- map2_df(POKE_Q_storm_list_beta, POKE_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
-STRT_fDOM_storm <- map2_df(STRT_Q_storm_list_beta, STRT_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
-VAUL_fDOM_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
+FRCH_fDOM_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_fDOM_storm_list_beta, left_join, by = "valuedatetime")
+MOOS_fDOM_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_fDOM_storm_list_beta, left_join, by = "valuedatetime")
+POKE_fDOM_storm <- map2_df(POKE_Q_storm_list_beta, POKE_fDOM_storm_list_beta, left_join, by = "valuedatetime")
+STRT_fDOM_storm <- map2_df(STRT_Q_storm_list_beta, STRT_fDOM_storm_list_beta, left_join, by = "valuedatetime")
+VAUL_fDOM_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_fDOM_storm_list_beta, left_join, by = "valuedatetime")
 CARI_fDOM_storm <- map2_df(CARI_Q_storm_list_beta, CARI_fDOM_storm_list_beta, inner_join, by = "valuedatetime")
 
-FRCH_fDOM_storm$storm.ID = c(rep("storm1", 575),
-                             rep("storm2", 911),
-                             rep("storm3", 623),
-                             rep("storm4", 671),
-                             rep("storm5a", 551),
-                             rep("storm5b", 779),
-                             rep("storm6a", 335),
-                             rep("storm6b", 935),
-                             rep("storm7", 419),
-                             rep("storm8", 1403))
+# FRCH_fDOM_storm$storm.ID = c(rep("storm1", 575),
+#                              rep("storm2", 911),
+#                              rep("storm3", 623),
+#                              rep("storm4", 671),
+#                              rep("storm5a", 551),
+#                              rep("storm5b", 779),
+#                              rep("storm6a", 335),
+#                              rep("storm6b", 935),
+#                              rep("storm7", 419),
+#                              rep("storm8", 1403))
+
+FRCH_fDOM_storm$storm.ID = c(rep("storm2", 303),
+                            rep("storm3", 207),
+                            rep("storm4", 223),
+                            rep("storm5a", 183),
+                            rep("storm5b", 259),
+                            rep("storm6a", 110),
+                            rep("storm6b", 311),
+                            rep("storm7", 139),
+                            rep("storm8", 465))
 
 names(FRCH_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 FRCH_fDOM_storm$site.ID <- "FRCH"
@@ -22015,16 +22157,27 @@ beta.all.fDOM <- FRCH_fDOM_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # MOOS # 
-MOOS_fDOM_storm$storm.ID = c(rep("storm1", 575),
-                             rep("storm2", 755),
-                             rep("storm3a", 347),
-                             rep("storm3b", 1079),
-                             rep("storm4a", 503),
-                             rep("storm4b", 743),
-                             rep("storm5a", 371),
-                             rep("storm5b", 575),
-                             rep("storm6", 383),
-                             rep("storm7", 779))
+# MOOS_fDOM_storm$storm.ID = c(rep("storm1", 575),
+#                              rep("storm2", 755),
+#                              rep("storm3a", 347),
+#                              rep("storm3b", 1079),
+#                              rep("storm4a", 503),
+#                              rep("storm4b", 743),
+#                              rep("storm5a", 371),
+#                              rep("storm5b", 575),
+#                              rep("storm6", 383),
+#                              rep("storm7", 779))
+
+MOOS_fDOM_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 251),
+                             rep("storm3a", 115),
+                             rep("storm3b", 353),
+                             rep("storm4a", 167),
+                             rep("storm4b", 246),
+                             rep("storm5a", 123),
+                             rep("storm5b", 191),
+                             rep("storm6", 127),
+                             rep("storm7", 259))
                             
 names(MOOS_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 MOOS_fDOM_storm$site.ID <- "MOOS"
@@ -22050,16 +22203,21 @@ beta.all.fDOM.moos.with.all <- MOOS_fDOM_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # POKE # 
+# POKE_fDOM_storm$storm.ID = c(rep("storm1", 235),
+#                               rep("storm2", 191),
+#                               rep("storm3", 167),
+#                               rep("storm4", 575),
+#                               rep("storm5", 1106),
+#                               rep("storm6", 479),
+#                               rep("storm7a", 1355),
+#                               rep("storm7b", 791),
+#                               rep("storm7c", 299),
+#                               rep("storm7d", 455))
+
 POKE_fDOM_storm$storm.ID = c(rep("storm1", 235),
-                              rep("storm2", 191),
-                              rep("storm3", 167),
-                              rep("storm4", 575),
-                              rep("storm5", 1106),
-                              rep("storm6", 479),
-                              rep("storm7a", 1355),
-                              rep("storm7b", 791),
-                              rep("storm7c", 299),
-                              rep("storm7d", 455))
+                            rep("storm2", 191),
+                            rep("storm5", 354),
+                            rep("storm5", 152))
 
 names(POKE_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 POKE_fDOM_storm$site.ID <- "POKE"
@@ -22085,11 +22243,17 @@ beta.all.fDOM.poke.with.all <- POKE_fDOM_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # STRT # 
-STRT_fDOM_storm$storm.ID = c(rep("storm1a", 575),
-                             rep("storm1b", 767),
-                             rep("storm2a", 287),
-                             rep("storm2b", 635),
-                             rep("storm3", 383))
+# STRT_fDOM_storm$storm.ID = c(rep("storm1a", 575),
+#                              rep("storm1b", 767),
+#                              rep("storm2a", 287),
+#                              rep("storm2b", 635),
+#                              rep("storm3", 383))
+
+STRT_fDOM_storm$storm.ID = c(rep("storm1a", 191),
+                            rep("storm1b", 255),
+                            rep("storm2a", 95),
+                            rep("storm2b", 211),
+                            rep("storm3", 127))
                              
 
 names(STRT_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
@@ -22119,14 +22283,23 @@ beta.all.fDOM.strt <- STRT_fDOM_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # VAUL # 
-VAUL_fDOM_storm$storm.ID = c(rep("storm1a", 1127),
-                             rep("stor1b", 1379),
-                             rep("storm2", 203),
-                             rep("storm3", 2004),
-                             rep("storm4a", 1283),
-                             rep("storm4b", 959),
-                             rep("storm5a", 996),
-                             rep("storm5b", 1155))
+# VAUL_fDOM_storm$storm.ID = c(rep("storm1a", 1127),
+#                              rep("stor1b", 1379),
+#                              rep("storm2", 203),
+#                              rep("storm3", 2004),
+#                              rep("storm4a", 1283),
+#                              rep("storm4b", 959),
+#                              rep("storm5a", 996),
+#                              rep("storm5b", 1155))
+
+VAUL_fDOM_storm$storm.ID = c(rep("storm1a", 14),
+                            rep("stor1b", 459),
+                            rep("storm2", 67),
+                            rep("storm3", 663),
+                            rep("storm4a", 423),
+                            rep("storm4b", 319),
+                            rep("storm5a", 328),
+                            rep("storm5b", 387))
 
 names(VAUL_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 VAUL_fDOM_storm$site.ID <- "VAUL"
@@ -22152,16 +22325,28 @@ beta.all.fDOM.vaul <- VAUL_fDOM_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, fDOM.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_fDOM_storm$storm.ID = c(rep("storm1", 2519),
-                             rep("storm2", 3659),
-                             rep("storm3", 2099),
-                             rep("storm4", 2399),
-                             rep("storm5", 1919),
-                             rep("storm6", 5939),
-                             rep("storm7", 5916),
-                             rep("storm8", 6566),
-                             rep("storm9", 4859),
-                             rep("storm10", 1619))
+# CARI_fDOM_storm$storm.ID = c(rep("storm1", 2519),
+#                              rep("storm2", 3659),
+#                              rep("storm3", 2099),
+#                              rep("storm4", 2399),
+#                              rep("storm5", 1919),
+#                              rep("storm6", 5939),
+#                              rep("storm7", 5916),
+#                              rep("storm8", 6566),
+#                              rep("storm9", 4859),
+#                              rep("storm10", 1619))
+
+CARI_fDOM_storm$storm.ID = c(rep("storm1", 167),
+                            rep("storm11", 243),
+                            rep("storm2", 139),
+                            rep("storm3", 159),
+                            rep("storm4", 159),
+                            rep("storm5", 127),
+                            rep("storm6", 395),
+                            rep("storm7", 344),
+                            rep("storm8", 437),
+                            rep("storm9", 323),
+                            rep("storm10", 107))
 
 names(CARI_fDOM_storm) <- c("DateTime", "Q", "Q.norm", "fDOM", "fDOM.norm", "storm.ID")
 CARI_fDOM_storm$site.ID <- "CARI"
@@ -22198,24 +22383,40 @@ beta.all.fdom <- All_fDOM_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.fdom$response_var <- "fDOM"
 
+all.2021.ci.fDOM <- All_fDOM_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(fDOM.norm ~ Q.norm, data = .x)))
+
+all.2021.ci.fDOM$response_var <- "fDOM"
+
 ##### SPC #####
-FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
-MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
-POKE_SPC_storm <- map2_df(POKE_Q_storm_list_beta, POKE_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
-STRT_SPC_storm <- map2_df(STRT_Q_storm_list_beta, STRT_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
-VAUL_SPC_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
+FRCH_SPC_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_SpCond_storm_list_beta, left_join, by = "valuedatetime")
+MOOS_SPC_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_SpCond_storm_list_beta, left_join, by = "valuedatetime")
+POKE_SPC_storm <- map2_df(POKE_Q_storm_list_beta, POKE_SpCond_storm_list_beta, left_join, by = "valuedatetime")
+STRT_SPC_storm <- map2_df(STRT_Q_storm_list_beta, STRT_SpCond_storm_list_beta, left_join, by = "valuedatetime")
+VAUL_SPC_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_SpCond_storm_list_beta, left_join, by = "valuedatetime")
 CARI_SPC_storm <- map2_df(CARI_Q_storm_list_beta, CARI_SpCond_storm_list_beta, inner_join, by = "valuedatetime")
 
-FRCH_SPC_storm$storm.ID = c(rep("storm1", 575),
-                            rep("storm2", 911),
-                            rep("storm3", 623),
-                            rep("storm4", 671),
-                            rep("storm5a", 551),
-                            rep("storm5b", 779),
-                            rep("storm6a", 335),
-                            rep("storm6b", 935),
-                            rep("storm7", 419),
-                            rep("storm8", 1403))
+# FRCH_SPC_storm$storm.ID = c(rep("storm1", 575),
+#                             rep("storm2", 911),
+#                             rep("storm3", 623),
+#                             rep("storm4", 671),
+#                             rep("storm5a", 551),
+#                             rep("storm5b", 779),
+#                             rep("storm6a", 335),
+#                             rep("storm6b", 935),
+#                             rep("storm7", 419),
+#                             rep("storm8", 1403))
+
+FRCH_SPC_storm$storm.ID = c(rep("storm2", 303),
+                             rep("storm3", 207),
+                             rep("storm4", 223),
+                             rep("storm5a", 183),
+                             rep("storm5b", 259),
+                             rep("storm6a", 110),
+                             rep("storm6b", 311),
+                             rep("storm7", 139),
+                             rep("storm8", 465))
 
 names(FRCH_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 FRCH_SPC_storm$site.ID <- "FRCH"
@@ -22242,16 +22443,27 @@ beta.all.SPC <- FRCH_SPC_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # MOOS # 
-MOOS_SPC_storm$storm.ID = c(rep("storm1", 575),
-                            rep("storm2", 755),
-                            rep("storm3a", 347),
-                            rep("storm3b", 1079),
-                            rep("storm4a", 503),
-                            rep("storm4b", 743),
-                            rep("storm5a", 371),
-                            rep("storm5b", 575),
-                            rep("storm6", 383),
-                            rep("storm7", 779))
+# MOOS_SPC_storm$storm.ID = c(rep("storm1", 575),
+#                             rep("storm2", 755),
+#                             rep("storm3a", 347),
+#                             rep("storm3b", 1079),
+#                             rep("storm4a", 503),
+#                             rep("storm4b", 743),
+#                             rep("storm5a", 371),
+#                             rep("storm5b", 575),
+#                             rep("storm6", 383),
+#                             rep("storm7", 779))
+
+MOOS_SPC_storm$storm.ID = c(rep("storm1", 191),
+                             rep("storm2", 251),
+                             rep("storm3a", 115),
+                             rep("storm3b", 353),
+                             rep("storm4a", 167),
+                             rep("storm4b", 246),
+                             rep("storm5a", 123),
+                             rep("storm5b", 191),
+                             rep("storm6", 127),
+                             rep("storm7", 259))
 
 names(MOOS_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 MOOS_SPC_storm$site.ID <- "MOOS"
@@ -22277,16 +22489,21 @@ beta.all.SPC.moos.with.all <- MOOS_SPC_storm_ascending %>% group_by(storm.ID) %>
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # POKE # 
+# POKE_SPC_storm$storm.ID = c(rep("storm1", 235),
+#                              rep("storm2", 191),
+#                              rep("storm3", 167),
+#                              rep("storm4", 575),
+#                              rep("storm5", 1106),
+#                              rep("storm6", 479),
+#                              rep("storm7a", 1355),
+#                              rep("storm7b", 791),
+#                              rep("storm7c", 299),
+#                              rep("storm7d", 455))
+
 POKE_SPC_storm$storm.ID = c(rep("storm1", 235),
                              rep("storm2", 191),
-                             rep("storm3", 167),
-                             rep("storm4", 575),
-                             rep("storm5", 1106),
-                             rep("storm6", 479),
-                             rep("storm7a", 1355),
-                             rep("storm7b", 791),
-                             rep("storm7c", 299),
-                             rep("storm7d", 455))
+                             rep("storm5", 354),
+                             rep("storm5", 152))
 
 names(POKE_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 POKE_SPC_storm$site.ID <- "POKE"
@@ -22312,11 +22529,17 @@ beta.all.SPC.poke.with.all <- POKE_SPC_storm_ascending %>% group_by(storm.ID) %>
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # STRT # 
-STRT_SPC_storm$storm.ID = c(rep("storm1a", 575),
-                            rep("storm1b", 767),
-                            rep("storm2a", 287),
-                            rep("storm2b", 635),
-                            rep("storm3", 383))
+# STRT_SPC_storm$storm.ID = c(rep("storm1a", 575),
+#                             rep("storm1b", 767),
+#                             rep("storm2a", 287),
+#                             rep("storm2b", 635),
+#                             rep("storm3", 383))
+
+STRT_SPC_storm$storm.ID = c(rep("storm1a", 191),
+                             rep("storm1b", 255),
+                             rep("storm2a", 95),
+                             rep("storm2b", 211),
+                             rep("storm3", 127))
 
 names(STRT_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 STRT_SPC_storm$site.ID <- "STRT"
@@ -22342,14 +22565,23 @@ beta.all.SPC.strt <- STRT_SPC_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # VAUL # 
-VAUL_SPC_storm$storm.ID = c(rep("storm1a", 1127),
-                            rep("stor1b", 1379),
-                            rep("storm2", 203),
-                            rep("storm3", 2004),
-                            rep("storm4a", 1283),
-                            rep("storm4b", 959),
-                            rep("storm5a", 996),
-                            rep("storm5b", 1155))
+# VAUL_SPC_storm$storm.ID = c(rep("storm1a", 1127),
+#                             rep("stor1b", 1379),
+#                             rep("storm2", 203),
+#                             rep("storm3", 2004),
+#                             rep("storm4a", 1283),
+#                             rep("storm4b", 959),
+#                             rep("storm5a", 996),
+#                             rep("storm5b", 1155))
+
+VAUL_SPC_storm$storm.ID = c(rep("storm1a", 14),
+                             rep("stor1b", 459),
+                             rep("storm2", 67),
+                             rep("storm3", 663),
+                             rep("storm4a", 423),
+                             rep("storm4b", 319),
+                             rep("storm5a", 328),
+                             rep("storm5b", 387))
 
 names(VAUL_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 VAUL_SPC_storm$site.ID <- "VAUL"
@@ -22375,16 +22607,28 @@ beta.all.SPC.vaul <- VAUL_SPC_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, SPC.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_SPC_storm$storm.ID = c(rep("storm1", 2519),
-                            rep("storm2", 3659),
-                            rep("storm3", 2099),
-                            rep("storm4", 2399),
-                            rep("storm5", 1919),
-                            rep("storm6", 5939),
-                            rep("storm7", 5916),
-                            rep("storm8", 6566),
-                            rep("storm9", 4859),
-                            rep("storm10", 1619))
+# CARI_SPC_storm$storm.ID = c(rep("storm1", 2519),
+#                             rep("storm2", 3659),
+#                             rep("storm3", 2099),
+#                             rep("storm4", 2399),
+#                             rep("storm5", 1919),
+#                             rep("storm6", 5939),
+#                             rep("storm7", 5916),
+#                             rep("storm8", 6566),
+#                             rep("storm9", 4859),
+#                             rep("storm10", 1619))
+
+CARI_SPC_storm$storm.ID = c(rep("storm1", 167),
+                             rep("storm11", 243),
+                             rep("storm2", 139),
+                             rep("storm3", 159),
+                             rep("storm4", 159),
+                             rep("storm5", 127),
+                             rep("storm6", 395),
+                             rep("storm7", 344),
+                             rep("storm8", 437),
+                             rep("storm9", 323),
+                             rep("storm10", 107))
 
 names(CARI_SPC_storm) <- c("DateTime", "Q", "Q.norm", "SPC", "SPC.norm", "storm.ID")
 CARI_SPC_storm$site.ID <- "CARI"
@@ -22422,24 +22666,40 @@ beta.all.SPC <- All_SPC_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.SPC$response_var <- "SPC"
 
+all.2021.ci.SPC <- All_SPC_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(SPC.norm ~ Q.norm, data = .x)))
+
+all.2021.ci.fDOM$response_var <- "SPC"
+
 ##### Turb #####
-FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, inner_join, by = "valuedatetime")
-MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, inner_join, by = "valuedatetime")
-POKE_turb_storm <- map2_df(POKE_Q_storm_list_beta, POKE_turb_storm_list_beta, inner_join, by = "valuedatetime")
-STRT_turb_storm <- map2_df(STRT_Q_storm_list_beta, STRT_turb_storm_list_beta, inner_join, by = "valuedatetime")
-VAUL_turb_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_turb_storm_list_beta, inner_join, by = "valuedatetime")
+FRCH_turb_storm <- map2_df(FRCH_Q_storm_list_beta, FRCH_turb_storm_list_beta, left_join, by = "valuedatetime")
+MOOS_turb_storm <- map2_df(MOOS_Q_storm_list_beta, MOOS_turb_storm_list_beta, left_join, by = "valuedatetime")
+POKE_turb_storm <- map2_df(POKE_Q_storm_list_beta, POKE_turb_storm_list_beta, left_join, by = "valuedatetime")
+STRT_turb_storm <- map2_df(STRT_Q_storm_list_beta, STRT_turb_storm_list_beta, left_join, by = "valuedatetime")
+VAUL_turb_storm <- map2_df(VAUL_Q_storm_list_beta, VAUL_turb_storm_list_beta, left_join, by = "valuedatetime")
 CARI_turb_storm <- map2_df(CARI_Q_storm_list_beta, CARI_turb_storm_list_beta, inner_join, by = "valuedatetime")
 
-FRCH_turb_storm$storm.ID = c(rep("storm1", 575),
-                             rep("storm2", 911),
-                             rep("storm3", 623),
-                             rep("storm4", 671),
-                             rep("storm5a", 551),
-                             rep("storm5b", 779),
-                             rep("storm6a", 335),
-                             rep("storm6b", 935),
-                             rep("storm7", 419),
-                             rep("storm8", 1403))
+# FRCH_turb_storm$storm.ID = c(rep("storm1", 575),
+#                              rep("storm2", 911),
+#                              rep("storm3", 623),
+#                              rep("storm4", 671),
+#                              rep("storm5a", 551),
+#                              rep("storm5b", 779),
+#                              rep("storm6a", 335),
+#                              rep("storm6b", 935),
+#                              rep("storm7", 419),
+#                              rep("storm8", 1403))
+
+FRCH_turb_storm$storm.ID = c(rep("storm2", 303),
+                            rep("storm3", 207),
+                            rep("storm4", 223),
+                            rep("storm5a", 183),
+                            rep("storm5b", 259),
+                            rep("storm6a", 110),
+                            rep("storm6b", 311),
+                            rep("storm7", 139),
+                            rep("storm8", 465))
 
 names(FRCH_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 FRCH_turb_storm$site.ID <- "FRCH"
@@ -22466,16 +22726,27 @@ beta.all.turb <- FRCH_turb_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # MOOS # 
-MOOS_turb_storm$storm.ID = c(rep("storm1", 575),
-                             rep("storm2", 755),
-                             rep("storm3a", 347),
-                             rep("storm3b", 1079),
-                             rep("storm4a", 503),
-                             rep("storm4b", 743),
-                             rep("storm5a", 371),
-                             rep("storm5b", 575),
-                             rep("storm6", 383),
-                             rep("storm7", 779))
+# MOOS_turb_storm$storm.ID = c(rep("storm1", 575),
+#                              rep("storm2", 755),
+#                              rep("storm3a", 347),
+#                              rep("storm3b", 1079),
+#                              rep("storm4a", 503),
+#                              rep("storm4b", 743),
+#                              rep("storm5a", 371),
+#                              rep("storm5b", 575),
+#                              rep("storm6", 383),
+#                              rep("storm7", 779))
+
+MOOS_turb_storm$storm.ID = c(rep("storm1", 191),
+                            rep("storm2", 251),
+                            rep("storm3a", 115),
+                            rep("storm3b", 353),
+                            rep("storm4a", 167),
+                            rep("storm4b", 246),
+                            rep("storm5a", 123),
+                            rep("storm5b", 191),
+                            rep("storm6", 127),
+                            rep("storm7", 259))
 
 names(MOOS_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 MOOS_turb_storm$site.ID <- "MOOS"
@@ -22501,16 +22772,21 @@ beta.all.turb.moos.with.all <- MOOS_turb_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # POKE # 
+# POKE_turb_storm$storm.ID = c(rep("storm1", 235),
+#                               rep("storm2", 191),
+#                               rep("storm3", 167),
+#                               rep("storm4", 575),
+#                               rep("storm5", 1106),
+#                               rep("storm6", 479),
+#                               rep("storm7a", 1355),
+#                               rep("storm7b", 791),
+#                               rep("storm7c", 299),
+#                               rep("storm7d", 455))
+
 POKE_turb_storm$storm.ID = c(rep("storm1", 235),
-                              rep("storm2", 191),
-                              rep("storm3", 167),
-                              rep("storm4", 575),
-                              rep("storm5", 1106),
-                              rep("storm6", 479),
-                              rep("storm7a", 1355),
-                              rep("storm7b", 791),
-                              rep("storm7c", 299),
-                              rep("storm7d", 455))
+                            rep("storm2", 191),
+                            rep("storm5", 354),
+                            rep("storm5", 152))
 
 names(POKE_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 POKE_turb_storm$site.ID <- "POKE"
@@ -22536,11 +22812,17 @@ beta.all.turb.poke.with.all <- POKE_turb_storm_ascending %>% group_by(storm.ID) 
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # STRT # 
-STRT_turb_storm$storm.ID = c(rep("storm1a", 575),
-                             rep("storm1b", 767),
-                             rep("storm2a", 287),
-                             rep("storm2b", 635),
-                             rep("storm3", 383))
+# STRT_turb_storm$storm.ID = c(rep("storm1a", 575),
+#                              rep("storm1b", 767),
+#                              rep("storm2a", 287),
+#                              rep("storm2b", 635),
+#                              rep("storm3", 383))
+
+STRT_turb_storm$storm.ID = c(rep("storm1a", 191),
+                            rep("storm1b", 255),
+                            rep("storm2a", 95),
+                            rep("storm2b", 211),
+                            rep("storm3", 127))
 
 names(STRT_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 STRT_turb_storm$site.ID <- "STRT"
@@ -22566,14 +22848,23 @@ beta.all.turb.strt <- STRT_turb_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # VAUL # 
-VAUL_turb_storm$storm.ID = c(rep("storm1a", 1127),
-                             rep("stor1b", 1379),
-                             rep("storm2", 203),
-                             rep("storm3", 2004),
-                             rep("storm4a", 1283),
-                             rep("storm4b", 959),
-                             rep("storm5a", 996),
-                             rep("storm5b", 1155))
+# VAUL_turb_storm$storm.ID = c(rep("storm1a", 1127),
+#                              rep("stor1b", 1379),
+#                              rep("storm2", 203),
+#                              rep("storm3", 2004),
+#                              rep("storm4a", 1283),
+#                              rep("storm4b", 959),
+#                              rep("storm5a", 996),
+#                              rep("storm5b", 1155))
+
+VAUL_turb_storm$storm.ID = c(rep("storm1a", 14),
+                            rep("stor1b", 459),
+                            rep("storm2", 67),
+                            rep("storm3", 663),
+                            rep("storm4a", 423),
+                            rep("storm4b", 319),
+                            rep("storm5a", 328),
+                            rep("storm5b", 387))
 
 names(VAUL_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 VAUL_turb_storm$site.ID <- "VAUL"
@@ -22599,16 +22890,28 @@ beta.all.turb.vaul <- VAUL_turb_storm_ascending %>% group_by(storm.ID) %>%
   summarize(beta = slope(Q.norm, turb.norm)) # this works just like the beta one that is for an individual site
 
 # CARI # 
-CARI_turb_storm$storm.ID = c(rep("storm1", 2519),
-                             rep("storm2", 3659),
-                             rep("storm3", 2099),
-                             rep("storm4", 2399),
-                             rep("storm5", 1919),
-                             rep("storm6", 5939),
-                             rep("storm7", 5916),
-                             rep("storm8", 6566),
-                             rep("storm9", 4859),
-                             rep("storm10", 1619))
+# CARI_turb_storm$storm.ID = c(rep("storm1", 2519),
+#                              rep("storm2", 3659),
+#                              rep("storm3", 2099),
+#                              rep("storm4", 2399),
+#                              rep("storm5", 1919),
+#                              rep("storm6", 5939),
+#                              rep("storm7", 5916),
+#                              rep("storm8", 6566),
+#                              rep("storm9", 4859),
+#                              rep("storm10", 1619))
+
+CARI_turb_storm$storm.ID = c(rep("storm1", 167),
+                            rep("storm11", 243),
+                            rep("storm2", 139),
+                            rep("storm3", 159),
+                            rep("storm4", 159),
+                            rep("storm5", 127),
+                            rep("storm6", 395),
+                            rep("storm7", 344),
+                            rep("storm8", 437),
+                            rep("storm9", 323),
+                            rep("storm10", 107))
 
 names(CARI_turb_storm) <- c("DateTime", "Q", "Q.norm", "turb", "turb.norm", "storm.ID")
 CARI_turb_storm$site.ID <- "CARI"
@@ -22645,11 +22948,19 @@ beta.all.turb <- All_turb_storm %>% group_by(storm.ID, site.ID) %>%
 
 beta.all.turb$response_var <- "turb"
 
-beta.all.2021 <- rbind(beta.all.no3, beta.all.fdom,
-                       beta.all.SPC, beta.all.turb)
+all.2021.ci.turb <- All_turb_storm %>% 
+  group_by(site.ID, storm.ID) %>% 
+  group_modify(~ parameters::model_parameters(stats::lm(turb.norm ~ Q.norm, data = .x)))
+
+all.2021.ci.turb$response_var <- "turb"
+
+beta.all.2021 <- rbind(all.2021.ci.no3, all.2021.ci.fDOM,
+                       all.2021.ci.SPC, all.2021.ci.turb)
 
 write.csv(beta.all.2021, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/beta/beta.2021.csv")
 
+beta.all.2021 <- beta.all.2021 %>% 
+  filter(Parameter != "(Intercept)")
 #### plot ####
 HI_2021 <- read_csv("Output_from_analysis/06_HI_fire_permafrost_script/HI_antecedent_conditions/All_years/HI.2021.csv")
 names(HI_2021)[names(HI_2021) == 'storm.num'] <- 'storm.ID'
@@ -22658,11 +22969,11 @@ names(HI_2021)[names(HI_2021) == 'response'] <- 'response_var'
 HI_beta = left_join(HI_2021, beta.all.2021, by=c("site.ID", "storm.ID", "response_var"))
 
 
-HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results.csv")
+HI_FI <- read.csv("~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI.diff_results_2021.csv")
 
-HI_FI_beta = left_join(HI_FI, beta.all.2019, by=c("site.ID", "storm.ID", "response_var"))
+HI_FI_beta = left_join(HI_FI, beta.all.2021, by=c("site.ID", "storm.ID", "response_var"))
 
-write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results.csv")
+write.csv(HI_FI_beta, "~/Documents/Storms/Output_from_analysis/06_HI_fire_permafrost_script/HI_FI_beta.diff_results_2021.csv")
 
 # NO3 #
 HI_FI_NO3 = subset(HI_FI_beta, response_var == "NO3")
@@ -22867,7 +23178,8 @@ antecedent_2021 <- antecedent_2021[,-c(1:3)]
 HI_FI <- rbind(HI_FI_2018, HI_FI_2019, HI_FI_2020, HI_FI_2021)
 
 beta_all <- rbind(beta_2018, beta_2019, beta_2020, beta_2021)
-
+beta_all <- beta_all %>% 
+  filter(Parameter != "(Intercept)")
 antecedent_all <- rbind(antecedent_2018, antecedent_2019, antecedent_2020, antecedent_2021)
 names(antecedent_all)[names(antecedent_all) == "storm.num"] <- "storm.ID"
 names(antecedent_all)[names(antecedent_all) == "response"] <- "response_var"

@@ -4338,7 +4338,7 @@ VAUL = left_join(vaul.final.discharge.2019, vaul.fdom.final, by="DateTime")
 VAUL = left_join(VAUL, vaul.no3.final, by="DateTime")
 VAUL = left_join(VAUL, vaul.spcond.final, by="DateTime")
 VAUL = left_join(VAUL, vaul.turb.final, by="DateTime")
-VAUL <- VAUL[, -c(6,8,10)]
+VAUL <- VAUL[, -c(6,8)]
 
 
 # MOOS #
@@ -17976,11 +17976,11 @@ MOOS.Q.2021 = as.data.frame(Q.daily.2021$MOOS)
 MOOS.Q.2021$day = as.Date(rownames(Q.daily.2021))
 names(MOOS.Q.2021) = c("Discharge_Lsec", "day")
 
-write_csv(FRCH.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/FRCH/FRCH_Q_2021.csv")
-write_csv(STRT.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/STRT/STRT_Q_2021.csv")
-write_csv(POKE.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/POKE/POKE_Q_2021.csv")
-write_csv(VAUL.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/VAUL/VAUL_Q_2021.csv")
-write_csv(MOOS.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/MOOS/MOOS_Q_2021.csv")
+#write_csv(FRCH.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/FRCH/FRCH_Q_2021.csv")
+#write_csv(STRT.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/STRT/STRT_Q_2021.csv")
+#write_csv(POKE.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/POKE/POKE_Q_2021.csv")
+#write_csv(VAUL.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/VAUL/VAUL_Q_2021.csv")
+#write_csv(MOOS.Q.2021, "~/Documents/DoD_Discharge/Discharge_Chem/2021/Daily_Q_day/MOOS/MOOS_Q_2021.csv")
 
 #data wrangling - fill gaps #
 # fxn #
@@ -18215,7 +18215,7 @@ MOOS.2021.chem = left_join(MOOS.2021.chem, moos.spcond.final, by="DateTime")
 MOOS.2021.chem = left_join(MOOS.2021.chem, moos.turb.final, by="DateTime")
 MOOS.2021.chem <- MOOS.2021.chem[, -c(6,8,10)]
 
-plot(MOOS.2021.chem$MeanDischarge ~ MOOS.2021.chem$DateTime, type="l", xlab="", ylab="Q (L/sec)",
+plot(MOOS.2021.chem$Q ~ MOOS.2021.chem$DateTime, type="l", xlab="", ylab="Q (L/sec)",
      xlim = as.POSIXct(c("2021-05-01 00:00:00","2021-10-01 00:00:00"), tz="America/Anchorage"))
 lines(MOOS.2021.chem$nitrateuM * 60 ~ MOOS.2021.chem$DateTime, type="l", xlab="", ylab="", col="purple",
       xlim = as.POSIXct(c("2021-05-01 00:00:00","2021-10-01 00:00:00"), tz="America/Anchorage"))
@@ -18225,12 +18225,12 @@ lines(MOOS.2021.chem$fDOM.QSU * 15 ~ MOOS.2021.chem$DateTime, type="l", xlab="",
 DOD.2021.1 <- rbind(FRCH.2021.chem, MOOS.2021.chem, POKE.2021.chem, VAUL.2021.chem, STRT.2021.chem)
 
 # Write CSV #
-write.csv(FRCH.2021.chem, "~/Documents/Storms/Q_Chem/FRCH/FRCH_chem_2021.csv")
-write.csv(STRT.2021.chem, "~/Documents/Storms/Q_Chem/STRT/STRT_chem_2021.csv")
-write.csv(POKE.2021.chem, "~/Documents/Storms/Q_Chem/POKE/POKE_chem_2021.csv")
-write.csv(VAUL.2021.chem, "~/Documents/Storms/Q_Chem/VAUL/VAUL_chem_2021.csv")
-write.csv(MOOS.2021.chem, "~/Documents/Storms/Q_Chem/MOOS/MOOS_chem_2021.csv")
-write.csv(DOD.2021.1, "~/Documents/DoD_Discharge/Discharge_Chem/2021/DOD.2021.1.csv")
+#write.csv(FRCH.2021.chem, "~/Documents/Storms/Q_Chem/FRCH/FRCH_chem_2021.csv")
+#write.csv(STRT.2021.chem, "~/Documents/Storms/Q_Chem/STRT/STRT_chem_2021.csv")
+#write.csv(POKE.2021.chem, "~/Documents/Storms/Q_Chem/POKE/POKE_chem_2021.csv")
+#write.csv(VAUL.2021.chem, "~/Documents/Storms/Q_Chem/VAUL/VAUL_chem_2021.csv")
+#write.csv(MOOS.2021.chem, "~/Documents/Storms/Q_Chem/MOOS/MOOS_chem_2021.csv")
+#write.csv(DOD.2021.1, "~/Documents/DoD_Discharge/Discharge_Chem/2021/DOD.2021.1.csv")
 
 # Baseflow Separation #
 
@@ -18264,6 +18264,8 @@ moos.final.discharge.2021$MeanDischarge <- moos.final.discharge.2021$Q
 poke.final.discharge.2021$MeanDischarge <- poke.final.discharge.2021$Q
 vaul.final.discharge.2021$MeanDischarge <- vaul.final.discharge.2021$Q
 strt.final.discharge.2021$MeanDischarge <- strt.final.discharge.2021$Q
+
+#write.csv(poke.final.discharge.2021, "~/Documents/Storms/Q_Chem/POKE/POKE_Q_2021.csv")
 
 ### examine the recursive digital filter at .9, .925, .95 levels ###
 plot(frch.final.discharge.2021$MeanDischarge ~ frch.final.discharge.2021$DateTime, type = "l", xlab = "", ylab = "Q (L/sec)",
@@ -18432,9 +18434,9 @@ vaul.ten.fourty.eight <- vaul.precip.discharge[which(vaul.precip.discharge$fourt
 poke.ten.twenty.four <- poke.precip.discharge[which(poke.precip.discharge$twentyfour >= 10),] # twenty four hour period where the precip is 10
 poke.ten.fourty.eight <- poke.precip.discharge[which(poke.precip.discharge$fourtyeight >= 10),] # fourty eight hour period where the precip is greater than 10
 
-write.csv(strt.precip.discharge, "~/Documents/DoD_2021/RainGauge/strt.precip.discharge.csv", row.names = FALSE)
-write.csv(vaul.precip.discharge, "~/Documents/DoD_2021/RainGauge/vaul.precip.discharge.csv", row.names = FALSE)
-write.csv(poke.precip.discharge, "~/Documents/DoD_2021/RainGauge/poke.precip.discharge.csv", row.names = FALSE)
+#write.csv(strt.precip.discharge, "~/Documents/DoD_2021/RainGauge/strt.precip.discharge.csv", row.names = FALSE)
+#write.csv(vaul.precip.discharge, "~/Documents/DoD_2021/RainGauge/vaul.precip.discharge.csv", row.names = FALSE)
+#write.csv(poke.precip.discharge, "~/Documents/DoD_2021/RainGauge/poke.precip.discharge.csv", row.names = FALSE)
 
 ## Discharge/Chem/Precip ##
 
@@ -19420,6 +19422,21 @@ plot(STRT.st$inst_rainfall_mm ~ STRT.st$DateTime, type="h",
      ylim = c(5,0), 
      axes=F, xlab="", ylab="")
 axis(side = 4)
+
+### For Presentation ###
+plot(MOOS_storm7_08_27$MeanDischarge ~ as.POSIXct(MOOS_storm7_08_27$DateTime, tz="America/Anchorage"), type="l", xlab="", ylab="Q (L/sec)",ylim = c(1500,4200), col="blue", lwd = 2,
+     xlim = as.POSIXct(c("2021-08-27 00:00:00","2021-08-30 23:45:00"), tz="America/Anchorage"))
+par(new = T)
+plot(MOOS$fDOM.QSU * 10 ~ MOOS$DateTime, xlab="", ylab="", col="maroon",
+     xlim = as.POSIXct(c("2021-08-27 00:00:00","2021-08-30 23:45:00"), tz="America/Anchorage"),
+     type = "l", lwd = 1.5,
+     axes = F)
+par(new = T)
+plot(STRT.st$inst_rainfall_mm ~ STRT.st$DateTime, type="h",
+     xlim = as.POSIXct(c("2021-08-27 00:00:00","2021-08-30 23:45:00"), tz="America/Anchorage"),
+     ylim = c(1,0), 
+     axes=F, xlab="", ylab="", lwd = 1.5)
+
 
 # No more alarms # 
 plot(MOOS$MeanDischarge ~ MOOS$DateTime, type="l", xlab="", ylab="Q (L/sec)",

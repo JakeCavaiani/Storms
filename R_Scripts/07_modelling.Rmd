@@ -137,6 +137,9 @@ antecedent_HI_FI_1_0[c(130), 24] <- "medium"
 #antecedent_HI_FI_1_0[c(130), 25] <- "2018-06-29"
 antecedent_HI_FI_1_0[c(130), 26] <- 126.33403
 
+antecedent_HI_FI_1_0[c(305), 23] <- "burned"
+antecedent_HI_FI_1_0[c(305), 24] <- "high"
+
 antecedent_HI_FI_1_0[c(313), 14] <- 37.600
 antecedent_HI_FI_1_0[c(313), 15] <- 12.7643333
 antecedent_HI_FI_1_0[c(313), 16] <- 54.800
@@ -150,12 +153,27 @@ antecedent_HI_FI_1_0[c(313), 23] <- "burned"
 antecedent_HI_FI_1_0[c(313), 24] <- "high"
 #antecedent_HI_FI_1_0[c(313), 25] <- "2018-06-29"
 #antecedent_HI_FI_1_0[c(313), 26] <- 79.60417
+
+antecedent_HI_FI_1_0[c(339:342), 23] <- "burned"
+antecedent_HI_FI_1_0[c(339:342), 24] <- "high"
+
 antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[-658,]
+
+antecedent_HI_FI_1_0[c(750), 23] <- "burned"
+antecedent_HI_FI_1_0[c(750), 24] <- "medium"
 
 which(antecedent_HI_FI_1_0$site.ID == "MOOS")
 # i have a discrepency with is MOOS is burned or not....2018/2019 are listed as burned and 2020/2021 are listed as unburned....MOOS is catergorized as BURNED
 
 antecedent_HI_FI_1_0[c(503:532, 817:846), 23] <- "burned"
+
+antecedent_HI_FI_1_0 <- antecedent_HI_FI_1_0[-c(1:4,9,35:41,43,82:85,106:109, 
+                                                153:156, 158:160,162:164,166:168,170:172,221:226,265:279,298:301,343:354,370:373,387:402,
+                                                459:462,530,533:540,561:564,574:575,593:596,674:677,695:698,711:718,
+                                                786,850,893:896,918:921,946:949), ] # removing storms that do not have a Q respond
+
+antecedent_HI_FI_1_0[c(251,285,408,583,740,363,515,615,663,664,698,737,739), 13] <- NA # removing errant Beta values that are close to 25-50ish 
+
 
 ##subsetting by solute 
 # NO3 #
@@ -174,8 +192,6 @@ HI_FI_turb = subset(antecedent_HI_FI_1_0, response_var == "turb")
 #########################################################################################################
 ``` {r}
 
-HI_FI_NO3$site.ID <- factor(HI_FI_NO3$site.ID, levels = c('FRCH','MOOS','CARI','POKE','STRT', 'VAUL'))
-
 HI_FI_NO3.p = 
   ggplot(HI_FI_NO3, aes(Flush_index, Hyst_index)) + geom_point(aes(colour=factor(site.ID), shape = pf), size = 4)+
   geom_errorbar(aes(ymin=HI_ymin, ymax=HI_ymax), colour="black", alpha=0.5, size=.5, width = 0.1)+ 
@@ -184,6 +200,8 @@ HI_FI_NO3.p =
   scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
   ggtitle("a) NO3-")+ 
+  ylab("HI") +
+  xlab("") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_NO3.p
 ```
@@ -203,6 +221,8 @@ HI_FI_fDOM.p =
   scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
   ggtitle("b) fDOM")+ 
+  xlab("") +
+  ylab("") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_fDOM.p
 ```
@@ -220,7 +240,9 @@ HI_FI_SPC.p =
   geom_errorbarh(aes(xmin=FI_ymin, xmax=FI_ymax), colour="black", alpha=0.5, size=.5, height = 0.1) +
   scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
-  ggtitle("c) SPC")+ 
+  ggtitle("c) SPC")+
+  xlab("FI") + 
+  ylab("HI") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_SPC.p
 ```
@@ -238,12 +260,22 @@ HI_FI_turb.p =
   scale_color_manual(values = c("orange red", viridis::viridis(6)), "Catchment")+theme_bw() +
   ylim(-1.5, 1.5) + xlim(-1.5, 1.5)+
   ggtitle("d) Turb")+ 
+  xlab("FI") +
+  ylab("") +
   theme(panel.border = element_blank(), panel.grid.major = element_blank(),panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"), text = element_text(size = 20)) 
 HI_FI_turb.p
 
 ```
 This seems like we would expect...a mostly flushing effect during storms
 
+
+
+``` {r}
+library(ggpubr)
+ggarrange(HI_FI_NO3.p, HI_FI_fDOM.p, HI_FI_SPC.p, HI_FI_turb.p, ncol=2, nrow=2, common.legend = TRUE, legend="right")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI_FI_permafrost.pdf", width = 10, height = 10, device = "pdf")
+```
 
 ### HI vs. FI ### FIRE
 ``` {r}
@@ -301,7 +333,12 @@ HI_FI_turb.p.fire =
 HI_FI_turb.p.fire
 
 ```
+``` {r}
 
+ggarrange(HI_FI_NO3.p.fire, HI_FI_fDOM.p.fire, HI_FI_SPC.p.fire, HI_FI_turb.p.fire, ncol=2, nrow=2, common.legend = TRUE, legend="right")
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI_FI_fire.pdf", width = 10, height = 10, device = "pdf")
+```
 
 ### regression between FI and Beta
 ``` {r}
@@ -848,8 +885,6 @@ HI_FI_SPC = subset(antecedent_HI_FI_1_0, response_var == "SPC")
 # turb #
 HI_FI_turb = subset(antecedent_HI_FI_1_0, response_var == "turb")
 
-
-
 ```
 
 
@@ -1334,7 +1369,7 @@ HI_FI_NO3 %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) +
 
 #### Correlation 
 ``` {r}
-NO3_data <- HI_FI_NO3[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn")]
+NO3_data <- HI_FI_NO3[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "pf", "burn", "year")]
 NO3_data <- na.omit(NO3_data) # 236 to 223 rows 
 cor(NO3_data[,c(1,3:10)])
 
@@ -1411,6 +1446,7 @@ Plot partial residual for the interesting predictor – PrecipWeek
 pr <- ggpredict(M1, terms = c("PrecipWeek"))
 plot(pr, add.data = TRUE)
 
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/partial.residuals.pdf")
 ```
 Visually look at the effect of PrecipWeek on HI and we would expect these to look like a nice regression model 
 ```{r, echo=FALSE}
@@ -1444,11 +1480,45 @@ summary(M3)
 
 ```
 alter structure between random slopes and random intercepts
+
 ```{r}
-aictab(list(M0,M1,M2,M3))
+pr.no3 <- ggpredict(M3, terms = c("PrecipWeek"))
+plot(pr.no3, add.data = TRUE)
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/partial.residuals.png", device = "png")
 ```
-Mod3: Model without TempWeek, ThreeMonth, or StormTemp with a random intercept structure structure
+
+
+```{r}
+f10 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID))
+
+M10 <- lmer(f10, REML = TRUE, data = NO3_data)
+summary(M10)
+
+```
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11 <- lmer(f11, data = NO3_data)
+summary(M11)
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12 <- lmer(f12, data = NO3_data)
+
+
+```
+
+```{r}
+aictab(list(M0,M1,M2,M3,M10,M11,M12))
+```
+Mod3: Model without TempWeek, ThreeMonth, or StormTemp with a random intercept structure 
 Mod2: Model without ThreeMonth or StormTemp with a random intercept structure
+Mod5: Reduced model with random slopes and intercepts uncorrelated 
+Mod6: Reduced model with random effect of year and site 
+Mod7: Reduced model with random effect of year with uncorrelated structure 
 Mod4: Model without ThreeMonth or StormTemp with a random slope structure with (PrecipWeek|site.ID)
 Mod1: full model with all candidate predictors and random intercept structure
 
@@ -1457,12 +1527,16 @@ This shows us that the random intercept structure is a better fit model
 ### Dot and Whisker plot ###
 
 ```{r}
-
-dwplot(M1, vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = NO3_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
     xlab("Coefficient") + 
-  ggtitle("Antecedent Conditions, NO3")
+  ggtitle("") +
+  theme_classic() 
 
-
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/NO3/coefficient.png")
 
 ```
 CI overlapping 0 are nonsignificant 
@@ -1488,6 +1562,7 @@ The plot shows the standardized residuals (or Pearson’s residuals) versus fitt
 
 ### Mixed effect model is a pseudo r^2  ###
 ```{r}
+
 sjPlot::tab_model(M1)
 
 
@@ -1719,7 +1794,7 @@ HI_FI_fDOM %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) +
 It appears that fDOM has slightly more site variation. It seems like there is a clearer distinction between sites and fDOM responses. Lets see if that shows in the model...
 
 ``` {r}
-fDOM_data <- HI_FI_fDOM[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+fDOM_data <- HI_FI_fDOM[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 fDOM_data <- na.omit(fDOM_data) # 241 to 237
 cor(fDOM_data[, c(1,3:10)])
@@ -1790,7 +1865,7 @@ plot(pr, add.data = TRUE)
 ### Altnerative slopes ###
 ```{r, echo=FALSE}
 
-f2.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (PrecipMonth|site.ID))
+f2.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (PrecipWeek|site.ID))
 
 M2.fDOM <- lmer(f2.fDOM, data = fDOM_data)
 
@@ -1798,22 +1873,63 @@ summary(M2.fDOM)
 
 ```
 
-```{r}
-aictab(list(M0.fDOM, M1.fDOM, M2.fDOM))
+### Altnerative slopes ###
+```{r, echo=FALSE}
+
+f10.fDOM <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (0 + PrecipWeek|site.ID) + (1|site.ID))
+
+M10.fDOM <- lmer(f10.fDOM, data = fDOM_data)
 
 ```
-Mod2: Reduced model (no StormTemp or ThreeMonth precip) and random intercept structure
-Mod3: Reduced model ('') with random slopes structure
+
+```{r}
+pr <- ggpredict(M2.fDOM, terms = c("PrecipMonth"))
+plot(pr, add.data = TRUE)
+
+```
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.fDOM <- lmer(f11, data = fDOM_data)
+
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.fDOM <- lmer(f12, data = fDOM_data)
+
+
+```
+
+
+```{r}
+aictab(list(M0.fDOM, M1.fDOM, M2.fDOM, M10.fDOM,M11.fDOM,M12.fDOM))
+
+```
+Mod6: Reduced model with uncorrelated random intercept and slope with random effect of year 
+Mod5: Reduced model with random intercept with year and site as random effects 
+Mod4: Reduced model with uncorrelated random intercept and random slope strucuture 
+Mod3: Reduced model (no StormTemp or ThreeMonth precip) and random intercept structure
+Mod2: Reduced model ('') with random slopes structure
 Mod1: Full model with random intercept structure 
 
 Mod2 with random intercept structure is the better model.
 
 ```{r}
-dwplot(list(M1.fDOM),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, fDOM")
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = fDOM_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/fDOM/coefficient.png")
+
 ```
 CI overlapping 0 are nonsignificant...This shows us that the only predictor that is significant is PrecipMonth precip  
 
@@ -1831,8 +1947,8 @@ The plot shows the standardized residuals (or Pearson’s residuals) versus fitt
 
 ### Mixed effect model is a pseudo r^2  ###
 ```{r}
-sjPlot::tab_model(M1.fDOM)
-
+sjPlot::tab_model(M12.fDOM)
+r.squaredGLMM(M12.fDOM)
 ```
 
 The R2 values of the summary table are correct as Marginal and conditional are both there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
@@ -1842,7 +1958,7 @@ The marginal R2 (marginal coefficient of determination) represents the variance 
 
 
 ```{r}
-r.squaredGLMM(M1.fDOM)
+r.squaredGLMM(M2.fDOM)
 
 ```
 
@@ -2084,7 +2200,7 @@ HI_FI_SPC %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) +
 
 
 ``` {r}
-SPC_data <- HI_FI_SPC[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+SPC_data <- HI_FI_SPC[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 SPC_data <- na.omit(SPC_data) # 232-228
 cor(SPC_data[,c(1,3:10)])
@@ -2174,22 +2290,57 @@ M2.SPC <- lmer(f2.SPC, data = SPC_data)
 ```
 
 
-```{r}
-aictab(list(M0.SPC, M1.SPC, M2.SPC))
+```{r, echo=FALSE}
+
+f10.SPC <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID))
+
+M10.SPC <- lmer(f10.SPC, data = SPC_data)
+
 
 ```
+
+
+```{r}
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.SPC <- lmer(f11, data = SPC_data)
+
+
+```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.SPC <- lmer(f12, data = SPC_data)
+
+
+```
+
+```{r}
+aictab(list(M0.SPC, M1.SPC, M2.SPC, M10.SPC,M11.SPC,M12.SPC))
+
+```
+Mod5: Reduced model with random intercept structure with random year and site effect 
 Mod2: Reduced model (no StormTemp or ThreeMonth Precip) with random intercept structure
+Mod6: Reduced model with unncorelated structure with random year and site effect
+Mod4: Reduced model ('') with uncorrelated random slopes and intercept 
 Mod3: Reduced model ('') with random slope structure
 Mod1: Full model with random intercept structure
 
 
 
 ```{r}
-dwplot(list(M1.SPC),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent conditions, SPC")
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = SPC_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/SPC/coefficient.png")
+
 ```
 CI overlapping 0 are nonsignificant. PrecipWeek and maybe PrecipMonth are significant
 
@@ -2207,8 +2358,8 @@ The plot shows the standardized residuals (or Pearson’s residuals) versus fitt
 
 ### Mixed effect model is a pseudo r^2  ###
 ```{r}
-sjPlot::tab_model(M1.SPC)
-
+sjPlot::tab_model(M11.SPC)
+r.squaredGLMM(M11.SPC)
 ```
 
 The R2 values of the summary table are correct as Marginal and conditional are bothe there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
@@ -2434,7 +2585,7 @@ HI_FI_turb %>% ggplot(aes(x = TimeSinceChena, y = Hyst_index)) +
 
 
 ``` {r}
-turb_data <- HI_FI_turb[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+turb_data <- HI_FI_turb[,c("Hyst_index", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 turb_data <- na.omit(turb_data) # 240 to 235
 cor(turb_data[,c(1,3:10)])
@@ -2521,23 +2672,64 @@ summary(M2.turb)
 
 ```
 
+```{r, echo=FALSE}
+f10.turb <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID)+(1|site.ID))
+
+M10.turb <- lmer(f10.turb, data = turb_data)
+
+summary(M10.turb)
+
+```
+
+```{r}
+pr <- ggpredict(M10.turb, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+```
 
 
 ```{r}
-aictab(list(M0.turb, M1.turb, M2.turb))
+f11 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.Turb <- lmer(f11, data = turb_data)
+
 
 ```
+
+```{r}
+f12 <- formula(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.Turb <- lmer(f12, data = turb_data)
+
+
+```
+
+
+
+```{r}
+aictab(list(M0.turb, M1.turb, M2.turb, M10.turb, M11.Turb,M12.Turb))
+
+```
+Mod6: Uncorrelated random slope and random intercept with year and site as effect 
+Mod4: Reduced model with uncorrelated random slope and random intercept 
+Mod5: Reduced model with random intercept and year effect 
 Mod3: Reduced model (no StormTemp, ThreeMonth Precip) with random slope intercept structure
 Mod2: Reduced model ('') with random intercept structure
 Mod1: Full model with random intercept structure 
 
 
 ```{r}
-dwplot(list(M1.turb),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, Turb")
+m1 <- lm(Hyst_index ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = turb_data)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/HI/Turb/coefficient.png")
+
 ```
 CI overlapping 0 are nonsignificant which is almost everything besides PrecipMonth and PrecipWeek for our reduced model 
 
@@ -2556,8 +2748,8 @@ The plot shows the standardized residuals (or Pearson’s residuals) versus fitt
 
 ### Mixed effect model is a pseudo r^2  ###
 ```{r}
-sjPlot::tab_model(M1.turb)
-
+sjPlot::tab_model(M12.Turb)
+r.squaredGLMM(M12.Turb)
 ```
 
 The R2 values of the summary table are correct as Marginal and conditional are bothe there. The more appropriate conditional and marginal coefficient of determination for generalized mixed-effect models can be extracted using the r.squaredGLMM function from the MuMIn package
@@ -2567,7 +2759,7 @@ The marginal R2 (marginal coefficient of determination) represents the variance 
 
 
 ```{r}
-r.squaredGLMM(M1.turb)
+r.squaredGLMM(M10.turb)
 
 ```
 only 12%...ouch
@@ -2599,6 +2791,83 @@ summary(M5.turb)
 
 ```
 Fire has significant interaction with TimeSinceChena 
+
+
+############################################################################################################################################### Catchment effects ################################################
+#########################################################################################################
+
+
+```{r}
+CV.all <- antecedent_HI_FI_1_0 %>% group_by(response_var,site.ID, year) %>%
+  summarize(meanHI = mean(Hyst_index),
+            meanFI = mean(Flush_index, na.rm = TRUE),
+            meanBETA = mean(beta, na.rm = TRUE),
+            sdHI = sd(Hyst_index),
+            sdFI = sd(Flush_index, na.rm = TRUE),
+            sdBETA = sd(beta, na.rm = TRUE),
+            CVhi = sdHI/meanHI,
+            CVfi = sdFI/meanFI,
+            CVbeta = sdBETA/meanBETA,
+            pf = paste(pf),
+            burn = paste(burn)) # calculating mean HI and CV for each year and each site
+
+CV.all <- CV.all[!duplicated(CV.all$meanHI), ] # removing duplicated rows 
+
+chem <- read_csv("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Results_figures/Discharge_chem/all.chem.csv", 
+    col_types = cols(fDOM.QSU = col_double(), 
+        nitrateuM = col_double(), SpCond.uScm = col_double(), 
+        Turbidity.FNU = col_double())) # reading in all chem data 
+
+chem.mean <- chem %>% group_by(Site, year) %>% 
+  summarize(meanfDOM = mean(fDOM.QSU, na.rm = TRUE)) # generating mean fDOM concentration by site and year 
+
+names(chem.mean) <- c("site.ID", "year", "meanfDOM") # changing the names so they can be merged
+
+CV.all.model <- left_join(CV.all, chem.mean, by = c("site.ID", "year")) # merging TNDOC and CV to run for the model 
+
+NO3.CV <- subset(CV.all.model, CV.all$response_var == "NO3")
+NO3.CV <- NO3.CV[-c(4,19),] # removing CARI 2021 due to it being an outlier 
+
+
+fcvno3 <- formula(CVhi ~ pf*meanfDOM + burn*meanfDOM + (1|year))
+
+Mcvno3 <- lmer(fcvno3, data = NO3.CV)
+summary(Mcvno3)
+
+plot(Mcvno3)
+
+qqnorm(resid(Mcvno3))
+
+sjPlot::tab_model(Mcvno3)
+r.squaredGLMM(Mcvno3)
+
+m1 <- lm(CVhi ~ pf*meanfDOM + burn*meanfDOM, data = NO3.CV)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+#write.csv(CV.all.model, "~/Documents/Storms/Output_from_analysis/From_07_Modelling/TNDOC_CV.csv")
+
+CV.all <- antecedent_HI_FI_1_0 %>% group_by(response_var,site.ID, year) %>%
+  summarize(meanHI = mean(Hyst_index),
+            meanFI = mean(Flush_index),
+            meanBETA = mean(beta),
+            sdHI = sd(Hyst_index),
+            sdFI = sd(Flush_index),
+            sdBETA = sd(beta),
+            CVhi = sd(Hyst_index)/mean(Hyst_index),
+            CVfi = sd(Flush_index)/mean(Flush_index),
+            CVbeta = sd(beta)/mean(beta),
+            pf = paste(pf),
+            burn = paste(burn)) # calculating mean HI and CV for each year and each site
+
+chem.mean <- chem %>% group_by(Site, year) %>% 
+  summarize(meanfDOM = mean(fDOM.QSU, na.rm = TRUE)) # generating mean fDOM concentration by site and year 
+```
 
 
 
@@ -2764,7 +3033,7 @@ HI_FI_NO3 %>% ggplot(aes(x = TimeSinceChena, y = beta)) +
 ```
 
 ``` {r}
-NO3_data_beta <- HI_FI_NO3[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+NO3_data_beta <- HI_FI_NO3[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 NO3_data_beta <- na.omit(NO3_data_beta) #236 to 216
 which(NO3_data_beta$beta > 1.5)
@@ -2849,25 +3118,67 @@ M2.NO3.beta <- lmer(f2.NO3_beta, data = NO3_data_beta)
 
 
 ```{r}
-aictab(list(M0.NO3_beta, M1.NO3.beta, M2.NO3.beta))
+f10.NO3_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID)+(1|site.ID))
+
+M10.NO3.beta <- lmer(f10.NO3_beta, data = NO3_data_beta)
+
 
 ```
+
+```{r}
+pr <- ggpredict(M10.NO3.beta, terms = c("PrecipWeek"))
+plot(pr, add.data = TRUE)
+
+```
+
+
+```{r}
+f11.NO3_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.NO3.beta <- lmer(f11.NO3_beta, data = NO3_data_beta)
+
+```
+
+```{r}
+f12.NO3_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.NO3.beta <- lmer(f12.NO3_beta, data = NO3_data_beta)
+
+```
+
+
+```{r}
+aictab(list(M0.NO3_beta, M1.NO3.beta, M2.NO3.beta, M10.NO3.beta, M11.NO3.beta, M12.NO3.beta))
+
+```
+Mod4: Reduced model with uncorrelated random slopes and intercept
+Mod6: Reduced model with uncorrelated structure with year and site as random effect 
 Mod3: Reduced model (No StormTemp or ThreeMonth) with random slopes structure
 Mod2: Reduced model ('') with random intercept structure
+Mod5: Reduced model with random intercept structure with year and site as random effect 
 Mod1: Full model with random intercept structure
 
 ```{r}
-dwplot(list(M1.NO3.beta),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, NO3")
+m1 <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = NO3_data_beta)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Beta/NO3 /coefficient.png")
+
 ```
 CI overlapping with 0 implies nonsignificace
 PrecipWeek is the only significant predictor
 ```{r}
-sjPlot::tab_model(M1.NO3.beta)
-r.squaredGLMM(M1.NO3.beta)
+sjPlot::tab_model(M10.NO3.beta)
+r.squaredGLMM(M10.NO3.beta)
+
+sjPlot::tab_model(M2.NO3.beta)
+r.squaredGLMM(M2.NO3.beta)
 ```
 Only 12.3% explained 
 
@@ -3030,7 +3341,7 @@ HI_FI_fDOM %>% ggplot(aes(x = TimeSinceChena, y = beta)) +
 
 
 ``` {r}
-fDOM_data_beta <- HI_FI_fDOM[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+fDOM_data_beta <- HI_FI_fDOM[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 fDOM_data_beta <- na.omit(fDOM_data_beta) #241 to 232
 
@@ -3102,34 +3413,67 @@ qqnorm(resid(M1.fDOM_beta))
 ```
 
 ```{r}
-pr <- ggpredict(M1.turb, terms = c("TempWeek"))
+pr <- ggpredict(M1.fDOM_beta, terms = c("StormPrecip"))
 plot(pr, add.data = TRUE)
 
 ```
 
 ```{r, echo=FALSE}
-f2.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (TempWeek|site.ID))
+f2.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (PrecipWeek|site.ID))
 
 M2.fDOM_beta <- lmer(f2.fDOM_beta, data = fDOM_data_beta)
 
 summary(M2.fDOM_beta)
 
 ```
+```{r, echo=FALSE}
+f10.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + ThreeMonth + Intensity + StormTemp + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID))
+
+M10.fDOM_beta <- lmer(f10.fDOM_beta, data = fDOM_data_beta)
+
+
+```
+
 
 ```{r}
-aictab(list(M0.fDOM_beta, M1.fDOM_beta, M2.fDOM_beta))
+f11.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.fDOM.beta <- lmer(f11.fDOM_beta, data = fDOM_data_beta)
+
+```
+
+```{r}
+f12.fDOM_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.fDOM.beta <- lmer(f12.fDOM_beta, data = fDOM_data_beta)
+
+```
+
+
+```{r}
+aictab(list(M0.fDOM_beta, M1.fDOM_beta, M2.fDOM_beta, M10.fDOM_beta, M11.fDOM.beta, M12.fDOM.beta))
 
 ```
 Mod2: Reduced model (No StormTemp or ThreeMonth Precip) with random intercept structure
-Mod3: Reduced model ('') with random slope structure
+Mod5: Reduced model ('') with random intercept with year and site as random effects
+Mod6: Reduced model ('') with uncorrelated structure with year and site as random effect
 Mod1: Full model with random intercept structure
+Mod4: Reduced model('') with uncorrelated slope and intercept structure 
+Mod3: Reduced model ('') with random slope structure
+
 
 ```{r}
-dwplot(list(M1.fDOM_beta),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, fDOM")
+m1 <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = fDOM_data_beta)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Beta/fDOM /coefficient.png")
+
 ```
 CI overlapping 0 indicate nonsignificance and it seems like only TempWeek is significant
 
@@ -3298,7 +3642,7 @@ HI_FI_SPC %>% ggplot(aes(x = TimeSinceChena, y = beta)) +
 
 
 ``` {r}
-SPC_data_beta <- HI_FI_SPC[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+SPC_data_beta <- HI_FI_SPC[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 SPC_data_beta <- na.omit(SPC_data_beta) #232 to 223
 which(SPC_data_beta$beta > 1.5)
@@ -3369,34 +3713,67 @@ plot(pr, add.data = TRUE)
 ```
 
 ```{r, echo=FALSE}
-f2.SPC_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth  + Intensity + TempWeek +  TimeSinceChena + (PrecipMonth|site.ID))
+f2.SPC_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth  + Intensity + TempWeek +  TimeSinceChena + (PrecipWeek|site.ID))
 
 M2.SPC_beta <- lmer(f2.SPC_beta, data = SPC_data_beta)
 
 summary(M2.SPC_beta)
 
 ```
+```{r, echo=FALSE}
+f10.SPC_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth  + Intensity + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID)+(1|site.ID))
 
-```{r}
-aictab(list(M0.SPC_beta, M1.SPC_beta, M2.SPC_beta))
+M10.SPC_beta <- lmer(f10.SPC_beta, data = SPC_data_beta)
+
 
 ```
+
+
+```{r}
+f11.SPC_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.SPC.beta <- lmer(f11.SPC_beta, data = SPC_data_beta)
+
+```
+
+```{r}
+f12.SPC_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.SPC.beta <- lmer(f12.SPC_beta, data = SPC_data_beta)
+
+```
+
+
+
+```{r}
+aictab(list(M0.SPC_beta, M1.SPC_beta, M2.SPC_beta, M10.SPC_beta, M11.SPC.beta, M12.SPC.beta))
+
+```
+Mod5: Reduced modelwith random intercept structure with site and year as random effects
+Mod6: Uncorrelated structure with year and site as a random effect
 Mod2: Reduced model (No StormTemp or ThreeMonth Precip) with random intercept structure
+Mod4: Reduced model ('') with uncorrelated slope and intercept 
 Mod3: Reduced model ('') with random slope structure
 Mod1: Full model with random intercept structure
 
 ```{r}
-dwplot(list(M1.SPC_beta),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, SPC")
+m1 <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = SPC_data_beta)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Beta/SPC /coefficient.png")
+
 ```
 
 
 ```{r}
-sjPlot::tab_model(M1.SPC_beta)
-r.squaredGLMM(M1.SPC_beta)
+sjPlot::tab_model(M11.SPC.beta)
+r.squaredGLMM(M11.SPC.beta)
 ```
 13.8% explained 
 
@@ -3560,7 +3937,7 @@ HI_FI_turb %>% ggplot(aes(x = TimeSinceChena, y = beta)) +
 
 
 ``` {r}
-turb_data_beta <- HI_FI_turb[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf")]
+turb_data_beta <- HI_FI_turb[,c("beta", "site.ID", "StormPrecip", "StormTemp", "PrecipWeek", "PrecipMonth", "ThreeMonth", "TempWeek", "Intensity", "TimeSinceChena", "burn", "pf", "year")]
 
 turb_data_beta <- na.omit(turb_data_beta) #240 to 229
 which(turb_data_beta$beta > 1.5)
@@ -3627,39 +4004,71 @@ qqnorm(resid(M1.turb_beta))
 ```
 
 ```{r}
-pr <- ggpredict(M1.turb_beta, terms = c("StormPrecip"))
+pr <- ggpredict(M1.turb_beta, terms = c("PrecipWeek"))
 plot(pr, add.data = TRUE)
 
 ```
 
 ```{r, echo=FALSE}
-f2.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (StormPrecip|site.ID))
+f2.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (PrecipWeek|site.ID))
 
 M2.turb_beta <- lmer(f2.turb_beta, data = turb_data_beta)
 
 summary(M2.turb_beta)
 
 ```
+```{r, echo=FALSE}
+f10.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek +  TimeSinceChena + (0+PrecipWeek|site.ID)+(1|site.ID))
 
-```{r}
-aictab(list(M0.turb_beta, M1.turb_beta, M2.turb_beta))
+M10.turb_beta <- lmer(f10.turb_beta, data = turb_data_beta)
+
 
 ```
+
+
+```{r}
+f11.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (1|site.ID) + (1|year))
+
+M11.turb.beta <- lmer(f11.turb_beta, data = turb_data_beta)
+
+```
+
+```{r}
+f12.turb_beta <- formula(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity  + TempWeek + TimeSinceChena + (0+PrecipWeek|site.ID) + (1|site.ID) + (1|year))
+
+M12.turb.beta <- lmer(f12.turb_beta, data = turb_data_beta)
+
+```
+
+
+```{r}
+aictab(list(M0.turb_beta, M1.turb_beta, M2.turb_beta, M10.turb_beta, M11.turb.beta, M12.turb.beta))
+
+```
+Mod5: Reduced model with random intercept structure with year and site as a random effect
+Mod6: Reduced model with uncorrelated structure with year and site as a random effect 
 Mod2: Reduced Model (no StormPrcip or ThreeMonth) with random intercept structure
+Mod4: Reduced Model('') with uncorrelated structure 
 Mod3: Reduced model ('') with random slope structure
 Mod1: Full model with random intercept structure 
 
 ```{r}
-dwplot(list(M1.turb_beta),
-       vline = geom_vline(xintercept = 0,
-           colour = "grey60",
-           linetype = 2)) +
-  ggtitle("Antecedent Conditions, Turb")
+m1 <- lm(beta ~ StormPrecip + PrecipWeek + PrecipMonth + Intensity + TempWeek + TimeSinceChena, data = turb_data_beta)
+dwplot(m1,
+       dot_args = list(color = "black"), # color for the dot
+       whisker_args = list(color = "red"),   # color for the whisker
+       vline = geom_vline(xintercept = 0, colour = "grey50", linetype = 2)) +
+    xlab("Coefficient") + 
+  ggtitle("") +
+  theme_classic() 
+
+ggsave("~/Documents/Storms/Output_from_analysis/From_07_Modelling/Beta/Turb/coefficient.png")
+
 ```
 
 ```{r}
-sjPlot::tab_model(M1.turb_beta)
-r.squaredGLMM(M1.turb_beta)
+sjPlot::tab_model(M11.turb.beta)
+r.squaredGLMM(M11.turb.beta)
 ```
 13% explained
 
